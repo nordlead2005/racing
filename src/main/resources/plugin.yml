@@ -1,0 +1,32 @@
+# https://bukkit.gamepedia.com/Plugin_YAML
+name: Racing
+version: ${project.version}
+description: With Racing you can compete against other players in custom made racing tracks.
+load: POSTWORLD
+author: hornta
+website: https://github.com/hornta/racing
+main: com.github.hornta.race.Racing
+database: false
+depend: [ProtocolLib]
+#prefix: ""
+softdepend: [NoteBlockAPI, HolographicDisplays]
+loadbefore: []
+commands:
+  racing:
+permissions:
+  racing.admin:
+    description: Gives access to everything in Racing plugin
+    default: op
+    children:
+      racing.modify: true
+      racing.moderator: true
+  racing.modify:
+    description: Gives access to build and modify races
+    default: op
+  racing.moderator:
+    description: Gives access to start and stop races
+    default: op
+  racing.player:
+    description: Gives access to basic commands in Racing
+    default: true
+api-version: 1.13

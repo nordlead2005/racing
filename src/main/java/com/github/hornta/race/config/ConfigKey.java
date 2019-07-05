@@ -1,0 +1,133 @@
+package com.github.hornta.race.config;
+
+import com.github.hornta.race.api.StorageType;
+import org.bukkit.configuration.ConfigurationSection;
+
+import java.util.HashSet;
+import java.util.Set;
+import java.util.function.Function;
+
+public enum ConfigKey {
+  LANGUAGE("language", ConfigType.STRING, "english"),
+  SONGS_DIRECTORY("songs_directory", ConfigType.STRING, "songs"),
+  MIN_REQUIRED_STARTPOINTS("minimum_required_startpoints", ConfigType.INTEGER, 2),
+  MIN_REQUIRED_CHECKPOINTS("minimum_required_checkpoints", ConfigType.INTEGER, 1),
+  STORAGE("storage.current", ConfigType.STRING, StorageType.FILE, StorageType::valueOf),
+  FILE_RACE_DIRECTORY("storage.file.directory", ConfigType.STRING, "races"),
+  DEBUG("debug", ConfigType.BOOLEAN, false),
+  RACE_PREPARE_TIME("prepare_time", ConfigType.INTEGER, 300),
+  RACE_ANNOUNCE_INTERVALS("race_announce_intervals", ConfigType.LIST, new int[] { 180, 60, 30 });
+
+  private static final Set<String> configPaths = new HashSet<>();
+
+  static {
+    for (ConfigKey key : ConfigKey.values()) {
+      if (key.getPath() == null || key.getPath().isEmpty()) {
+        throw new Error("A config path can't be null or empty.");
+      }
+
+      if(key.getType() == null) {
+        throw new Error("A config type can't be null");
+      }
+
+      for (char character : key.name().toCharArray()) {
+        if (Character.getType(character) == Character.LOWERCASE_LETTER) {
+          throw new Error("All characters in a config key must be uppercase");
+        }
+      }
+
+      for (char character : key.getPath().toCharArray()) {
+        if (Character.getType(character) == Character.UPPERCASE_LETTER) {
+          throw new Error("All character in a config path must be lowercase");
+        }
+      }
+
+      if (configPaths.contains(key.getPath())) {
+        throw new Error("Duplicate identifier `" + key.getPath() + "` found in ConfigKey");
+      }
+
+      configPaths.add(key.getPath());
+    }
+  }
+
+  private String path;
+  private ConfigType type;
+  private Object defaultValue;
+  private Function<String, IEnumConfig> converter;
+
+  ConfigKey(String path, ConfigType type, Object defaultValue) {
+    this.path = path;
+    this.type = type;
+    this.defaultValue = defaultValue;
+  }
+
+  ConfigKey(String path, ConfigType type, Object defaultValue, Function<String, IEnumConfig> converter) {
+    this.path = path;
+    this.type = type;
+    this.defaultValue = defaultValue;
+    this.converter = converter;
+  }
+
+  public static boolean hasPath(String path) {
+    return configPaths.contains(path);
+  }
+
+  public ConfigType getType() {
+    return type;
+  }
+
+  public Object getDefaultValue() {
+    return defaultValue;
+  }
+
+  public String getPath() {
+    return path;
+  }
+
+  public boolean isExpectedType(ConfigurationSection configurationSection) {
+    boolean isExpectedType = false;
+
+    switch (type) {
+      case SET:
+        isExpectedType = configurationSection.isSet(path);
+        break;
+      case LIST:
+        isExpectedType = configurationSection.isList(path);
+        break;
+      case LONG:
+        isExpectedType = configurationSection.isLong(path);
+        break;
+      case COLOR:
+        isExpectedType = configurationSection.isColor(path);
+        break;
+      case DOUBLE:
+        isExpectedType = configurationSection.isDouble(path);
+        break;
+      case STRING:
+        isExpectedType = configurationSection.isString(path);
+        break;
+      case VECTOR:
+        isExpectedType = configurationSection.isVector(path);
+        break;
+      case BOOLEAN:
+        isExpectedType = configurationSection.isBoolean(path);
+        break;
+      case INTEGER:
+        isExpectedType = configurationSection.isInt(path);
+        break;
+      case ITEM_STACK:
+        isExpectedType = configurationSection.isItemStack(path);
+        break;
+      case OFFLINE_PLAYER:
+        isExpectedType = configurationSection.isOfflinePlayer(path);
+        break;
+      default:
+    }
+
+    return isExpectedType;
+  }
+
+  public Function<String, IEnumConfig> getConverter() {
+    return converter;
+  }
+}

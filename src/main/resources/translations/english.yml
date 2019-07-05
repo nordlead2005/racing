@@ -1,0 +1,102 @@
+commands:
+  create_race:
+    success: "§eRace `<race_name>` has been created."
+    error_name_occupied: "§cThere is already a race with called `<race_name>`."
+  delete_race:
+    success: "§eRace `<race_name>` has been deleted."
+  change_race_name:
+    success: "§eRace name changed from `<old_name>` to `<new_name>`."
+  enable_race:
+    success: "§eRace `<race_name>` has been enabled."
+    error_is_editing: "§cRace under construction can't be enabled."
+    error_is_enabled: "§cThis race is already enabled."
+  disable_race:
+    success: "§eRace `<race_name>` har been disabled."
+    error_is_started: "§cThis race is ongoing and can therefore not be disabled."
+    error_is_disabled: "§cThis race is already disabled."
+  race_add_checkpoint:
+    success: "§eNew checkpoint `<position>` has been created for race `<race_name>`."
+    error_is_occupied: "§cThere is already a checkpoint int this location."
+  race_delete_checkpoint:
+    success: "§eCheckpoint `<position>` for race `<race_name>` has been deleted."
+  race_add_startpoint:
+    success: "§eNew start point `<position>` for race `<race_name>` has been created."
+    error_is_occupied: "§cThere is already a start point in this location."
+  race_delete_startpoint:
+    success: "§Start point `<position>` for race `<race_name>` har been deleted."
+  race_start_edit:
+    success: "§eThis race is now under construction."
+    error_is_editing: "§cThis race is already under construction."
+    error_is_enabled: "§cRace must be disabled before it can be put under construction."
+  race_stop_edit:
+    success: "§eThis race is no longer under construction."
+    error_is_not_editing: "§cThis race is not under construction."
+  race_spawn:
+    error_is_editing: "§cThis race is currently under construction."
+  race_set_spawn:
+    success: "§eSpawn for race `<race_name>` set to <x>, <y>, <z> in world `<world>`."
+  list_races:
+    race_list: "Race (<num_race>): <races>"
+    race_list_item: "§b<race>"
+  race_set_type:
+    success: "§eRace type changed from `<old_type>` to `<new_type>`."
+    error_nochange: "§cRace type is already set to `<type>`."
+  race_set_song:
+    success: "§eRace song changed from `<old_song>` to `<new_song>`."
+    error_nochange: "§cRace song is already set to `<song>`."
+  race_unset_song:
+    success: "§eSong was removed from race."
+    error_already_unset: "§cRace does not have a song."
+  start_race:
+    error_already_started: "§cRace is already started.."
+    error_missing_startpoints: "§cRace must at least have <num_start_points> start points."
+    error_missing_checkpoints: "§cRace must at least have <num_checkpoints> checkpoints."
+  stop_race:
+    success: "§eRace been stopped."
+    error_not_started: "§cRace is not started."
+  join_race:
+    success: "§e<player_name> entered race `<race_name>`. (<current_participants>/<max_participants> participants)"
+    error_not_open: "§cThis race is not open for participation."
+    error_is_full: "§cThere are not open slots left."
+    error_is_participating: "§cYou are already participating in this race."
+    error_is_participating_other: "§cYou are currently participating in another race."
+  race_skip_wait:
+    error_not_started: "§cRace must be started in order to skip preparing."
+  reload:
+    success: "§eConfiguration has been reloaded."
+    not_races: "§cRaces has not been reloaded because there are currently ongoing races."
+
+validators:
+  race_not_found: "§cA race with name `<race_name>` couldn't be found."
+  race_already_exist: "§cThere is already a race with name `<race_name>`."
+  checkpoint_not_found: "§cA checkpoint with position `<position>` in race `<race_name>` couldn't be found."
+  checkpoint_already_exist: "§cThere is already a checkpoint `<position>` in race `<race_name>`."
+  startpoint_not_found: "§cA start point with position `<position>` in race `<race_name>` couldn't be found."
+  startpoint_already_exist: "§cThere is already a start point with position `<position>` in race `<race_name>`."
+  type_not_found: "§cThere is not type called `<type>`. Possible types: <types>."
+  song_not_found: "§cThere is not song called `<song_name>`."
+
+race_is_disabled: "§cThis race is currently disabled."
+race_canceled: "§cRace has been cancelled due to lack of participants."
+race_start_noshow_disqualified: "§e<player_name> was absent and is now disqualified."
+race_start_quit_disqualified: "§e<player_name> left and is now disqualified."
+edit_no_edit_mode: "§cYou can't change race `<race_name>` because it's not under construction. Type §7/racing startedit <race_name>§c to put it under construction."
+race_win: "§e<player_name> has won race §a<race_name>§e with time <time>."
+race_participate_click_text: "/racing join <race_name>"
+race_participate_hover_text: "Click here to participate."
+race_participate_text: "§e<command_sender> has started race §a<race_name>§e and begins in <time_left>. Write §7/racing join <race_name>§e to participate."
+race_participate_text_timeleft: "§eThere are <time_left> left before the race begin. Write §7/racing join <race_name>§e to participate."
+race_countdown_subtitle: "seconds before the race begins."
+
+no_permission_command: "§cYou don't have permission to execute this command."
+missing_arguments_command: "§cSome arguments for this command is missing.\n\nUsage:\n<usage>"
+command_not_found: "§cCommand wasn't found.\n\nSuggestions:\n<suggestions>"
+
+timeunit.second: "second"
+timeunit.seconds: "seconds"
+timeunit.minute: "minute"
+timeunit.minutes: "minutes"
+timeunit.hour: "hour"
+timeunit.hours: "hours"
+timeunit.day: "day"
+timeunit.days: "days"

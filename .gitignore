@@ -1,0 +1,14 @@
+server/cache
+server/logs
+server/crash-reports
+server/plugins/LuckPerms
+server/plugins/HolographicDisplays
+server/plugins/ProtocolLib
+server/plugins/Racing
+server/world
+server/world_nether
+server/world_the_end
+eula.txt
+server.properties
+target
+.idea
