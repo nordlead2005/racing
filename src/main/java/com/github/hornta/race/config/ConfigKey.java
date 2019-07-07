@@ -10,8 +10,6 @@ import java.util.function.Function;
 public enum ConfigKey {
   LANGUAGE("language", ConfigType.STRING, "english"),
   SONGS_DIRECTORY("songs_directory", ConfigType.STRING, "songs"),
-  MIN_REQUIRED_STARTPOINTS("minimum_required_startpoints", ConfigType.INTEGER, 2),
-  MIN_REQUIRED_CHECKPOINTS("minimum_required_checkpoints", ConfigType.INTEGER, 1),
   STORAGE("storage.current", ConfigType.STRING, StorageType.FILE, StorageType::valueOf),
   FILE_RACE_DIRECTORY("storage.file.directory", ConfigType.STRING, "races"),
   DEBUG("debug", ConfigType.BOOLEAN, false),

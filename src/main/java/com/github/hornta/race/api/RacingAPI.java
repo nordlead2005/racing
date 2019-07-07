@@ -5,6 +5,8 @@ import com.github.hornta.race.objects.RaceCheckpoint;
 import com.github.hornta.race.objects.RaceStartPoint;
 
 import java.util.List;
+import java.util.UUID;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 public interface RacingAPI {
@@ -12,8 +14,8 @@ public interface RacingAPI {
   void createRace(Race race, Consumer<Boolean> callback);
   void deleteRace(Race race, Consumer<Boolean> callback);
   void updateRace(Race race, Consumer<Boolean> callback);
-  void addRaceStart(Race race, RaceStartPoint startPoint, Consumer<Boolean> callback);
-  void deleteStartPoint(Race race, RaceStartPoint startPoint, Consumer<Boolean> callback);
-  void addStartPoint(Race race, RaceCheckpoint checkpoint, Consumer<Boolean> callback);
-  void deletePoint(Race race, RaceCheckpoint checkpoint, Consumer<Boolean> callback);
+  void addStartPoint(UUID raceId, RaceStartPoint startPoint, Consumer<Boolean> callback);
+  void deleteStartPoint(UUID raceId, RaceStartPoint startPoint, Consumer<Boolean> callback);
+  void addCheckpoint(UUID raceId, RaceCheckpoint checkpoint, Consumer<Boolean> callback);
+  void deleteCheckpoint(UUID raceId, RaceCheckpoint checkpoint, Consumer<Boolean> callback);
 }

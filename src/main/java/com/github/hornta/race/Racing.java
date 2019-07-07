@@ -6,41 +6,9 @@ import com.github.hornta.Carbon;
 import com.github.hornta.CarbonCommand;
 import com.github.hornta.race.api.FileAPI;
 import com.github.hornta.race.api.StorageType;
-import com.github.hornta.race.commands.CommandAddCheckpoint;
-import com.github.hornta.race.commands.CommandAddStartpoint;
-import com.github.hornta.race.commands.CommandCreateRace;
-import com.github.hornta.race.commands.CommandDeleteCheckpoint;
-import com.github.hornta.race.commands.CommandDeleteRace;
-import com.github.hornta.race.commands.CommandDeleteStartpoint;
-import com.github.hornta.race.commands.CommandDisableRace;
-import com.github.hornta.race.commands.CommandEnableRace;
-import com.github.hornta.race.commands.CommandJoinRace;
-import com.github.hornta.race.commands.CommandPlaySong;
-import com.github.hornta.race.commands.CommandRaceSetSpawn;
-import com.github.hornta.race.commands.CommandRaceSpawn;
-import com.github.hornta.race.commands.CommandRaceTeleportPoint;
-import com.github.hornta.race.commands.CommandRaceTeleportStart;
-import com.github.hornta.race.commands.CommandRaces;
-import com.github.hornta.race.commands.CommandSetRaceName;
-import com.github.hornta.race.commands.CommandSetSong;
-import com.github.hornta.race.commands.CommandSetType;
-import com.github.hornta.race.commands.CommandSkipWait;
-import com.github.hornta.race.commands.CommandStartEditRace;
-import com.github.hornta.race.commands.CommandStartRace;
-import com.github.hornta.race.commands.CommandStopEditRace;
-import com.github.hornta.race.commands.CommandStopRace;
-import com.github.hornta.race.commands.CommandStopSong;
-import com.github.hornta.race.commands.CommandUnsetSong;
-import com.github.hornta.race.commands.completers.PointCompleter;
-import com.github.hornta.race.commands.completers.RaceCompleter;
-import com.github.hornta.race.commands.completers.RacingTypeCompleter;
-import com.github.hornta.race.commands.completers.SongCompleter;
-import com.github.hornta.race.commands.completers.StartPointCompleter;
-import com.github.hornta.race.commands.validators.PointExistValidator;
-import com.github.hornta.race.commands.validators.RaceExistValidator;
-import com.github.hornta.race.commands.validators.RacingTypeValidator;
-import com.github.hornta.race.commands.validators.SongExistValidator;
-import com.github.hornta.race.commands.validators.StartPointExistValidator;
+import com.github.hornta.race.commands.*;
+import com.github.hornta.race.commands.completers.*;
+import com.github.hornta.race.commands.validators.*;
 import com.github.hornta.race.config.ConfigKey;
 import com.github.hornta.race.config.RaceConfiguration;
 import com.github.hornta.race.mcmmo.McMMOListener;
@@ -129,7 +97,7 @@ public class Racing extends JavaPlugin {
     carbon
       .addCommand("racing create")
       .withHandler(new CommandCreateRace(racingManager))
-      .addHelpText("/racing create <race>")
+      .addHelpText("/rc create <race>")
       .setNumberOfArguments(1)
       .validateArgument(0, raceShouldNotExist)
       .requiresPermission(Permission.RACING_MODIFY.toString())
@@ -138,7 +106,7 @@ public class Racing extends JavaPlugin {
     carbon
       .addCommand("racing delete")
       .withHandler(new CommandDeleteRace(racingManager))
-      .addHelpText("/racing delete <race>")
+      .addHelpText("/rc delete <race>")
       .setNumberOfArguments(1)
       .validateArgument(0, raceShouldExist)
       .setTabComplete(0, raceCompleter)
@@ -147,13 +115,13 @@ public class Racing extends JavaPlugin {
     carbon
       .addCommand("racing list")
       .withHandler(new CommandRaces(racingManager))
-      .addHelpText("/racing list")
+      .addHelpText("/rc list")
       .requiresPermission(Permission.RACING_PLAYER.toString());
 
     carbon
       .addCommand("racing addcheckpoint")
       .withHandler(new CommandAddCheckpoint(racingManager))
-      .addHelpText("/racing addcheckpoint <race>")
+      .addHelpText("/rc addcheckpoint <race>")
       .setNumberOfArguments(1)
       .validateArgument(0, raceShouldExist)
       .setTabComplete(0, raceCompleter)
@@ -163,7 +131,7 @@ public class Racing extends JavaPlugin {
     carbon
       .addCommand("racing deletecheckpoint")
       .withHandler(new CommandDeleteCheckpoint(racingManager))
-      .addHelpText("/racing deletecheckpoint <race> <point>")
+      .addHelpText("/rc deletecheckpoint <race> <point>")
       .setNumberOfArguments(2)
       .validateArgument(0, raceShouldExist)
       .setTabComplete(0, raceCompleter)
@@ -174,7 +142,7 @@ public class Racing extends JavaPlugin {
     carbon
       .addCommand("racing tpcheckpoint")
       .withHandler(new CommandRaceTeleportPoint(racingManager))
-      .addHelpText("/racing tpcheckpoint <race> <point>")
+      .addHelpText("/rc tpcheckpoint <race> <point>")
       .setNumberOfArguments(2)
       .validateArgument(0, raceShouldExist)
       .setTabComplete(0, raceCompleter)
@@ -186,7 +154,7 @@ public class Racing extends JavaPlugin {
     carbon
       .addCommand("racing spawn")
       .withHandler(new CommandRaceSpawn(racingManager))
-      .addHelpText("/racing spawn <race>")
+      .addHelpText("/rc spawn <race>")
       .setNumberOfArguments(1)
       .validateArgument(0, raceShouldExist)
       .setTabComplete(0, raceCompleter)
@@ -196,7 +164,7 @@ public class Racing extends JavaPlugin {
     carbon
       .addCommand("racing setspawn")
       .withHandler(new CommandRaceSetSpawn(racingManager))
-      .addHelpText("/racing setspawn <race>")
+      .addHelpText("/rc setspawn <race>")
       .setNumberOfArguments(1)
       .validateArgument(0, raceShouldExist)
       .setTabComplete(0, raceCompleter)
@@ -204,54 +172,40 @@ public class Racing extends JavaPlugin {
       .preventConsoleCommandSender();
 
     carbon
-      .addCommand("racing disable")
-      .withHandler(new CommandDisableRace(racingManager))
-      .addHelpText("/racing disable <race>")
-      .setNumberOfArguments(1)
+      .addCommand("racing setstate")
+      .withHandler(new CommandSetRaceState(racingManager))
+      .addHelpText("/rc setstate <race> <state>")
+      .setNumberOfArguments(2)
       .validateArgument(0, raceShouldExist)
       .setTabComplete(0, raceCompleter)
-      .requiresPermission(Permission.RACING_MODIFY.toString());
-
-    carbon
-      .addCommand("racing enable")
-      .withHandler(new CommandEnableRace(racingManager))
-      .addHelpText("/racing enable <race>")
-      .setNumberOfArguments(1)
-      .validateArgument(0, raceShouldExist)
-      .setTabComplete(0, raceCompleter)
+      .validateArgument(1, new RaceStateValidator())
+      .setTabComplete(1, new RaceStateCompleter())
       .requiresPermission(Permission.RACING_MODIFY.toString());
 
     carbon
       .addCommand("racing setname")
       .withHandler(new CommandSetRaceName(racingManager))
-      .addHelpText("/racing setname <race> <name>")
+      .addHelpText("/rc setname <race> <name>")
       .setNumberOfArguments(2)
       .validateArgument(0, raceShouldExist)
       .setTabComplete(0, raceCompleter)
       .requiresPermission(Permission.RACING_MODIFY.toString());
 
     carbon
-      .addCommand("racing startedit")
-      .withHandler(new CommandStartEditRace(racingManager))
-      .addHelpText("/racing startedit <race>")
-      .setNumberOfArguments(1)
+      .addCommand("racing settype")
+      .withHandler(new CommandSetType(racingManager))
+      .addHelpText("/rc settype <race> <type>")
+      .setNumberOfArguments(2)
       .validateArgument(0, raceShouldExist)
       .setTabComplete(0, raceCompleter)
-      .requiresPermission(Permission.RACING_MODIFY.toString());
-
-    carbon
-      .addCommand("racing stopedit")
-      .withHandler(new CommandStopEditRace(racingManager))
-      .addHelpText("/racing stopedit <race>")
-      .setNumberOfArguments(1)
-      .validateArgument(0, raceShouldExist)
-      .setTabComplete(0, raceCompleter)
+      .validateArgument(1, new RaceTypeValidator())
+      .setTabComplete(1, new RaceTypeCompleter())
       .requiresPermission(Permission.RACING_MODIFY.toString());
 
     carbon
       .addCommand("racing addstartpoint")
       .withHandler(new CommandAddStartpoint(racingManager))
-      .addHelpText("/racing addstartpoint <race>")
+      .addHelpText("/rc addstartpoint <race>")
       .setNumberOfArguments(1)
       .validateArgument(0, raceShouldExist)
       .setTabComplete(0, raceCompleter)
@@ -261,7 +215,7 @@ public class Racing extends JavaPlugin {
     carbon
       .addCommand("racing deletestartpoint")
       .withHandler(new CommandDeleteStartpoint(racingManager))
-      .addHelpText("/racing deletestartpoint <race> <position>")
+      .addHelpText("/rc deletestartpoint <race> <position>")
       .setNumberOfArguments(2)
       .validateArgument(0, raceShouldExist)
       .setTabComplete(0, raceCompleter)
@@ -272,7 +226,7 @@ public class Racing extends JavaPlugin {
     carbon
       .addCommand("racing tpstartpoint")
       .withHandler(new CommandRaceTeleportStart(racingManager))
-      .addHelpText("/racing tpstartpoint <race> <position>")
+      .addHelpText("/rc tpstartpoint <race> <position>")
       .setNumberOfArguments(2)
       .validateArgument(0, raceShouldExist)
       .setTabComplete(0, raceCompleter)
@@ -281,22 +235,11 @@ public class Racing extends JavaPlugin {
       .requiresPermission(Permission.RACING_MODIFY.toString())
       .preventConsoleCommandSender();
 
-    carbon
-      .addCommand("racing settype")
-      .withHandler(new CommandSetType(racingManager))
-      .addHelpText("/racing settype <race> <type>")
-      .setNumberOfArguments(2)
-      .validateArgument(0, raceShouldExist)
-      .setTabComplete(0, raceCompleter)
-      .validateArgument(1, new RacingTypeValidator())
-      .setTabComplete(1, new RacingTypeCompleter())
-      .requiresPermission(Permission.RACING_MODIFY.toString());
-
     if(isNoteBlockAPILoaded) {
       carbon
         .addCommand("racing setsong")
         .withHandler(new CommandSetSong(racingManager))
-        .addHelpText("/racing setsong <race> <song>")
+        .addHelpText("/rc setsong <race> <song>")
         .setNumberOfArguments(2)
         .validateArgument(0, raceShouldExist)
         .setTabComplete(0, raceCompleter)
@@ -307,7 +250,7 @@ public class Racing extends JavaPlugin {
     carbon
       .addCommand("racing unsetsong")
       .withHandler(new CommandUnsetSong(racingManager))
-      .addHelpText("/racing unsetsong <race>")
+      .addHelpText("/rc unsetsong <race>")
       .setNumberOfArguments(1)
       .validateArgument(0, raceShouldExist)
       .setTabComplete(0, raceCompleter)
@@ -317,7 +260,7 @@ public class Racing extends JavaPlugin {
     carbon
       .addCommand("racing start")
       .withHandler(new CommandStartRace(racingManager))
-      .addHelpText("/racing start <race>")
+      .addHelpText("/rc start <race>")
       .setNumberOfArguments(1)
       .validateArgument(0, raceShouldExist)
       .setTabComplete(0, raceCompleter)
@@ -327,7 +270,7 @@ public class Racing extends JavaPlugin {
     carbon
       .addCommand("racing join")
       .withHandler(new CommandJoinRace(racingManager))
-      .addHelpText("/racing join <race>")
+      .addHelpText("/rc join <race>")
       .setNumberOfArguments(1)
       .validateArgument(0, raceShouldExist)
       .setTabComplete(0, raceCompleter)
@@ -337,7 +280,7 @@ public class Racing extends JavaPlugin {
     carbon
       .addCommand("racing stop")
       .withHandler(new CommandStopRace(racingManager))
-      .addHelpText("/racing stop <race>")
+      .addHelpText("/rc stop <race>")
       .setNumberOfArguments(1)
       .validateArgument(0, raceShouldExist)
       .setTabComplete(0, raceCompleter)
@@ -346,7 +289,7 @@ public class Racing extends JavaPlugin {
     carbon
       .addCommand("racing skipwait")
       .withHandler(new CommandSkipWait(racingManager))
-      .addHelpText("/racing skipwait <race>")
+      .addHelpText("/rc skipwait <race>")
       .setNumberOfArguments(1)
       .validateArgument(0, raceShouldExist)
       .setTabComplete(0, raceCompleter)
@@ -356,7 +299,7 @@ public class Racing extends JavaPlugin {
       carbon
         .addCommand("racing playsong")
         .withHandler(new CommandPlaySong())
-        .addHelpText("/racing playsong <song>")
+        .addHelpText("/rc playsong <song>")
         .setNumberOfArguments(1)
         .validateArgument(0, songExistValidator)
         .setTabComplete(0, songCompleter)
@@ -366,7 +309,7 @@ public class Racing extends JavaPlugin {
       carbon
         .addCommand("racing stopsong")
         .withHandler(new CommandStopSong())
-        .addHelpText("/racing stopsong")
+        .addHelpText("/rc stopsong")
         .requiresPermission(Permission.RACING_MODIFY.toString())
         .preventConsoleCommandSender();
     }
@@ -375,6 +318,7 @@ public class Racing extends JavaPlugin {
       .addCommand("racing reload")
       .withHandler((CommandSender sender, String[] args) -> {
         RaceConfiguration.reload(this);
+        SongManager.getInstance().loadSongs((String) RaceConfiguration.getValue(ConfigKey.SONGS_DIRECTORY));
 
         if(!racingManager.getRaceSessions().isEmpty()) {
           MessageManager.sendMessage(sender, MessageKey.RELOAD_NOT_RACES);
@@ -384,8 +328,12 @@ public class Racing extends JavaPlugin {
 
         MessageManager.sendMessage(sender, MessageKey.RELOAD_SUCCESS);
       })
-      .addHelpText("/racing reload")
+      .addHelpText("/rc reload")
       .requiresPermission(Permission.RACING_ADMIN.toString());
+
+    carbon
+      .addCommand("racing help")
+      .withHandler(new CommandHelp());
   }
 
   @Override

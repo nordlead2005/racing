@@ -6,14 +6,6 @@ commands:
     success: "§eRace `<race_name>` har raderats."
   change_race_name:
     success: "§eNamn på race har ändrats från `<old_name>` till `<new_name>`."
-  enable_race:
-    success: "§eRace `<race_name>` har aktiverats."
-    error_is_editing: "§cRace under konstruktion kan inte aktiveras."
-    error_is_enabled: "§cDetta race är redan aktiverat."
-  disable_race:
-    success: "§eRace `<race_name>` har inaktiverats."
-    error_is_started: "§cDetta race är startat och kan därför inte inaktiveras."
-    error_is_disabled: "§cDetta race är redan inaktiverat."
   race_add_checkpoint:
     success: "§eNy checkpoint position `<position>` har skapats för race `<race_name>`."
     error_is_occupied: "§cDet finns redan en checkpoint på den här platsen."
@@ -24,15 +16,8 @@ commands:
     error_is_occupied: "§cDet finns redan en startposition på den här platsen."
   race_delete_startpoint:
     success: "§eStartposition #<position> för race `<race_name>` har raderats."
-  race_start_edit:
-    success: "§eDetta race är nu under konstruktion."
-    error_is_editing: "§cDetta race är redan under konstruktion."
-    error_is_enabled: "§cRace måste inaktiveras före redigering."
-  race_stop_edit:
-    success: "§eDetta race är inte längre under konstruktion."
-    error_is_not_editing: "§cDetta race är inte under konstruktion."
   race_spawn:
-    error_is_editing: "§cDetta race är för tillfället under konstruktion."
+    error_not_enabled: "§cDetta race är inte öppet."
   race_set_spawn:
     success: "§eSpawn för race `<race_name>` satt till <x>, <y>, <z> i värld `<world>`."
   list_races:
@@ -49,8 +34,9 @@ commands:
     error_already_unset: "§cRacet har ingen vald låt."
   start_race:
     error_already_started: "§cRacet är redan startat."
-    error_missing_startpoints: "§cRacet måste ha minst <num_start_points> startpositioner."
-    error_missing_checkpoints: "§cRacet måste ha minst <num_checkpoints> checkpoint."
+    error_missing_startpoint: "§cRacet måste ha minst 1 startposition."
+    error_missing_checkpoint: "§cRacet måste ha minst 1 checkpoint."
+    error_not_enabled: "§Detta race måste vara öppnat för att kunna starta. Skriv §7/rc setstate enabled §cför att öppna det."
   stop_race:
     success: "§eRacet har stoppats."
     error_not_started: "§cRacet kan inte avslutas eftersom det inte är startat."
@@ -65,6 +51,13 @@ commands:
   reload:
     success: "§eKonfiguration har laddats om."
     not_races: "§cRaces har inte laddats om eftersom ett eller flera race pågår."
+  race_set_state:
+    success: "§eStatus har ändrats från `<old_state>` till `<new_state>`."
+    error_nochange: "§Status är redan satt till `<state>`."
+    error_ongoing: "§cRace som pågår kan inte ändra status."
+  race_help:
+    title: "§6§m----§r§6[ §eRacing Hjälp §6]§m----"
+    item: "§e<text>"
 
 validators:
   race_not_found: "§cDet finns inget race med namn `<race_name>`."
@@ -74,18 +67,18 @@ validators:
   startpoint_not_found: "§cDet finns ingen startposition `<position>` i race `<race_name>`."
   startpoint_already_exist: "§cDet finns redan en startposition `<position>` i race `<race_name>`."
   type_not_found: "§cDet finns ingen typ `<type>`. Möjliga typer: <types>."
+  state_not_found: "§cDet finns ingen status `<state>`. Möjliga statusar: <states>."
   song_not_found: "§cDet finns ingen låt med namnet `<song_name>`."
 
-race_is_disabled: "§cDetta race är för tillfället stängt."
 race_canceled: "§cRacet har blivit inställt p.g.a. för få deltagande."
 race_start_noshow_disqualified: "§e<player_name> uteblev från racet och är därmed diskvalificerad."
 race_start_quit_disqualified: "§e<player_name> lämnade och är därmed diskvalificerad."
-edit_no_edit_mode: "§cDu kan inte ändra på race `<race_name>` eftersom racet inte är under konstruktion."
+edit_no_edit_mode: "§cDu kan inte ändra på race `<race_name>` eftersom racet inte är under konstruktion. Skriv §7/rc setstate <race_name> under_construction§c för att sätta det under konstruktion."
 race_win: "§e<player_name> har vunnit race §a<race_name>§e med tiden <time>."
-race_participate_click_text: "/racing join <race_name>"
+race_participate_click_text: "/rc join <race_name>"
 race_participate_hover_text: "Klicka för att delta"
-race_participate_text: "§e<command_sender> har startat race §a<race_name>§e som startar om <time_left>. Skriv §7/racing join <race_name>§e för att delta."
-race_participate_text_timeleft: "§eDet är <time_left> kvar innan racet startar. Skriv §7/racing join <race_name>§e för att delta."
+race_participate_text: "§e<command_sender> har startat race §a<race_name>§e som startar om <time_left>. Skriv §7/rc join <race_name>§e för att delta."
+race_participate_text_timeleft: "§eDet är <time_left> kvar innan racet startar. Skriv §7/rc join <race_name>§e för att delta."
 race_countdown_subtitle: "sekunder innan racet börjar"
 
 no_permission_command: "§cDu har inte tillåtelse att utföra detta kommando."

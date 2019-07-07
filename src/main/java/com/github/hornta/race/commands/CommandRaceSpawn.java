@@ -1,8 +1,10 @@
 package com.github.hornta.race.commands;
 
 import com.github.hornta.ICommandHandler;
+import com.github.hornta.race.Permission;
 import com.github.hornta.race.RacingManager;
 import com.github.hornta.race.Util;
+import com.github.hornta.race.enums.RaceState;
 import com.github.hornta.race.message.MessageKey;
 import com.github.hornta.race.message.MessageManager;
 import com.github.hornta.race.objects.Race;
@@ -17,13 +19,9 @@ public class CommandRaceSpawn extends RacingCommand implements ICommandHandler {
   @Override
   public void handle(CommandSender commandSender, String[] args) {
     Race race = racingManager.getRace(args[0]);
-    if(race.isEditing() && !commandSender.hasPermission("ts.race.spawn.editing")) {
-      MessageManager.sendMessage(commandSender, MessageKey.RACE_SPAWN_IS_EDITING);
-      return;
-    }
 
-    if(!race.isEnabled() && !commandSender.hasPermission("ts.race.spawn.disabled")) {
-      MessageManager.sendMessage(commandSender, MessageKey.RACE_IS_DISABLED);
+    if(race.getState() != RaceState.ENABLED && !commandSender.hasPermission(Permission.RACING_MODERATOR.toString())) {
+      MessageManager.sendMessage(commandSender, MessageKey.RACE_SPAWN_NOT_ENABLED);
       return;
     }
 

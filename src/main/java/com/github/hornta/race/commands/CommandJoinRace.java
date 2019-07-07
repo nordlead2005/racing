@@ -2,7 +2,7 @@ package com.github.hornta.race.commands;
 
 import com.github.hornta.ICommandHandler;
 import com.github.hornta.race.RacingManager;
-import com.github.hornta.race.enums.RaceState;
+import com.github.hornta.race.enums.RaceSessionState;
 import com.github.hornta.race.message.MessageKey;
 import com.github.hornta.race.message.MessageManager;
 import com.github.hornta.race.objects.Race;
@@ -26,7 +26,7 @@ public class CommandJoinRace extends RacingCommand implements ICommandHandler {
       session = sessions.get(0);
     }
 
-    if(session == null || session.getState() != RaceState.PREPARING) {
+    if(session == null || session.getState() != RaceSessionState.PREPARING) {
       MessageManager.sendMessage(commandSender, MessageKey.JOIN_RACE_NOT_OPEN);
       return;
     }

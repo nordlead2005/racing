@@ -13,6 +13,8 @@ softdepend: [NoteBlockAPI, HolographicDisplays]
 loadbefore: []
 commands:
   racing:
+    aliases:
+      - rc
 permissions:
   racing.admin:
     description: Gives access to everything in Racing plugin
@@ -23,6 +25,8 @@ permissions:
   racing.modify:
     description: Gives access to build and modify races
     default: op
+    children:
+      racing.moderator: true
   racing.moderator:
     description: Gives access to start and stop races
     default: op

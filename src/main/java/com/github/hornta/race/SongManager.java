@@ -7,6 +7,7 @@ import com.xxmicloxx.NoteBlockAPI.songplayer.RadioSongPlayer;
 import com.xxmicloxx.NoteBlockAPI.utils.NBSDecoder;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.util.HashMap;
@@ -17,15 +18,22 @@ import java.util.Set;
 
 public class SongManager {
   private static SongManager instance;
+  private JavaPlugin plugin;
   private Map<Player, RadioSongPlayer> playerRadios = new HashMap<>();
   private Map<String, Song> songsByName;
   private Set<String> songNames;
 
-  private SongManager() {}
+  private SongManager(JavaPlugin plugin) {
+    this.plugin = plugin;
+  }
 
-  public static void init(Plugin plugin) {
-    instance = new SongManager();
-    instance.loadSongs(new File(plugin.getDataFolder(), RaceConfiguration.getValue(ConfigKey.SONGS_DIRECTORY)));
+  public static SongManager getInstance() {
+    return instance;
+  }
+
+  public static void init(JavaPlugin plugin) {
+    instance = new SongManager(plugin);
+    instance.loadSongs((String) RaceConfiguration.getValue(ConfigKey.SONGS_DIRECTORY));
   }
 
   public static Set<String> getSongNames() {
@@ -58,7 +66,11 @@ public class SongManager {
     return instance.songsByName.get(name);
   }
 
-  private void loadSongs(File directory) {
+  public void loadSongs(String pathToSongs) {
+    loadSongs(new File(plugin.getDataFolder(), pathToSongs));
+  }
+
+  public void loadSongs(File directory) {
     if(songsByName != null) {
       songsByName.clear();
       songNames.clear();

@@ -110,7 +110,7 @@ public class Translations {
       for(String key : destYaml.getKeys(true)) {
         if(!resourceYaml.contains(key)) {
           destYaml.set(key, null);
-          Racing.logger().log(Level.INFO, "Deleted unused key from `" + key + "` from `" + dest.getName() + "`.");
+          Racing.logger().log(Level.INFO, "Deleted unused key `" + key + "` from `" + dest.getName() + "`.");
         }
       }
 

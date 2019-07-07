@@ -2,7 +2,7 @@ package com.github.hornta.race.objects;
 
 import com.github.hornta.race.Racing;
 import com.github.hornta.race.Util;
-import com.github.hornta.race.enums.RacingType;
+import com.github.hornta.race.enums.RaceType;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -146,7 +146,7 @@ public class RacePlayerSession {
       unfreezeHorse();
     }
 
-    if(race.getType() == RacingType.ELYTRA) {
+    if(race.getType() == RaceType.ELYTRA) {
       player.getInventory().setChestplate(new ItemStack(Material.ELYTRA, 1));
     }
   }
@@ -198,7 +198,7 @@ public class RacePlayerSession {
     }
 
     Bukkit.getScheduler().scheduleSyncDelayedTask(Racing.getInstance(), () -> {
-      if(race.getType() == RacingType.HORSE) {
+      if(race.getType() == RaceType.HORSE) {
         spawnHorse(true, horse);
       }
       player.teleport(getRespawnLocation());

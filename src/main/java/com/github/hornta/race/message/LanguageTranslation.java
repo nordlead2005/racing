@@ -31,13 +31,7 @@ public class LanguageTranslation {
         continue;
       }
 
-      // in case translation contains redundant keys
-      if(!MessageKey.hasIdentifier(key)) {
-        yaml.set(key, null);
-        Racing.logger().log(Level.WARNING, "Deleted unused path `" + key + "` in `" + file.getName() + "`");
-
-        // in case some key is not a string
-      } else if (!yaml.isString(key)) {
+      if (!yaml.isString(key)) {
         validationErrors.add("Expected \"" + key + "\" in \"" + file.getName() + "\" to be of type string.");
       }
     }
@@ -46,13 +40,6 @@ public class LanguageTranslation {
       yaml.save(file);
     } catch (IOException ex) {
       Racing.logger().log(Level.SEVERE, "Failed to save to " + file.getName(), ex);
-    }
-
-    // in case translation contains missing keys
-    for(MessageKey key : messageKeys) {
-      if (yaml.getString(key.getIdentifier()) == null) {
-        validationErrors.add("Expected path \"" + key.getIdentifier() + "\" to exist in \"" + file.getName() + "\".");
-      }
     }
 
     if (!validationErrors.isEmpty()) {

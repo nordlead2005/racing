@@ -27,6 +27,10 @@ public class RaceCheckpoint extends RacePoint implements Comparable<RaceCheckpoi
   }
 
   public void stopTask() {
+    if(task == null) {
+      return;
+    }
+
     task.cancel();
     task = null;
   }

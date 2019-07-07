@@ -2,7 +2,8 @@ package com.github.hornta.race.commands;
 
 import com.github.hornta.ICommandHandler;
 import com.github.hornta.race.RacingManager;
-import com.github.hornta.race.enums.RacingType;
+import com.github.hornta.race.enums.RaceState;
+import com.github.hornta.race.enums.RaceType;
 import com.github.hornta.race.message.MessageKey;
 import com.github.hornta.race.message.MessageManager;
 import com.github.hornta.race.objects.Race;
@@ -17,20 +18,20 @@ public class CommandSetType extends RacingCommand implements ICommandHandler {
   public void handle(CommandSender commandSender, String[] args) {
     Race race = racingManager.getRace(args[0]);
 
-    if(!race.isEditing()) {
+    if(race.getState() != RaceState.UNDER_CONSTRUCTION) {
       MessageManager.setValue("race_name", race.getName());
       MessageManager.sendMessage(commandSender, MessageKey.EDIT_NO_EDIT_MODE);
       return;
     }
 
-    if(race.getType() == RacingType.fromString(args[1])) {
+    if(race.getType() == RaceType.fromString(args[1])) {
       MessageManager.setValue("type", race.getType().toString());
       MessageManager.sendMessage(commandSender, MessageKey.RACE_SET_TYPE_NOCHANGE);
       return;
     }
 
-    RacingType oldType = race.getType();
-    race.setType(RacingType.fromString(args[1]));
+    RaceType oldType = race.getType();
+    race.setType(RaceType.fromString(args[1]));
 
     racingManager.updateRace(race, () -> {
       MessageManager.setValue("old_type", oldType.toString());

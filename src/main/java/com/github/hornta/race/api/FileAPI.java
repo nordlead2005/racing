@@ -3,7 +3,8 @@ package com.github.hornta.race.api;
 import com.github.hornta.race.Racing;
 import com.github.hornta.race.config.ConfigKey;
 import com.github.hornta.race.config.RaceConfiguration;
-import com.github.hornta.race.enums.RacingType;
+import com.github.hornta.race.enums.RaceState;
+import com.github.hornta.race.enums.RaceType;
 import com.github.hornta.race.objects.Race;
 import com.github.hornta.race.objects.RaceCheckpoint;
 import com.github.hornta.race.objects.RaceStartPoint;
@@ -77,19 +78,18 @@ public class FileAPI implements RacingAPI {
     yaml.set("id", race.getId().toString());
     yaml.set("version", Racing.getInstance().getDescription().getVersion());
     yaml.set("name", race.getName());
+    yaml.set("state", race.getState().name());
+    yaml.set("type", race.getType().name());
+    yaml.set("song", race.getSong());
+    yaml.set("created_at", race.getCreatedAt().getEpochSecond());
     yaml.set("spawn.x", race.getSpawn().getX());
     yaml.set("spawn.y", race.getSpawn().getY());
     yaml.set("spawn.z", race.getSpawn().getZ());
     yaml.set("spawn.pitch", race.getSpawn().getPitch());
     yaml.set("spawn.yaw", race.getSpawn().getYaw());
     yaml.set("spawn.world", race.getSpawn().getWorld().getName());
-    yaml.set("created_at", race.getCreatedAt().getEpochSecond());
-    yaml.set("type", race.getType().name());
-    yaml.set("song", race.getSong());
-    writeRaceCheckpoints(race.getCheckpoints(), yaml);
+    writeCheckpoints(race.getCheckpoints(), yaml);
     writeStartPoints(race.getStartPoints(), yaml);
-    yaml.set("is_enabled", race.isEnabled());
-    yaml.set("is_editing", race.isEnabled());
 
     CompletableFuture.supplyAsync(() -> {
       try {
@@ -131,15 +131,15 @@ public class FileAPI implements RacingAPI {
     CompletableFuture.supplyAsync(() -> {
       YamlConfiguration yaml = YamlConfiguration.loadConfiguration(raceFile);
       yaml.set("name", race.getName());
+      yaml.set("state", race.getState().name());
+      yaml.set("type", race.getType().name());
+      yaml.set("song", race.getSong());
       yaml.set("spawn.x", race.getSpawn().getX());
       yaml.set("spawn.y", race.getSpawn().getY());
       yaml.set("spawn.z", race.getSpawn().getZ());
       yaml.set("spawn.pitch", race.getSpawn().getPitch());
       yaml.set("spawn.yaw", race.getSpawn().getYaw());
       yaml.set("spawn.world", race.getSpawn().getWorld().getName());
-      yaml.set("type", race.getType().name());
-      yaml.set("is_enabled", race.isEnabled());
-      yaml.set("is_editing", race.isEditing());
 
       try {
         yaml.save(raceFile);
@@ -154,13 +154,13 @@ public class FileAPI implements RacingAPI {
   }
 
   @Override
-  public void addStartPoint(Race race, RaceCheckpoint checkpoint, Consumer<Boolean> callback) {
-    File raceFile = new File(racesDirectory, race.getId() + ".yml");
+  public void addCheckpoint(UUID raceId, RaceCheckpoint checkpoint, Consumer<Boolean> callback) {
+    File raceFile = new File(racesDirectory, raceId + ".yml");
 
     CompletableFuture.supplyAsync(() -> {
       YamlConfiguration yaml = YamlConfiguration.loadConfiguration(raceFile);
 
-      List<RaceCheckpoint> checkpoints = parseRaceCheckpoints(yaml);
+      List<RaceCheckpoint> checkpoints = parseCheckpoints(yaml);
 
       boolean hasPosition = checkpoints.stream().anyMatch((RaceCheckpoint p) -> p.getPosition() == checkpoint.getPosition());
 
@@ -169,7 +169,7 @@ public class FileAPI implements RacingAPI {
       }
 
       checkpoints.add(checkpoint);
-      writeRaceCheckpoints(checkpoints, yaml);
+      writeCheckpoints(checkpoints, yaml);
 
       try {
         yaml.save(raceFile);
@@ -183,18 +183,23 @@ public class FileAPI implements RacingAPI {
   }
 
   @Override
-  public void deletePoint(Race race, RaceCheckpoint checkpoint, Consumer<Boolean> callback) {
-    File raceFile = new File(racesDirectory, race.getId() + ".yml");
+  public void deleteCheckpoint(UUID raceId, RaceCheckpoint checkpoint, Consumer<Boolean> callback) {
+    File raceFile = new File(racesDirectory, raceId + ".yml");
 
     CompletableFuture.supplyAsync(() -> {
       YamlConfiguration yaml = YamlConfiguration.loadConfiguration(raceFile);
 
-      List<RaceCheckpoint> checkpoints = parseRaceCheckpoints(yaml)
+      List<RaceCheckpoint> checkpoints = parseCheckpoints(yaml)
         .stream()
         .filter((RaceCheckpoint point) -> !point.getId().equals(checkpoint.getId()))
+        .peek((RaceCheckpoint point) -> {
+          if(point.getPosition() > checkpoint.getPosition()) {
+            point.setPosition(point.getPosition() - 1);
+          }
+        })
         .collect(Collectors.toList());
 
-      yaml.set(CHECKPOINTS_LOCATION, checkpoints);
+      writeCheckpoints(checkpoints, yaml);
 
       try {
         yaml.save(raceFile);
@@ -208,8 +213,8 @@ public class FileAPI implements RacingAPI {
   }
 
   @Override
-  public void addRaceStart(Race race, RaceStartPoint startPoint, Consumer<Boolean> callback) {
-    File raceFile = new File(racesDirectory, race.getId() + ".yml");
+  public void addStartPoint(UUID raceId, RaceStartPoint startPoint, Consumer<Boolean> callback) {
+    File raceFile = new File(racesDirectory, raceId + ".yml");
 
     CompletableFuture.supplyAsync(() -> {
       YamlConfiguration yaml = YamlConfiguration.loadConfiguration(raceFile);
@@ -237,16 +242,23 @@ public class FileAPI implements RacingAPI {
   }
 
   @Override
-  public void deleteStartPoint(Race race, RaceStartPoint startPoint, Consumer<Boolean> callback) {
-    File raceFile = new File(racesDirectory, race.getId() + ".yml");
+  public void deleteStartPoint(UUID raceId, RaceStartPoint startPoint, Consumer<Boolean> callback) {
+    File raceFile = new File(racesDirectory, raceId + ".yml");
 
     CompletableFuture.supplyAsync(() -> {
       YamlConfiguration yaml = YamlConfiguration.loadConfiguration(raceFile);
-      List<RaceStartPoint> filteredCheckpoints = parseStartPoints(yaml)
+
+      List<RaceStartPoint> filteredStartPoints = parseStartPoints(yaml)
         .stream()
         .filter((RaceStartPoint point) -> !point.getId().equals(startPoint.getId()))
+        .peek((RaceStartPoint point) -> {
+          if(point.getPosition() > startPoint.getPosition()) {
+            point.setPosition(point.getPosition() - 1);
+          }
+        })
         .collect(Collectors.toList());
-      yaml.set(START_POINTS_LOCATION, filteredCheckpoints);
+
+      writeStartPoints(filteredStartPoints, yaml);
 
       try {
         yaml.save(raceFile);
@@ -297,33 +309,29 @@ public class FileAPI implements RacingAPI {
       throw new ParseRaceException("`created_at` is invalid");
     }
 
-    RacingType type;
+    RaceType type;
     try {
-      type = RacingType.valueOf(yaml.getString("type"));
+      type = RaceType.valueOf(yaml.getString("type"));
     } catch (IllegalArgumentException ex) {
       throw new ParseRaceException("`type` is invalid");
     }
 
-    if(!yaml.isBoolean("is_editing")) {
-      throw new ParseRaceException("`is_editing` flag is missing from race");
+    RaceState state;
+    try {
+      state = RaceState.valueOf(yaml.getString("state"));
+    } catch (IllegalArgumentException ex) {
+      throw new ParseRaceException("`state` is invalid");
     }
 
-    if(!yaml.isBoolean("is_enabled")) {
-      throw new ParseRaceException("`is_enabled` flag is missing from race");
-    }
-
-    boolean isEditing = yaml.getBoolean("is_editing");
-    boolean isEnabled = yaml.getBoolean("is_enabled");
-
-    List<RaceCheckpoint> checkpoints = parseRaceCheckpoints(yaml);
+    List<RaceCheckpoint> checkpoints = parseCheckpoints(yaml);
     List<RaceStartPoint> startPoints = parseStartPoints(yaml);
 
     String song = yaml.getString("song", null);
 
-    return new Race(id, version, name, spawn, isEnabled, isEditing, createdAt, checkpoints, startPoints, type, song);
+    return new Race(id, version, name, spawn, state, createdAt, checkpoints, startPoints, type, song);
   }
 
-  private List<RaceCheckpoint> parseRaceCheckpoints(YamlConfiguration yaml) {
+  private List<RaceCheckpoint> parseCheckpoints(YamlConfiguration yaml) {
     List<RaceCheckpoint> checkpoints = new ArrayList<>();
     ConfigurationSection section = yaml.getConfigurationSection(CHECKPOINTS_LOCATION);
 
@@ -369,7 +377,8 @@ public class FileAPI implements RacingAPI {
     return checkpoints;
   }
 
-  private boolean writeRaceCheckpoints(List<RaceCheckpoint> checkpoints, YamlConfiguration yaml) {
+  private void writeCheckpoints(List<RaceCheckpoint> checkpoints, YamlConfiguration yaml) {
+    yaml.set(CHECKPOINTS_LOCATION, null);
     if(!yaml.contains(CHECKPOINTS_LOCATION)) {
       yaml.createSection(CHECKPOINTS_LOCATION);
     }
@@ -380,7 +389,6 @@ public class FileAPI implements RacingAPI {
       writeLocation(checkpoint.getLocation(), yaml, key + ".location");
       yaml.set(key + ".radius", checkpoint.getRadius());
     }
-    return true;
   }
 
   private List<RaceStartPoint> parseStartPoints(YamlConfiguration yaml) {
@@ -472,17 +480,18 @@ public class FileAPI implements RacingAPI {
     );
   }
 
-  private boolean writeStartPoints(List<RaceStartPoint> startPoints, YamlConfiguration yaml) {
+  private void writeStartPoints(List<RaceStartPoint> startPoints, YamlConfiguration yaml) {
+    yaml.set(START_POINTS_LOCATION, null);
     if(!yaml.contains(START_POINTS_LOCATION)) {
       yaml.createSection(START_POINTS_LOCATION);
     }
+
     for(RaceStartPoint startPoint : startPoints) {
       String key = START_POINTS_LOCATION + "." + startPoint.getId();
       yaml.set(key + ".position", startPoint.getPosition());
       yaml.set(key + ".location", startPoint.getPosition());
       writeLocation(startPoint.getLocation(), yaml, key + ".location");
     }
-    return true;
   }
 
   private void writeLocation(Location location, YamlConfiguration yaml, String path) {

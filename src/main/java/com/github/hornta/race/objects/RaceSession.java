@@ -5,8 +5,8 @@ import com.github.hornta.race.SongManager;
 import com.github.hornta.race.Util;
 import com.github.hornta.race.config.ConfigKey;
 import com.github.hornta.race.config.RaceConfiguration;
-import com.github.hornta.race.enums.RaceState;
-import com.github.hornta.race.enums.RacingType;
+import com.github.hornta.race.enums.RaceSessionState;
+import com.github.hornta.race.enums.RaceType;
 import com.github.hornta.race.events.RacePlayerGoalEvent;
 import com.github.hornta.race.events.RaceSessionResultEvent;
 import com.github.hornta.race.events.RaceSessionStopEvent;
@@ -61,7 +61,7 @@ public class RaceSession implements Listener {
   private final Race race;
 
   private RadioSongPlayer songPlayer;
-  private RaceState state;
+  private RaceSessionState state;
   private List<BukkitTask> startTimerTasks = new ArrayList<>();
   private RaceCountdown countdown;
   private Instant start;
@@ -81,11 +81,11 @@ public class RaceSession implements Listener {
     }
   }
 
-  public RaceState getState() {
+  public RaceSessionState getState() {
     return state;
   }
 
-  public void setState(RaceState state) {
+  public void setState(RaceSessionState state) {
     log("Change state from " + this.state + " to " + state);
     this.state = state;
   }
@@ -122,7 +122,7 @@ public class RaceSession implements Listener {
       ).create()
     );
 
-    setState(RaceState.PREPARING);
+    setState(RaceSessionState.PREPARING);
 
     List<Integer> announceIntervals = RaceConfiguration.getValue(ConfigKey.RACE_ANNOUNCE_INTERVALS);
     for(int interval : announceIntervals) {
@@ -145,13 +145,6 @@ public class RaceSession implements Listener {
   }
 
   private void actualStart() {
-    int requiredStartPoints = RaceConfiguration.getValue(ConfigKey.MIN_REQUIRED_STARTPOINTS);
-    if(playerSessions.size() < requiredStartPoints) {
-      MessageManager.broadcast(MessageKey.RACE_CANCELED);
-      stop();
-      return;
-    }
-
     // check if players are online before countdown starts
     for(RacePlayerSession session : playerSessions.values()) {
       if(!session.getPlayer().isOnline()) {
@@ -170,7 +163,7 @@ public class RaceSession implements Listener {
       return;
     }
 
-    setState(RaceState.COUNTDOWN);
+    setState(RaceSessionState.COUNTDOWN);
 
     List<RacePlayerSession> shuffledSessions = new ArrayList<>(playerSessions.values());
     Collections.shuffle(shuffledSessions);
@@ -190,7 +183,7 @@ public class RaceSession implements Listener {
 
     countdown = new RaceCountdown(playerSessions);
     countdown.start(() -> {
-      setState(RaceState.STARTED);
+      setState(RaceSessionState.STARTED);
       String teamName = id.toString().substring(0, 15);
       team = Bukkit.getScoreboardManager().getMainScoreboard().getTeam(teamName);
       if(team == null) {
@@ -219,7 +212,7 @@ public class RaceSession implements Listener {
       task.cancel();
     }
 
-    if(state != RaceState.COUNTDOWN) {
+    if(state != RaceSessionState.COUNTDOWN) {
       actualStart();
     }
   }
@@ -251,7 +244,7 @@ public class RaceSession implements Listener {
     participants.clear();
     playerSessions.clear();
 
-    if(state != RaceState.PREPARING) {
+    if(state != RaceSessionState.PREPARING) {
       for (RaceCheckpoint checkpoint : race.getCheckpoints()) {
         checkpoint.stopTask();
       }
@@ -329,13 +322,13 @@ public class RaceSession implements Listener {
 
   @EventHandler
   void onPlayerMove(PlayerMoveEvent event) {
-    if(isParticipating(event.getPlayer()) && (state == RaceState.COUNTDOWN || state == RaceState.STARTED)) {
+    if(isParticipating(event.getPlayer()) && (state == RaceSessionState.COUNTDOWN || state == RaceSessionState.STARTED)) {
       tryIncrementCheckpoint(playerSessions.get(event.getPlayer()));
 
       // prevent player from moving after being teleported to the start point
       // will happen when player for example is holding walk forward button while being teleported
 
-      if(state != RaceState.COUNTDOWN) {
+      if(state != RaceSessionState.COUNTDOWN) {
         return;
       }
 
@@ -374,7 +367,7 @@ public class RaceSession implements Listener {
 
   @EventHandler
   void onEntityTarget(EntityTargetEvent event) {
-    if((event.getTarget() instanceof Player) && isParticipating((Player) event.getTarget()) && state == RaceState.COUNTDOWN) {
+    if((event.getTarget() instanceof Player) && isParticipating((Player) event.getTarget()) && state == RaceSessionState.COUNTDOWN) {
       event.setCancelled(true);
     }
   }
@@ -382,7 +375,7 @@ public class RaceSession implements Listener {
   @EventHandler
   void onPlayerQuit(PlayerQuitEvent event) {
     Player player = event.getPlayer();
-    if(isParticipating(player) && (state == RaceState.COUNTDOWN || state == RaceState.STARTED)) {
+    if(isParticipating(player) && (state == RaceSessionState.COUNTDOWN || state == RaceSessionState.STARTED)) {
       playerSessions.get(player).restore();
       playerSessions.remove(player);
       participants.remove(player);
@@ -445,12 +438,12 @@ public class RaceSession implements Listener {
       return;
     }
 
-    if(race.getType() == RacingType.PIG && event.getVehicle().getType() != EntityType.PIG) {
+    if(race.getType() == RaceType.PIG && event.getVehicle().getType() != EntityType.PIG) {
       event.setCancelled(true);
       log("Deny enter vehicle " + event.getVehicle().getEntityId());
     }
 
-    if(race.getType() == RacingType.HORSE && event.getVehicle().getType() != EntityType.HORSE) {
+    if(race.getType() == RaceType.HORSE && event.getVehicle().getType() != EntityType.HORSE) {
       event.setCancelled(true);
       log("Deny enter vehicle " + event.getVehicle().getEntityId());
     }
@@ -536,7 +529,7 @@ public class RaceSession implements Listener {
       return;
     }
 
-    if(race.getType() != RacingType.ELYTRA) {
+    if(race.getType() != RaceType.ELYTRA) {
       return;
     }
 

@@ -1,29 +1,18 @@
 package com.github.hornta.race;
 
 import com.github.hornta.race.api.RacingAPI;
+import com.github.hornta.race.enums.RaceSessionState;
 import com.github.hornta.race.enums.RaceState;
-import com.github.hornta.race.enums.RacingType;
-import com.github.hornta.race.events.AddRaceCheckpointEvent;
-import com.github.hornta.race.events.AddRaceStartPointEvent;
-import com.github.hornta.race.events.ChangeRaceNameEvent;
-import com.github.hornta.race.events.CreateRaceEvent;
-import com.github.hornta.race.events.DeleteRaceCheckpointEvent;
-import com.github.hornta.race.events.DeleteRaceEvent;
-import com.github.hornta.race.events.DeleteRaceStartPointEvent;
-import com.github.hornta.race.events.EditingRaceEvent;
-import com.github.hornta.race.events.RaceSessionResultEvent;
-import com.github.hornta.race.events.RaceSessionStopEvent;
+import com.github.hornta.race.enums.RaceType;
+import com.github.hornta.race.events.*;
 import com.github.hornta.race.message.MessageKey;
 import com.github.hornta.race.message.MessageManager;
 import com.github.hornta.race.objects.PlayerSessionResult;
 import com.github.hornta.race.objects.Race;
 import com.github.hornta.race.objects.RaceCheckpoint;
 import com.github.hornta.race.objects.RacePlayerSession;
-import com.github.hornta.race.objects.RacePoint;
 import com.github.hornta.race.objects.RaceSession;
 import com.github.hornta.race.objects.RaceStartPoint;
-import com.gmail.filoghost.holographicdisplays.api.Hologram;
-import com.gmail.filoghost.holographicdisplays.api.HologramsAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
@@ -32,7 +21,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.util.Vector;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -42,9 +30,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 public class RacingManager implements Listener {
-  private static final Vector HologramOffset = new Vector(0, 1, 0);
   private Map<String, Race> racesByName = new HashMap<>();
   private List<Race> races = new ArrayList<>();
   private RacingAPI api;
@@ -71,7 +59,7 @@ public class RacingManager implements Listener {
     return getRaceSessions(race, null);
   }
 
-  public List<RaceSession> getRaceSessions(Race race, RaceState state) {
+  public List<RaceSession> getRaceSessions(Race race, RaceSessionState state) {
     List<RaceSession> sessions = new ArrayList<>();
 
     for(RaceSession session : raceSessions) {
@@ -84,23 +72,28 @@ public class RacingManager implements Listener {
     return sessions;
   }
 
+  public boolean hasOngoingSession(Race race) {
+    for(RaceSession session : raceSessions) {
+      if(session.getRace() == race) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   @EventHandler
-  void onAddRace(CreateRaceEvent event) {
-    if(!event.getRace().isEditing()) {
+  void onCreateRace(CreateRaceEvent event) {
+    if(event.getRace().getState() != RaceState.UNDER_CONSTRUCTION) {
       return;
     }
 
     for(RaceCheckpoint checkpoint : event.getRace().getCheckpoints()) {
       checkpoint.startTask(true);
-      if(Racing.getInstance().isHolographicDisplaysLoaded()) {
-        checkpoint.setHologram(getRacePointHologram(checkpoint));
-      }
+      checkpoint.setupHologram();
     }
 
-    if(Racing.getInstance().isHolographicDisplaysLoaded()) {
-      for (RaceStartPoint startPoint : event.getRace().getStartPoints()) {
-        startPoint.setHologram(getRacePointHologram(startPoint));
-      }
+    for (RaceStartPoint startPoint : event.getRace().getStartPoints()) {
+      startPoint.setupHologram();
     }
   }
 
@@ -108,98 +101,75 @@ public class RacingManager implements Listener {
   void onDeleteRace(DeleteRaceEvent event) {
     for(RaceCheckpoint checkpoint : event.getRace().getCheckpoints()) {
       checkpoint.stopTask();
-
-      if(Racing.getInstance().isHolographicDisplaysLoaded()) {
-        checkpoint.getHologram().delete();
-        checkpoint.setHologram(null);
-      }
+      checkpoint.removeHologram();
     }
 
-    if(Racing.getInstance().isHolographicDisplaysLoaded()) {
-      for (RaceStartPoint startPoint : event.getRace().getStartPoints()) {
-        if(startPoint.getHologram() != null) {
-          startPoint.getHologram().delete();
-          startPoint.setHologram(null);
-        }
-      }
+    for (RaceStartPoint startPoint : event.getRace().getStartPoints()) {
+      startPoint.removeHologram();
     }
   }
 
   @EventHandler
   void onAddRaceCheckpoint(AddRaceCheckpointEvent event) {
     event.getCheckpoint().startTask(true);
-    if(Racing.getInstance().isHolographicDisplaysLoaded()) {
-      event.getCheckpoint().setHologram(getRacePointHologram(event.getCheckpoint()));
-    }
+    event.getCheckpoint().setupHologram();
   }
 
   @EventHandler
   void onDeleteRaceCheckpoint(DeleteRaceCheckpointEvent event) {
     event.getCheckpoint().stopTask();
+    event.getCheckpoint().removeHologram();
 
-    if(Racing.getInstance().isHolographicDisplaysLoaded() && event.getCheckpoint().getHologram() != null) {
-      event.getCheckpoint().getHologram().delete();
-      event.getCheckpoint().setHologram(null);
+    for (RaceCheckpoint checkpoint : event.getRace().getCheckpoints()) {
+      if (checkpoint.getPosition() >= event.getCheckpoint().getPosition() && checkpoint.getHologram() != null) {
+        checkpoint.removeHologram();
+        checkpoint.setupHologram();
+      }
     }
   }
 
   @EventHandler
   void onAddRaceStartPoint(AddRaceStartPointEvent event) {
-    if(Racing.getInstance().isHolographicDisplaysLoaded()) {
-      event.getStartPoint().setHologram(getRacePointHologram(event.getStartPoint()));
-    }
+    event.getStartPoint().setupHologram();
   }
 
   @EventHandler
   void onDeleteRaceStartPoint(DeleteRaceStartPointEvent event) {
-    if(!Racing.getInstance().isHolographicDisplaysLoaded()) {
-      return;
-    }
-
-    if(event.getStartPoint().getHologram() != null) {
-      event.getStartPoint().getHologram().delete();
-      event.getStartPoint().setHologram(null);
-    }
+    event.getStartPoint().removeHologram();
 
     for (RaceStartPoint startPoint : event.getRace().getStartPoints()) {
-      if (startPoint.getPosition() > event.getStartPoint().getPosition() && startPoint.getHologram() != null) {
-        startPoint.getHologram().delete();
-        startPoint.setHologram(getRacePointHologram(startPoint));
+      if (startPoint.getPosition() >= event.getStartPoint().getPosition() && startPoint.getHologram() != null) {
+        startPoint.removeHologram();
+        startPoint.setupHologram();
       }
     }
   }
 
   @EventHandler
-  void onEditingRace(EditingRaceEvent event) {
+  void onRaceChangeState(RaceChangeStateEvent event) {
     for (RaceCheckpoint checkpoint : event.getRace().getCheckpoints()) {
-      if (event.isEditing()) {
+      if (event.getRace().getState() == RaceState.UNDER_CONSTRUCTION) {
         checkpoint.startTask(true);
-        if(Racing.getInstance().isHolographicDisplaysLoaded()) {
-          checkpoint.setHologram(getRacePointHologram(checkpoint));
-        }
+        checkpoint.setupHologram();
       } else {
         checkpoint.stopTask();
-        if(Racing.getInstance().isHolographicDisplaysLoaded()) {
-          checkpoint.getHologram().delete();
-          checkpoint.setHologram(null);
-        }
+        checkpoint.removeHologram();
       }
     }
 
     if(Racing.getInstance().isHolographicDisplaysLoaded()) {
       for (RaceStartPoint startPoint : event.getRace().getStartPoints()) {
-        if (event.isEditing()) {
-          startPoint.setHologram(getRacePointHologram(startPoint));
+        if (event.getRace().getState() == RaceState.UNDER_CONSTRUCTION) {
+          startPoint.setupHologram();
         } else {
-          startPoint.getHologram().delete();
-          startPoint.setHologram(null);
+          startPoint.removeHologram();
         }
       }
     }
   }
 
   @EventHandler
-  void onChangeRaceName(ChangeRaceNameEvent event) {
+  void onChangeRaceName(RaceChangeNameEvent event) {
     racesByName.remove(event.getOldName());
     racesByName.put(event.getRace().getName(), event.getRace());
   }
@@ -301,7 +271,7 @@ public class RacingManager implements Listener {
   public void addCheckpoint(Location location, Race race, Consumer<RaceCheckpoint> consumer) {
     RaceCheckpoint checkpoint = new RaceCheckpoint(UUID.randomUUID(), race.getCheckpoints().size() + 1, location, 3);
 
-    api.addStartPoint(race, checkpoint, (Boolean result) -> Bukkit.getScheduler().scheduleSyncDelayedTask(Racing.getInstance(), () -> {
+    api.addCheckpoint(race.getId(), checkpoint, (Boolean result) -> Bukkit.getScheduler().scheduleSyncDelayedTask(Racing.getInstance(), () -> {
       if(result) {
         race.addStartPoint(checkpoint);
         Bukkit.getPluginManager().callEvent(new AddRaceCheckpointEvent(race, checkpoint));
@@ -311,9 +281,20 @@ public class RacingManager implements Listener {
   }
 
   public void deleteCheckpoint(Race race, RaceCheckpoint checkpoint, Runnable runnable) {
-    api.deletePoint(race, checkpoint, (Boolean result) -> Bukkit.getScheduler().scheduleSyncDelayedTask(Racing.getInstance(), () -> {
+    api.deleteCheckpoint(race.getId(), checkpoint, (Boolean result) -> Bukkit.getScheduler().scheduleSyncDelayedTask(Racing.getInstance(), () -> {
       if(result) {
-        race.delPoint(checkpoint);
+        race.setCheckpoints(
+          race.
+            getCheckpoints()
+            .stream()
+            .filter((RaceCheckpoint checkpoint1) -> checkpoint1 != checkpoint)
+            .peek((RaceCheckpoint checkpoint1) -> {
+              if(checkpoint1.getPosition() > checkpoint.getPosition()) {
+                checkpoint1.setPosition(checkpoint1.getPosition() - 1);
+              }
+            })
+            .collect(Collectors.toList())
+        );
         Bukkit.getPluginManager().callEvent(new DeleteRaceCheckpointEvent(race, checkpoint));
         runnable.run();
       }
@@ -326,12 +307,11 @@ public class RacingManager implements Listener {
       Racing.getInstance().getDescription().getVersion(),
       name,
       location,
-      false,
-      true,
+      RaceState.UNDER_CONSTRUCTION,
       Instant.now(),
       Collections.emptyList(),
       Collections.emptyList(),
-      RacingType.PLAYER,
+      RaceType.PLAYER,
       null);
 
     api.createRace(race, (Boolean result) -> Bukkit.getScheduler().scheduleSyncDelayedTask(Racing.getInstance(), () -> {
@@ -358,7 +338,7 @@ public class RacingManager implements Listener {
   public void addStartPoint(Location location, Race race, Consumer<RaceStartPoint> consumer) {
     RaceStartPoint startPoint = new RaceStartPoint(UUID.randomUUID(), race.getStartPoints().size() + 1, location);
 
-    api.addRaceStart(race, startPoint, (Boolean result) -> Bukkit.getScheduler().scheduleSyncDelayedTask(Racing.getInstance(), () -> {
+    api.addStartPoint(race.getId(), startPoint, (Boolean result) -> Bukkit.getScheduler().scheduleSyncDelayedTask(Racing.getInstance(), () -> {
       if(result) {
         race.addStartPoint(startPoint);
         Bukkit.getPluginManager().callEvent(new AddRaceStartPointEvent(race, startPoint));
@@ -368,9 +348,20 @@ public class RacingManager implements Listener {
   }
 
   public void deleteStartPoint(Race race, RaceStartPoint startPoint, Runnable runnable) {
-    api.deleteStartPoint(race, startPoint, (Boolean result) -> Bukkit.getScheduler().scheduleSyncDelayedTask(Racing.getInstance(), () -> {
+    api.deleteStartPoint(race.getId(), startPoint, (Boolean result) -> Bukkit.getScheduler().scheduleSyncDelayedTask(Racing.getInstance(), () -> {
       if(result) {
-        race.deleteStartPoint(startPoint);
+        race.setStartPoints(
+          race.
+            getStartPoints()
+            .stream()
+            .filter((RaceStartPoint startPoint1) -> startPoint1 != startPoint)
+            .peek((RaceStartPoint startPoint1) -> {
+              if(startPoint1.getPosition() > startPoint.getPosition()) {
+                startPoint1.setPosition(startPoint1.getPosition() - 1);
+              }
+            })
+            .collect(Collectors.toList())
+        );
         Bukkit.getPluginManager().callEvent(new DeleteRaceStartPointEvent(race, startPoint));
         runnable.run();
       }
@@ -396,12 +387,5 @@ public class RacingManager implements Listener {
       }
     }
     return null;
-  }
-
-  private Hologram getRacePointHologram(RacePoint startPoint) {
-    Hologram hologram = HologramsAPI.createHologram(Racing.getInstance(), startPoint.getLocation().add(HologramOffset));
-    hologram.appendTextLine("§d" + startPoint.getPosition());
-    hologram.getVisibilityManager().setVisibleByDefault(false);
-    return hologram;
   }
 }

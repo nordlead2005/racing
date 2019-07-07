@@ -1,6 +1,7 @@
 package com.github.hornta.race.objects;
 
-import com.github.hornta.race.enums.RacingType;
+import com.github.hornta.race.enums.RaceState;
+import com.github.hornta.race.enums.RaceType;
 import org.bukkit.Location;
 import org.bukkit.event.Listener;
 
@@ -16,10 +17,9 @@ public class Race implements Listener {
   private Location spawn;
   private List<RaceCheckpoint> checkpoints;
   private List<RaceStartPoint> startPoints;
-  private boolean isEnabled;
-  private boolean isEditing;
+  private RaceState state;
   private Instant createdAt;
-  private RacingType type;
+  private RaceType type;
   private String song;
 
   public Race(
@@ -27,19 +27,18 @@ public class Race implements Listener {
     String version,
     String name,
     Location spawn,
-    boolean isEnabled,
-    boolean isEditing,
+    RaceState state,
     Instant createdAt,
     List<RaceCheckpoint> checkpoints,
     List<RaceStartPoint> startPoints,
-    RacingType type,
+    RaceType type,
     String song
   ) {
     this.id = id;
+    this.version = version;
     this.name = name;
     this.spawn = spawn;
-    this.isEnabled = isEnabled;
-    this.isEditing = isEditing;
+    this.state = state;
     this.createdAt = createdAt;
     this.checkpoints = new ArrayList<>(checkpoints);
     this.startPoints = new ArrayList<>(startPoints);
@@ -105,20 +104,25 @@ public class Race implements Listener {
     return null;
   }
 
-  public boolean isEnabled() {
-    return isEnabled;
+  public RaceStartPoint getStartPoint(Location location) {
+    for(RaceStartPoint startPoint : startPoints) {
+      if(
+        startPoint.getLocation().getBlockX() == location.getBlockX() &&
+        startPoint.getLocation().getBlockY() == location.getBlockY() &&
+        startPoint.getLocation().getBlockZ() == location.getBlockZ()
+      ) {
+        return startPoint;
+      }
+    }
+    return null;
   }
 
-  public void setEnabled(boolean enabled) {
-    isEnabled = enabled;
+  public RaceState getState() {
+    return state;
   }
 
-  public boolean isEditing() {
-    return isEditing;
-  }
-
-  public void setEditing(boolean editing) {
-    isEditing = editing;
+  public void setState(RaceState state) {
+    this.state = state;
   }
 
   public Instant getCreatedAt() {
@@ -129,23 +133,23 @@ public class Race implements Listener {
     checkpoints.add(point);
   }
 
-  public void delPoint(RaceCheckpoint point) {
-    checkpoints.remove(point);
-  }
-
-  public void deleteStartPoint(RaceStartPoint startPoint) {
-    startPoints.remove(startPoint);
-  }
-
   public void addStartPoint(RaceStartPoint startPoint) {
     startPoints.add(startPoint);
   }
 
-  public RacingType getType() {
+  public void setStartPoints(List<RaceStartPoint> startPoints) {
+    this.startPoints = startPoints;
+  }
+
+  public void setCheckpoints(List<RaceCheckpoint> checkpoints) {
+    this.checkpoints = checkpoints;
+  }
+
+  public RaceType getType() {
     return type;
   }
 
-  public void setType(RacingType type) {
+  public void setType(RaceType type) {
     this.type = type;
   }
 

@@ -2,7 +2,7 @@ package com.github.hornta.race.commands;
 
 import com.github.hornta.ICommandHandler;
 import com.github.hornta.race.RacingManager;
-import com.github.hornta.race.enums.RaceState;
+import com.github.hornta.race.enums.RaceSessionState;
 import com.github.hornta.race.message.MessageKey;
 import com.github.hornta.race.message.MessageManager;
 import com.github.hornta.race.objects.Race;
@@ -20,7 +20,7 @@ public class CommandSkipWait extends RacingCommand implements ICommandHandler {
   public void handle(CommandSender commandSender, String[] args) {
     Race race = racingManager.getRace(args[0]);
 
-    List<RaceSession> sessions = racingManager.getRaceSessions(race, RaceState.PREPARING);
+    List<RaceSession> sessions = racingManager.getRaceSessions(race, RaceSessionState.PREPARING);
 
     if(sessions.isEmpty()) {
       MessageManager.sendMessage(commandSender, MessageKey.RACE_SKIP_WAIT_NOT_STARTED);
