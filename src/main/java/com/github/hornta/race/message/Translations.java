@@ -2,7 +2,6 @@ package com.github.hornta.race.message;
 
 import com.github.hornta.race.Racing;
 import com.github.hornta.race.Util;
-import com.google.common.base.Charsets;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.reflections.Reflections;
@@ -12,6 +11,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -104,7 +104,7 @@ public class Translations {
       Racing.logger().log(Level.INFO, "Found existing translation file in " + dest.getName() + ".");
 
       YamlConfiguration destYaml = YamlConfiguration.loadConfiguration(dest);
-      YamlConfiguration resourceYaml = YamlConfiguration.loadConfiguration(new InputStreamReader(resource.getValue(), Charsets.UTF_8));
+      YamlConfiguration resourceYaml = YamlConfiguration.loadConfiguration(new InputStreamReader(resource.getValue(), StandardCharsets.UTF_8));
 
       // delete keys not found in resource translation
       for(String key : destYaml.getKeys(true)) {
