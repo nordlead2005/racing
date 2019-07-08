@@ -4,7 +4,8 @@ public enum RaceType {
   PLAYER,
   HORSE,
   PIG,
-  ELYTRA;
+  ELYTRA,
+  BOAT;
 
   public static RaceType fromString(String string) {
     for(RaceType type : values()) {

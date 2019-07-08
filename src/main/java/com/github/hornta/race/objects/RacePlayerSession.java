@@ -3,16 +3,13 @@ package com.github.hornta.race.objects;
 import com.github.hornta.race.Racing;
 import com.github.hornta.race.Util;
 import com.github.hornta.race.enums.RaceType;
-import org.bukkit.Bukkit;
-import org.bukkit.GameMode;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.Sound;
+import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.boss.BossBar;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Horse;
+import org.bukkit.entity.Boat;
 import org.bukkit.entity.Pig;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageEvent;
@@ -46,6 +43,7 @@ public class RacePlayerSession {
   private BossBar bossBar;
   private Pig pig;
   private Horse horse;
+  private Boat boat;
   private int currentLap;
   private boolean isAllowedToEnterVehicle;
   private boolean isAllowedToExitVehicle;
@@ -62,6 +60,10 @@ public class RacePlayerSession {
 
   public Pig getPig() {
     return pig;
+  }
+
+  public Boat getBoat() {
+    return boat;
   }
 
   void startCooldown() {
@@ -113,6 +115,11 @@ public class RacePlayerSession {
       case ELYTRA:
         break;
 
+      case BOAT:
+        spawnBoat();
+        enterVehicle();
+        break;
+
       default:
     }
 
@@ -129,6 +136,10 @@ public class RacePlayerSession {
 
     if(horse != null) {
       return horse;
+    }
+
+    if(boat != null) {
+      return boat;
     }
 
     return null;
@@ -170,6 +181,7 @@ public class RacePlayerSession {
     if(getVehicle() != null) {
       exitVehicle();
       getVehicle().remove();
+
       Bukkit.getScheduler().scheduleSyncDelayedTask(Racing.getInstance(), () -> {
         switch (race.getType()) {
           case PIG:
@@ -177,7 +189,11 @@ public class RacePlayerSession {
             break;
 
           case HORSE:
-            spawnHorse(false);
+            spawnHorse(false, horse);
+            break;
+
+          case BOAT:
+            spawnBoat();
             break;
 
           default:
@@ -201,6 +217,8 @@ public class RacePlayerSession {
     Bukkit.getScheduler().scheduleSyncDelayedTask(Racing.getInstance(), () -> {
       if(race.getType() == RaceType.HORSE) {
         spawnHorse(true, horse);
+      } else if(race.getType() == RaceType.BOAT) {
+        spawnBoat();
       }
       player.teleport(getRespawnLocation());
       enterVehicle();
@@ -208,7 +226,7 @@ public class RacePlayerSession {
   }
 
   private void spawnPig() {
-    pig = (Pig) startLocation.getWorld().spawnEntity(startLocation, EntityType.PIG);
+    pig = (Pig) startLocation.getWorld().spawnEntity(getRespawnLocation(), EntityType.PIG);
     pig.setInvulnerable(true);
     pig.setAI(false);
     pig.setSaddle(true);
@@ -219,7 +237,7 @@ public class RacePlayerSession {
   }
 
   private void spawnHorse(boolean freeze, Horse oldHorse) {
-    horse = (Horse) startLocation.getWorld().spawnEntity(startLocation, EntityType.HORSE);
+    horse = (Horse) startLocation.getWorld().spawnEntity(getRespawnLocation(), EntityType.HORSE);
     horse.setInvulnerable(true);
     horse.setAI(false);
     horse.setTamed(true);
@@ -233,6 +251,12 @@ public class RacePlayerSession {
       horse.setStyle(oldHorse.getStyle());
       horse.setAge(oldHorse.getAge());
     }
+  }
+
+  private void spawnBoat() {
+    boat = (Boat) startLocation.getWorld().spawnEntity(getRespawnLocation(), EntityType.BOAT);
+    boat.setInvulnerable(true);
+    boat.setWoodType(TreeSpecies.GENERIC);
   }
 
   private void unfreezeHorse() {
@@ -302,6 +326,7 @@ public class RacePlayerSession {
     }
     pig = null;
     horse = null;
+    boat = null;
 
     isDirty = false;
   }

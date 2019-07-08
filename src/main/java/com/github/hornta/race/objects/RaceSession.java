@@ -140,7 +140,7 @@ public class RaceSession implements Listener {
       }, (long)(prepareTime - interval) * 20));
     }
 
-    Bukkit.getScheduler().scheduleSyncDelayedTask(Racing.getInstance(), this::actualStart, prepareTime * 20);
+    addStartTimerTask(Bukkit.getScheduler().scheduleSyncDelayedTask(Racing.getInstance(), this::actualStart, prepareTime * 20));
   }
 
   private void actualStart() {
@@ -356,7 +356,7 @@ public class RaceSession implements Listener {
       }
 
       RacePlayerSession playerSession = playerSessions.get(event.getPlayer());
-      if(playerSession.getHorse() != null) {
+      if(playerSession.getHorse() != null || playerSession.getBoat() != null) {
         if(playerSession.getStartLocation().distanceSquared(event.getTo()) >= 1) {
           playerSession.respawnInVehicle();
         }
