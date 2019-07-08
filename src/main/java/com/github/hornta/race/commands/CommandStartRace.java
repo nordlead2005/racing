@@ -21,6 +21,7 @@ public class CommandStartRace extends RacingCommand implements ICommandHandler {
   @Override
   public void handle(CommandSender commandSender, String[] args) {
     Race race = racingManager.getRace(args[0]);
+    int laps = args.length == 1 ? 1 : Integer.parseInt(args[1]);
 
     if(race.getState() != RaceState.ENABLED) {
       MessageManager.sendMessage(commandSender, MessageKey.START_RACE_NOT_ENABLED);
@@ -39,11 +40,14 @@ public class CommandStartRace extends RacingCommand implements ICommandHandler {
       return;
     }
 
-    if(race.getCheckpoints().size() < 1) {
+    if(laps == 1 && race.getCheckpoints().size() < 1) {
       MessageManager.sendMessage(commandSender, MessageKey.START_RACE_MISSING_CHECKPOINT);
+      return;
+    } else if(race.getCheckpoints().size() < 2) {
+      MessageManager.sendMessage(commandSender, MessageKey.START_RACE_MISSING_CHECKPOINTS);
       return;
     }
 
-    racingManager.startNewSession(commandSender, race);
+    racingManager.startNewSession(commandSender, race, laps);
   }
 }

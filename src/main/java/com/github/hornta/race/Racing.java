@@ -261,9 +261,11 @@ public class Racing extends JavaPlugin {
       .addCommand("racing start")
       .withHandler(new CommandStartRace(racingManager))
       .addHelpText("/rc start <race>")
-      .setNumberOfArguments(1)
+      .addHelpText("/rc start <race> [laps]")
+      .setNumberOfArguments(1, 2)
       .validateArgument(0, raceShouldExist)
       .setTabComplete(0, raceCompleter)
+      .validateArgument(1, new IntegerValidator(1))
       .requiresPermission(Permission.RACING_MODERATOR.toString())
       .preventConsoleCommandSender();
 

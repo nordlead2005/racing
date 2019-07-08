@@ -13,6 +13,7 @@ import com.github.hornta.race.events.RaceSessionStopEvent;
 import com.github.hornta.race.message.MessageKey;
 import com.github.hornta.race.message.MessageManager;
 import com.xxmicloxx.NoteBlockAPI.songplayer.RadioSongPlayer;
+import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
@@ -32,12 +33,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityTargetEvent;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
-import org.bukkit.event.player.PlayerDropItemEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerItemDamageEvent;
-import org.bukkit.event.player.PlayerMoveEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.event.player.PlayerTeleportEvent;
+import org.bukkit.event.player.*;
 import org.bukkit.event.vehicle.VehicleEnterEvent;
 import org.bukkit.event.vehicle.VehicleExitEvent;
 import org.bukkit.scheduler.BukkitTask;
@@ -59,6 +55,7 @@ public class RaceSession implements Listener {
   private final UUID id;
   private final CommandSender initiator;
   private final Race race;
+  private final int laps;
 
   private RadioSongPlayer songPlayer;
   private RaceSessionState state;
@@ -71,9 +68,11 @@ public class RaceSession implements Listener {
   private Team team;
   private RaceSessionResult result;
 
-  public RaceSession(CommandSender initiator, Race race) {
+  public RaceSession(CommandSender initiator, Race race, int laps) {
     this.race = race;
     this.initiator = initiator;
+    this.laps = laps;
+
     id = UUID.randomUUID();
 
     if(Racing.getInstance().isNoteBlockAPILoaded() && race.getSong() != null) {
@@ -174,8 +173,9 @@ public class RaceSession implements Listener {
 
     int startPointIndex = 0;
     for(RacePlayerSession session : shuffledSessions) {
+      session.setCurrentLap(1);
       session.setStartPoint(race.getStartPoints().get(startPointIndex));
-      session.setBossBar(Bukkit.createBossBar(race.getName(), BarColor.BLUE, BarStyle.SOLID));
+      session.setBossBar(Bukkit.createBossBar(getBossBarTitle(session), BarColor.BLUE, BarStyle.SOLID));
       session.startCooldown();
       tryIncrementCheckpoint(session);
       startPointIndex += 1;
@@ -299,12 +299,35 @@ public class RaceSession implements Listener {
       if(nextCheckpoint.isInside(player)) {
         player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1);
         int checkpointIndex = race.getCheckpoints().indexOf(nextCheckpoint);
-        playerSession.getBossBar().setProgress((checkpointIndex + 1D) / numCheckpoints);
-        if(checkpointIndex == numCheckpoints - 1) {
+        int totalCheckpoints = numCheckpoints * laps;
+        int currentCheckpoints = (playerSession.getCurrentLap() - 1) * numCheckpoints + checkpointIndex + 1;
+        double progress = currentCheckpoints / (double)totalCheckpoints;
+        playerSession.getBossBar().setProgress(progress);
+
+        boolean isLastCheckpoint = checkpointIndex == numCheckpoints - 1;
+
+        if(isLastCheckpoint && playerSession.getCurrentLap() == laps) {
           playerSession.setNextCheckpoint(null);
           Bukkit.getPluginManager().callEvent(new RacePlayerGoalEvent(this, playerSession));
         } else {
-          playerSession.setNextCheckpoint(race.getCheckpoint(nextCheckpoint.getPosition() + 1));
+          if(isLastCheckpoint) {
+            playerSession.setNextCheckpoint(race.getCheckpoint(1));
+            playerSession.setCurrentLap(playerSession.getCurrentLap() + 1);
+            playerSession.getBossBar().setTitle(getBossBarTitle(playerSession));
+
+            if(laps > 1) {
+              String message;
+              if (playerSession.getCurrentLap() == laps) {
+                message = MessageManager.getMessage(MessageKey.RACE_FINAL_LAP);
+              } else {
+                MessageManager.setValue("ordinal", playerSession.getCurrentLap());
+                message = MessageManager.getMessage(MessageKey.RACE_NEXT_LAP);
+              }
+              player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(message));
+            }
+          } else {
+            playerSession.setNextCheckpoint(race.getCheckpoint(nextCheckpoint.getPosition() + 1));
+          }
         }
       }
     }
@@ -373,12 +396,21 @@ public class RaceSession implements Listener {
   }
 
   @EventHandler
+  void onPlayerKick(PlayerKickEvent event) {
+    Player player = event.getPlayer();
+    if(isParticipating(player) && (state == RaceSessionState.COUNTDOWN || state == RaceSessionState.STARTED)) {
+      playerSessions.get(player).restore();
+    }
+  }
+
+  @EventHandler
   void onPlayerQuit(PlayerQuitEvent event) {
     Player player = event.getPlayer();
     if(isParticipating(player) && (state == RaceSessionState.COUNTDOWN || state == RaceSessionState.STARTED)) {
       playerSessions.get(player).restore();
       playerSessions.remove(player);
       participants.remove(player);
+      log("onPlayerQuit: " + playerSessions.size() + " players left");
       for(Player player1 : participants) {
         MessageManager.setValue("player_name", player.getName());
         MessageManager.sendMessage(player1, MessageKey.QUIT_DISQULIAFIED);
@@ -541,6 +573,14 @@ public class RaceSession implements Listener {
     if(RaceConfiguration.getValue(ConfigKey.DEBUG)) {
       Racing.logger().log(Level.INFO, "§a[RaceSession " + race.getName() + "] " + message);
     }
+  }
+
+  private String getBossBarTitle(RacePlayerSession session) {
+    if(laps == 1) {
+      return race.getName();
+    }
+
+    return race.getName() + " lap " + session.getCurrentLap() + "/" + laps;
   }
 }
 

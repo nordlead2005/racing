@@ -46,6 +46,7 @@ public class RacePlayerSession {
   private BossBar bossBar;
   private Pig pig;
   private Horse horse;
+  private int currentLap;
   private boolean isAllowedToEnterVehicle;
   private boolean isAllowedToExitVehicle;
   private boolean isDirty;
@@ -334,5 +335,13 @@ public class RacePlayerSession {
   void setBossBar(BossBar bossBar) {
     bossBar.addPlayer(player);
     this.bossBar = bossBar;
+  }
+
+  public int getCurrentLap() {
+    return currentLap;
+  }
+
+  public void setCurrentLap(int currentLap) {
+    this.currentLap = currentLap;
   }
 }

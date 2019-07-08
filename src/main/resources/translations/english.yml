@@ -36,6 +36,7 @@ commands:
     error_already_started: "§cRace is already started."
     error_missing_startpoint: "§cRace must at least have 1 start point."
     error_missing_checkpoint: "§cRace must at least have 1 checkpoint."
+    error_missing_checkpoints: "§cRace must at least have 2 checkpoints."
     error_not_enabled: "§cThis race must be enabled in order to start. Write §7/rc setstate enabled §cto enable it."
   stop_race:
     success: "§eRace been stopped."
@@ -69,6 +70,10 @@ validators:
   type_not_found: "§cThere is no type called `<type>`. Possible types: <types>."
   state_not_found: "§cThere is no state called `<state>`. Possible states: <states>."
   song_not_found: "§cThere is not song called `<song_name>`."
+  validate_integer:
+    non_integer: "§cExpected argument to be an integer but got `<received>`."
+    min_exceed: "§cArgument value must at least `<expected>` but got `<received>`."
+    max_exceed: "§cArgument value must at most `<expected>` but got `<received>`."
 
 race_canceled: "§cRace has been cancelled due to lack of participants."
 race_start_noshow_disqualified: "§e<player_name> was absent and is now disqualified."
@@ -80,6 +85,8 @@ race_participate_hover_text: "Click here to participate."
 race_participate_text: "§e<command_sender> has started race §a<race_name>§e and begins in <time_left>. Write §7/rc join <race_name>§e to participate."
 race_participate_text_timeleft: "§eThere are <time_left> left before the race begin. Write §7/rc join <race_name>§e to participate."
 race_countdown_subtitle: "seconds before the race begins."
+race_next_lap_actionbar: "§6Lap <ordinal>"
+race_final_lap_actionbar: "§6Final lap"
 
 no_permission_command: "§cYou don't have permission to execute this command."
 missing_arguments_command: "§cSome arguments for this command is missing.\n\nUsage:\n<usage>"

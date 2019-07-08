@@ -45,8 +45,8 @@ public class RacingManager implements Listener {
     raceSessions.clear();
   }
 
-  public void startNewSession(CommandSender initiator, Race race) {
-    RaceSession raceSession = new RaceSession(initiator, race);
+  public void startNewSession(CommandSender initiator, Race race, int laps) {
+    RaceSession raceSession = new RaceSession(initiator, race, laps);
     raceSession.start();
     raceSessions.add(raceSession);
   }

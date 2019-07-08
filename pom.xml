@@ -6,13 +6,13 @@
 
     <groupId>com.github.hornta</groupId>
     <artifactId>racing</artifactId>
-    <version>0.1.0</version>
+    <version>0.2.0</version>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.compiler.source>1.8</maven.compiler.source>
-        <powermock.version>2.0.2</powermock.version>
+        <createDependencyReducedPom>false</createDependencyReducedPom>
     </properties>
 
     <build>
@@ -104,6 +104,7 @@
             <groupId>com.github.koca2000</groupId>
             <artifactId>NoteBlockAPI</artifactId>
             <version>1.3</version>
+            <scope>provided</scope>
         </dependency>
         <!-- mcMMO integration -->
         <dependency>

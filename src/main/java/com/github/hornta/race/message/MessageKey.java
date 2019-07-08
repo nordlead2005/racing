@@ -27,6 +27,7 @@ public enum MessageKey {
   START_RACE_ALREADY_STARTED("commands.start_race.error_already_started"),
   START_RACE_MISSING_STARTPOINT("commands.start_race.error_missing_startpoint"),
   START_RACE_MISSING_CHECKPOINT("commands.start_race.error_missing_checkpoint"),
+  START_RACE_MISSING_CHECKPOINTS("commands.start_race.error_missing_checkpoints"),
   START_RACE_NOT_ENABLED("commands.start_race.error_not_enabled"),
   STOP_RACE_SUCCESS("commands.stop_race.success"),
   STOP_RACE_NOT_STARTED("commands.stop_race.error_not_started"),
@@ -53,6 +54,9 @@ public enum MessageKey {
   TYPE_NOT_FOUND("validators.type_not_found"),
   STATE_NOT_FOUND("validators.state_not_found"),
   SONG_NOT_FOUND("validators.song_not_found"),
+  VALIDATE_INTEGER_NON_INTEGER("validators.validate_integer.non_integer"),
+  VALIDATE_INTEGER_MIN_EXCEED("validators.validate_integer.min_exceed"),
+  VALIDATE_INTEGER_MAX_EXCEED("validators.validate_integer.max_exceed"),
 
   RACE_CANCELED("race_canceled"),
   NOSHOW_DISQUALIFIED("race_start_noshow_disqualified"),
@@ -64,6 +68,8 @@ public enum MessageKey {
   PARTICIPATE_TEXT("race_participate_text"),
   PARTICIPATE_TEXT_TIMELEFT("race_participate_text_timeleft"),
   RACE_COUNTDOWN("race_countdown_subtitle"),
+  RACE_NEXT_LAP("race_next_lap_actionbar"),
+  RACE_FINAL_LAP("race_final_lap_actionbar"),
 
   NO_PERMISSION_COMMAND("no_permission_command"),
   MISSING_ARGUMENTS_COMMAND("missing_arguments_command"),

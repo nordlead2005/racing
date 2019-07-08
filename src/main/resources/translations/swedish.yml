@@ -36,6 +36,7 @@ commands:
     error_already_started: "§cRacet är redan startat."
     error_missing_startpoint: "§cRacet måste ha minst 1 startposition."
     error_missing_checkpoint: "§cRacet måste ha minst 1 checkpoint."
+    error_missing_checkpoints: "§cRacet måste ha minst 2 checkpoints."
     error_not_enabled: "§Detta race måste vara öppnat för att kunna starta. Skriv §7/rc setstate enabled §cför att öppna det."
   stop_race:
     success: "§eRacet har stoppats."
@@ -69,6 +70,10 @@ validators:
   type_not_found: "§cDet finns ingen typ `<type>`. Möjliga typer: <types>."
   state_not_found: "§cDet finns ingen status `<state>`. Möjliga statusar: <states>."
   song_not_found: "§cDet finns ingen låt med namnet `<song_name>`."
+  validate_integer:
+    non_integer: "§Förväntade argument av typen heltal men tog emot `<received>`."
+    min_exceed: "§cArgument måste vara minst `<expected>` men tog emot `<received>`."
+    max_exceed: "§cArgument måste vara minst `<expected>` men tog emot `<received>`."
 
 race_canceled: "§cRacet har blivit inställt p.g.a. för få deltagande."
 race_start_noshow_disqualified: "§e<player_name> uteblev från racet och är därmed diskvalificerad."
@@ -80,6 +85,8 @@ race_participate_hover_text: "Klicka för att delta"
 race_participate_text: "§e<command_sender> har startat race §a<race_name>§e som startar om <time_left>. Skriv §7/rc join <race_name>§e för att delta."
 race_participate_text_timeleft: "§eDet är <time_left> kvar innan racet startar. Skriv §7/rc join <race_name>§e för att delta."
 race_countdown_subtitle: "sekunder innan racet börjar"
+race_next_lap_actionbar: "§6Varv <ordinal>"
+race_final_lap_actionbar: "§6Sista varvet"
 
 no_permission_command: "§cDu har inte tillåtelse att utföra detta kommando."
 missing_arguments_command: "§cVissa argument till kommandot saknas.\n\nAnvändning:\n<usage>"

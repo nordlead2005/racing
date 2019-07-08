@@ -19,13 +19,13 @@
 package com.github.hornta.race.packetwrapper;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.Objects;
 
 import org.bukkit.entity.Player;
 
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.events.PacketContainer;
-import com.google.common.base.Objects;
 
 public abstract class AbstractPacket {
 	// The packet we will be modifying
@@ -41,7 +41,7 @@ public abstract class AbstractPacket {
 		// Make sure we're given a valid packet
 		if (handle == null)
 			throw new IllegalArgumentException("Packet handle cannot be NULL.");
-		if (!Objects.equal(handle.getType(), type))
+		if (!Objects.equals(handle.getType(), type))
 			throw new IllegalArgumentException(handle.getHandle()
 					+ " is not a packet of type " + type);
 
