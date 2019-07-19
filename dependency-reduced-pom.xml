@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.github.hornta</groupId>
   <artifactId>racing</artifactId>
-  <version>0.3.0</version>
+  <version>1.0.0</version>
   <build>
     <resources>
       <resource>
@@ -128,6 +128,18 @@
         <exclusion>
           <artifactId>worldguard-legacy</artifactId>
           <groupId>com.sk89q.worldguard</groupId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>com.github.MilkBowl</groupId>
+      <artifactId>VaultAPI</artifactId>
+      <version>1.7</version>
+      <scope>provided</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>bukkit</artifactId>
+          <groupId>org.bukkit</groupId>
         </exclusion>
       </exclusions>
     </dependency>

@@ -17,9 +17,9 @@ public class RaceCompleter implements BaseTabCompleter {
   }
 
   @Override
-  public List<String> getItems(CommandSender sender, String[] arguments) {
+  public List<String> getItems(CommandSender sender, String argument, String[] prevArgs) {
     return racingManager.getRaces().stream()
-      .filter(race -> race.getName().toLowerCase(Locale.ENGLISH).startsWith(arguments[0].toLowerCase(Locale.ENGLISH)))
+      .filter(race -> race.getName().toLowerCase(Locale.ENGLISH).startsWith(argument.toLowerCase(Locale.ENGLISH)))
       .map(Race::getName)
       .collect(Collectors.toList());
   }

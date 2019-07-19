@@ -47,6 +47,7 @@ commands:
     error_is_full: "§cThere are not open slots left."
     error_is_participating: "§cYou are already participating in this race."
     error_is_participating_other: "§cYou are currently participating in another race."
+    error_not_afford: "§cYou can't afford to enter this race. Entry fee is <entry_fee> and you have <balance>."
   race_skip_wait:
     error_not_started: "§cRace must be started in order to skip preparing."
   reload:
@@ -59,6 +60,8 @@ commands:
   race_help:
     title: "§6§m----§r§6[ §eRacing Help §6]§m----"
     item: "§e<text>"
+  race_set_entryfee:
+    success: "§eEntry fee set to <entry_fee>."
 
 validators:
   race_not_found: "§cA race with name `<race_name>` couldn't be found."
@@ -70,23 +73,40 @@ validators:
   type_not_found: "§cThere is no type called `<type>`. Possible types: <types>."
   state_not_found: "§cThere is no state called `<state>`. Possible states: <states>."
   song_not_found: "§cThere is not song called `<song_name>`."
-  validate_integer:
-    non_integer: "§cExpected argument to be an integer but got `<received>`."
-    min_exceed: "§cArgument value must at least `<expected>` but got `<received>`."
-    max_exceed: "§cArgument value must at most `<expected>` but got `<received>`."
+  validate_non_integer: "§cExpected argument `<argument>` to be an integer but got `<received>`.\n\nUsage:\n<help_texts>"
+  validate_non_number: "§cExpected argument `<argument>` to be an number but got `<received>`.\n\nUsage:\n<help_texts>"
+  min_exceed: "§cExpected argument `<argument>` to be at least `<expected>` but got `<received>`.\n\nUsage:\n<help_texts>"
+  max_exceed: "§cExpected argument `<argument>` to be at most `<expected>` but got `<received>`.\n\nUsage:\n<help_texts>"
 
-race_canceled: "§cRace has been cancelled due to lack of participants."
+race_canceled: "§eRace has been cancelled due to lack of participants."
 race_start_noshow_disqualified: "§e<player_name> was absent and is now disqualified."
 race_start_quit_disqualified: "§e<player_name> left and is now disqualified."
 edit_no_edit_mode: "§cYou can't change race `<race_name>` because it's not under construction. Type §7/rc setstate <race_name> under_construction§c to put it under construction."
 race_win: "§e<player_name> has won race §a<race_name>§e with time <time>."
 race_participate_click_text: "/rc join <race_name>"
 race_participate_hover_text: "Click here to participate."
-race_participate_text: "§e<command_sender> has started race §a<race_name>§e and begins in <time_left>. Write §7/rc join <race_name>§e to participate."
+race_participate_text: |
+  §eRace §a<race_name>§e has been initiated and starts in <time_left>.
+  Laps: <laps>
+  Initiator: <command_sender>
+  §6>> Click here to participate <<
+race_participate_text_fee: |
+  §eRace §a<race_name>§e has been initiated and starts in <time_left>.
+  Laps: <laps>
+  Entry fee: <entry_fee>
+  Initiator: <command_sender>
+  §6>> Click here to participate <<
 race_participate_text_timeleft: "§eThere are <time_left> left before the race begin. Write §7/rc join <race_name>§e to participate."
 race_countdown_subtitle: "seconds before the race begins."
 race_next_lap_actionbar: "§6Lap <ordinal>"
 race_final_lap_actionbar: "§6Final lap"
+race_elytra_respawn_info: "§eYou can punch the air to teleport back to the start location in elytra races."
+race_skipwait_hover_text: "Click here to start instantly"
+race_skipwait_click_text: "/rc skipwait <race_name>"
+race_skipwait: "§e[Skip waiting]"
+race_stop_hover_text: "Click here to stop the race"
+race_stop_click_text: "/rc stop <race_name>"
+race_stop: "§e[Stop race]"
 
 no_permission_command: "§cYou don't have permission to execute this command."
 missing_arguments_command: "§cSome arguments for this command is missing.\n\nUsage:\n<usage>"

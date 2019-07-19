@@ -1,6 +1,7 @@
 package com.github.hornta.race.commands.validators;
 
 import com.github.hornta.ValidationHandler;
+import com.github.hornta.ValidationResult;
 import com.github.hornta.race.RacingManager;
 import com.github.hornta.race.message.MessageKey;
 import com.github.hornta.race.message.MessageManager;
@@ -27,23 +28,23 @@ public class StartPointExistValidator implements ValidationHandler {
   }
 
   @Override
-  public boolean test(CommandSender commandSender, String[] arguments) {
-    Race race = racingManager.getRace(arguments[0]);
-    int position = Integer.parseInt(arguments[1]);
+  public boolean test(CommandSender commandSender, String argument, String[] prevArgs) {
+    Race race = racingManager.getRace(argument);
+    int position = Integer.parseInt(prevArgs[0]);
     boolean hasPoint = raceHasPoint(race, position);
     return (shouldExist && hasPoint) || (!shouldExist && !hasPoint);
   }
 
   @Override
-  public void whenInvalid(CommandSender sender, String[] arguments) {
+  public void whenInvalid(ValidationResult result) {
     MessageKey key;
     if(this.shouldExist) {
       key = MessageKey.STARTPOINT_NOT_FOUND;
     } else {
       key = MessageKey.STARTPOINT_ALREADY_EXIST;
     }
-    MessageManager.setValue("race_name", arguments[0]);
-    MessageManager.setValue("position", arguments[1]);
-    MessageManager.sendMessage(sender, key);
+    MessageManager.setValue("race_name", result.getPrevArgs()[0]);
+    MessageManager.setValue("position", result.getValue());
+    MessageManager.sendMessage(result.getCommandSender(), key);
   }
 }

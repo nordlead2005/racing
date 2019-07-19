@@ -3,6 +3,8 @@ package com.github.hornta.race.objects;
 import com.github.hornta.race.Racing;
 import com.github.hornta.race.Util;
 import com.github.hornta.race.enums.RaceType;
+import com.github.hornta.race.message.MessageKey;
+import com.github.hornta.race.message.MessageManager;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.boss.BossBar;
@@ -27,8 +29,9 @@ public class RacePlayerSession {
   private static final float DEFAULT_WALK_SPEED = 0.2F;
   private static final double HORSE_JUMP_STRENGTH = 0.7;
   private static final double HORSE_SPEED = 0.225;
-  private Race race;
-  private Player player;
+  private final Race race;
+  private final Player player;
+  private final double chargedEntryFee;
   private RaceStartPoint startPoint;
   private Location startLocation;
   private RaceCheckpoint currentCheckpoint;
@@ -49,9 +52,10 @@ public class RacePlayerSession {
   private boolean isAllowedToExitVehicle;
   private boolean isDirty;
 
-  RacePlayerSession(Race race, Player player) {
+  RacePlayerSession(Race race, Player player, double chargedEntryFee) {
     this.race = race;
     this.player = player;
+    this.chargedEntryFee = chargedEntryFee;
   }
 
   public Horse getHorse() {
@@ -113,6 +117,7 @@ public class RacePlayerSession {
         break;
 
       case ELYTRA:
+        MessageManager.sendMessage(player, MessageKey.ELYTRA_INFO);
         break;
 
       case BOAT:
@@ -145,6 +150,10 @@ public class RacePlayerSession {
     return null;
   }
 
+  public double getChargedEntryFee() {
+    return chargedEntryFee;
+  }
+
   void startRace() {
     player.setWalkSpeed(DEFAULT_WALK_SPEED);
     player.setFoodLevel(MAX_FOOD_LEVEL);
@@ -164,7 +173,7 @@ public class RacePlayerSession {
   }
 
   private Location getRespawnLocation() {
-    if (currentCheckpoint == null) {
+    if (currentCheckpoint == null || race.getType() == RaceType.ELYTRA) {
       return startPoint.getLocation();
     } else {
       return currentCheckpoint.getLocation().getWorld().getHighestBlockAt(

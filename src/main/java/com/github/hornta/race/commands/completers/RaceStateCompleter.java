@@ -12,10 +12,10 @@ import java.util.stream.Collectors;
 public class RaceStateCompleter implements BaseTabCompleter {
 
   @Override
-  public List<String> getItems(CommandSender sender, String[] arguments) {
+  public List<String> getItems(CommandSender sender, String argument, String[] prevArgs) {
     return Arrays.stream(RaceState.values())
       .map(RaceState::name)
-      .filter(state -> state.toLowerCase(Locale.ENGLISH).startsWith(arguments[0].toLowerCase(Locale.ENGLISH)))
+      .filter(state -> state.toLowerCase(Locale.ENGLISH).startsWith(argument.toLowerCase(Locale.ENGLISH)))
       .collect(Collectors.toList());
   }
 }

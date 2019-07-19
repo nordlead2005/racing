@@ -2,6 +2,7 @@ package com.github.hornta.race.objects;
 
 import com.github.hornta.race.enums.RaceState;
 import com.github.hornta.race.enums.RaceType;
+import com.github.hornta.race.enums.RaceVersion;
 import org.bukkit.Location;
 import org.bukkit.event.Listener;
 
@@ -12,7 +13,7 @@ import java.util.UUID;
 
 public class Race implements Listener {
   private UUID id;
-  private String version;
+  private RaceVersion version;
   private String name;
   private Location spawn;
   private List<RaceCheckpoint> checkpoints;
@@ -21,10 +22,11 @@ public class Race implements Listener {
   private Instant createdAt;
   private RaceType type;
   private String song;
+  private double entryFee;
 
   public Race(
     UUID id,
-    String version,
+    RaceVersion version,
     String name,
     Location spawn,
     RaceState state,
@@ -32,7 +34,8 @@ public class Race implements Listener {
     List<RaceCheckpoint> checkpoints,
     List<RaceStartPoint> startPoints,
     RaceType type,
-    String song
+    String song,
+    double entryFee
   ) {
     this.id = id;
     this.version = version;
@@ -44,6 +47,7 @@ public class Race implements Listener {
     this.startPoints = new ArrayList<>(startPoints);
     this.type = type;
     this.song = song;
+    this.entryFee = entryFee;
   }
 
   public UUID getId() {
@@ -159,5 +163,17 @@ public class Race implements Listener {
 
   public void setSong(String song) {
     this.song = song;
+  }
+
+  public double getEntryFee() {
+    return entryFee;
+  }
+
+  public void setEntryFee(double entryFee) {
+    this.entryFee = entryFee;
+  }
+
+  public RaceVersion getVersion() {
+    return version;
   }
 }

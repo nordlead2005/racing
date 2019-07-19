@@ -1,12 +1,14 @@
 package com.github.hornta.race.commands;
 
 import com.github.hornta.ICommandHandler;
+import com.github.hornta.race.Racing;
 import com.github.hornta.race.RacingManager;
 import com.github.hornta.race.enums.RaceSessionState;
 import com.github.hornta.race.message.MessageKey;
 import com.github.hornta.race.message.MessageManager;
 import com.github.hornta.race.objects.Race;
 import com.github.hornta.race.objects.RaceSession;
+import net.milkbowl.vault.economy.Economy;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -48,7 +50,20 @@ public class CommandJoinRace extends RacingCommand implements ICommandHandler {
       return;
     }
 
-    session.participate(player);
+    Economy economy = Racing.getInstance().getEconomy();
+    if (economy != null) {
+      if(economy.getBalance(player) < race.getEntryFee()) {
+        MessageManager.setValue("entry_fee", economy.format(race.getEntryFee()));
+        MessageManager.setValue("balance", economy.format(economy.getBalance(player)));
+        MessageManager.sendMessage(commandSender, MessageKey.JOIN_RACE_NOT_AFFORD);
+        return;
+      }
+
+      economy.withdrawPlayer(player, race.getEntryFee());
+    }
+
+    session.participate(player, race.getEntryFee());
+
     MessageManager.setValue("player_name", player.getName());
     MessageManager.setValue("race_name", race.getName());
     MessageManager.setValue("current_participants", session.getParticipants().size());

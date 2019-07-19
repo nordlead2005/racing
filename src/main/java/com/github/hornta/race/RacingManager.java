@@ -1,9 +1,7 @@
 package com.github.hornta.race;
 
 import com.github.hornta.race.api.RacingAPI;
-import com.github.hornta.race.enums.RaceSessionState;
-import com.github.hornta.race.enums.RaceState;
-import com.github.hornta.race.enums.RaceType;
+import com.github.hornta.race.enums.*;
 import com.github.hornta.race.events.*;
 import com.github.hornta.race.message.MessageKey;
 import com.github.hornta.race.message.MessageManager;
@@ -13,6 +11,7 @@ import com.github.hornta.race.objects.RaceCheckpoint;
 import com.github.hornta.race.objects.RacePlayerSession;
 import com.github.hornta.race.objects.RaceSession;
 import com.github.hornta.race.objects.RaceStartPoint;
+import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
@@ -236,6 +235,15 @@ public class RacingManager implements Listener {
     }
   }
 
+  @EventHandler
+  void onPlayerDisqualified(PlayerDisqualifiedEvent event) {
+    Economy economy = Racing.getInstance().getEconomy();
+
+    if (economy != null && event.getReason() == DisqualifyReason.NOSHOW) {
+      economy.depositPlayer(event.getSession().getPlayer(), event.getSession().getChargedEntryFee());
+    }
+  }
+
   public void setAPI(RacingAPI api) {
     this.api = api;
   }
@@ -304,7 +312,7 @@ public class RacingManager implements Listener {
   public void createRace(Location location, String name, Consumer<Race> consumer) {
     Race race = new Race(
       UUID.randomUUID(),
-      Racing.getInstance().getDescription().getVersion(),
+      RaceVersion.getLast(),
       name,
       location,
       RaceState.UNDER_CONSTRUCTION,
@@ -312,7 +320,8 @@ public class RacingManager implements Listener {
       Collections.emptyList(),
       Collections.emptyList(),
       RaceType.PLAYER,
-      null);
+      null,
+      0);
 
     api.createRace(race, (Boolean result) -> Bukkit.getScheduler().scheduleSyncDelayedTask(Racing.getInstance(), () -> {
       if(result) {

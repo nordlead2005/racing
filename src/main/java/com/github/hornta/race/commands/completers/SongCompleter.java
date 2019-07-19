@@ -10,9 +10,9 @@ import java.util.stream.Collectors;
 
 public class SongCompleter implements BaseTabCompleter {
   @Override
-  public List<String> getItems(CommandSender sender, String[] arguments) {
+  public List<String> getItems(CommandSender sender, String argument, String[] prevArgs) {
     return SongManager.getSongNames().stream()
-      .filter(name -> name.toLowerCase(Locale.ENGLISH).startsWith(arguments[0].toLowerCase(Locale.ENGLISH)))
+      .filter(name -> name.toLowerCase(Locale.ENGLISH).startsWith(argument.toLowerCase(Locale.ENGLISH)))
       .collect(Collectors.toList());
   }
 }

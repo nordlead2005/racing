@@ -16,9 +16,9 @@ public class StartPointCompleter implements BaseTabCompleter {
   }
 
   @Override
-  public List<String> getItems(CommandSender sender, String[] arguments) {
-    return racingManager.getRace(arguments[0]).getStartPoints().stream()
-      .filter(point -> String.valueOf(point.getPosition()).toLowerCase(Locale.ENGLISH).startsWith(arguments[1].toLowerCase(Locale.ENGLISH)))
+  public List<String> getItems(CommandSender sender, String argument, String[] prevArgs) {
+    return racingManager.getRace(argument).getStartPoints().stream()
+      .filter(point -> String.valueOf(point.getPosition()).toLowerCase(Locale.ENGLISH).startsWith(argument.toLowerCase(Locale.ENGLISH)))
       .map(p -> String.valueOf(p.getPosition()))
       .collect(Collectors.toList());
   }

@@ -5,8 +5,10 @@ import com.github.hornta.race.SongManager;
 import com.github.hornta.race.Util;
 import com.github.hornta.race.config.ConfigKey;
 import com.github.hornta.race.config.RaceConfiguration;
+import com.github.hornta.race.enums.DisqualifyReason;
 import com.github.hornta.race.enums.RaceSessionState;
 import com.github.hornta.race.enums.RaceType;
+import com.github.hornta.race.events.PlayerDisqualifiedEvent;
 import com.github.hornta.race.events.RacePlayerGoalEvent;
 import com.github.hornta.race.events.RaceSessionResultEvent;
 import com.github.hornta.race.events.RaceSessionStopEvent;
@@ -18,6 +20,7 @@ import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
+import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -37,6 +40,7 @@ import org.bukkit.event.player.*;
 import org.bukkit.event.vehicle.VehicleEnterEvent;
 import org.bukkit.event.vehicle.VehicleExitEvent;
 import org.bukkit.scheduler.BukkitTask;
+import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Team;
 
 import java.time.Duration;
@@ -103,7 +107,7 @@ public class RaceSession implements Listener {
 
     HoverEvent hoverEvent = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(MessageManager.getMessage(MessageKey.PARTICIPATE_HOVER_TEXT)).create());
 
-    MessageManager.setValue("race_name",race.getName());
+    MessageManager.setValue("race_name", race.getName());
     ClickEvent clickEvent = new ClickEvent(ClickEvent.Action.RUN_COMMAND, MessageManager.getMessage(MessageKey.PARTICIPATE_CLICK_TEXT));
 
     int prepareTime = RaceConfiguration.getValue(ConfigKey.RACE_PREPARE_TIME);
@@ -111,18 +115,55 @@ public class RaceSession implements Listener {
     MessageManager.setValue("command_sender", initiator.getName());
     MessageManager.setValue("race_name", race.getName());
     MessageManager.setValue("time_left", Util.getTimeLeft(prepareTime));
+    MessageManager.setValue("laps", laps);
+
+    MessageKey key = MessageKey.PARTICIPATE_TEXT;
+    Economy economy = Racing.getInstance().getEconomy();
+
+    if(economy != null) {
+      key = MessageKey.PARTICIPATE_TEXT_FEE;
+      MessageManager.setValue("entry_fee", economy.format(race.getEntryFee()));
+    }
 
     ComponentBuilder announceMessage = new ComponentBuilder("").event(hoverEvent).event(clickEvent);
 
     Util.setTimeUnitValues();
     Bukkit.getServer().spigot().broadcast(
       new ComponentBuilder(announceMessage).append(
-        TextComponent.fromLegacyText(MessageManager.getMessage(MessageKey.PARTICIPATE_TEXT))
+        TextComponent.fromLegacyText(MessageManager.getMessage(key))
       ).create()
     );
 
     setState(RaceSessionState.PREPARING);
 
+    MessageManager.setValue("race_name", race.getName());
+    ClickEvent skipWaitClickEvent = new ClickEvent(ClickEvent.Action.RUN_COMMAND, MessageManager.getMessage(MessageKey.SKIP_WAIT_CLICK_TEXT));
+    MessageManager.setValue("race_name", race.getName());
+    ClickEvent stopClickEvent = new ClickEvent(ClickEvent.Action.RUN_COMMAND, MessageManager.getMessage(MessageKey.STOP_RACE_CLICK_TEXT));
+
+    HoverEvent skipWaitHover = new HoverEvent(
+      HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(MessageManager.getMessage(MessageKey.SKIP_WAIT_HOVER_TEXT)).create()
+    );
+    HoverEvent stopHover = new HoverEvent(
+      HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(MessageManager.getMessage(MessageKey.STOP_RACE_HOVER_TEXT)).create()
+    );
+
+    TextComponent tc = new TextComponent();
+    tc.addExtra(
+      new ComponentBuilder(MessageManager.getMessage(MessageKey.SKIP_WAIT))
+      .event(skipWaitHover)
+      .event(skipWaitClickEvent).create()[0]
+    );
+    tc.addExtra(" ");
+    tc.addExtra(
+      new ComponentBuilder(MessageManager.getMessage(MessageKey.STOP_RACE))
+      .event(stopHover)
+      .event(stopClickEvent)
+      .create()[0]
+    );
+
+    initiator.spigot().sendMessage(tc);
+    
     List<Integer> announceIntervals = RaceConfiguration.getValue(ConfigKey.RACE_ANNOUNCE_INTERVALS);
     for(int interval : announceIntervals) {
       if(interval >= prepareTime) {
@@ -153,6 +194,7 @@ public class RaceSession implements Listener {
           MessageManager.setValue("player_name", session.getPlayer().getName());
           MessageManager.sendMessage(session1.getPlayer(), MessageKey.NOSHOW_DISQUALIFIED);
         }
+        Bukkit.getPluginManager().callEvent(new PlayerDisqualifiedEvent(session, DisqualifyReason.NOSHOW));
       }
     }
 
@@ -273,9 +315,9 @@ public class RaceSession implements Listener {
     return participants.contains(player);
   }
 
-  public void participate(Player player) {
+  public void participate(Player player, double chargedEntryFee) {
     participants.add(player);
-    playerSessions.put(player, new RacePlayerSession(race, player));
+    playerSessions.put(player, new RacePlayerSession(race, player, chargedEntryFee));
   }
 
   public void addStartTimerTask(int id) {
@@ -407,7 +449,8 @@ public class RaceSession implements Listener {
   void onPlayerQuit(PlayerQuitEvent event) {
     Player player = event.getPlayer();
     if(isParticipating(player) && (state == RaceSessionState.COUNTDOWN || state == RaceSessionState.STARTED)) {
-      playerSessions.get(player).restore();
+      RacePlayerSession playerSession = playerSessions.get(player);
+      playerSession.restore();
       playerSessions.remove(player);
       participants.remove(player);
       log("onPlayerQuit: " + playerSessions.size() + " players left");
@@ -419,6 +462,7 @@ public class RaceSession implements Listener {
       if(playerSessions.isEmpty()) {
         stop();
       }
+      Bukkit.getPluginManager().callEvent(new PlayerDisqualifiedEvent(playerSession, DisqualifyReason.QUIT));
     }
   }
 
@@ -528,6 +572,12 @@ public class RaceSession implements Listener {
         }
         break;
 
+      case HORSE:
+        if(event.getItemDrop().getItemStack().getType() == Material.SADDLE) {
+          event.setCancelled(true);
+        }
+        break;
+
       default:
     }
   }
@@ -566,6 +616,7 @@ public class RaceSession implements Listener {
     }
 
     RacePlayerSession playerSession = playerSessions.get(event.getPlayer());
+    playerSession.getPlayer().setFallDistance(0);
     playerSession.getPlayer().teleport(playerSession.getStartLocation());
   }
 

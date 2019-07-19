@@ -47,6 +47,7 @@ commands:
     error_is_full: "§cDet finns inga platser kvar."
     error_is_participating: "§cDu deltar redan i detta race."
     error_is_participating_other: "§cDu deltar för tillfället i ett annat race."
+    error_not_afford: "§cDu har inte råd att delta. Det kostar <entry_fee> och du har <balance>."
   race_skip_wait:
     error_not_started: "§cRacet måste vara startat för att kunna skippas."
   reload:
@@ -59,6 +60,8 @@ commands:
   race_help:
     title: "§6§m----§r§6[ §eRacing Hjälp §6]§m----"
     item: "§e<text>"
+  race_set_entryfee:
+    success: "§eAnmälningsavgift satt till <entry_fee>."
 
 validators:
   race_not_found: "§cDet finns inget race med namn `<race_name>`."
@@ -70,23 +73,40 @@ validators:
   type_not_found: "§cDet finns ingen typ `<type>`. Möjliga typer: <types>."
   state_not_found: "§cDet finns ingen status `<state>`. Möjliga statusar: <states>."
   song_not_found: "§cDet finns ingen låt med namnet `<song_name>`."
-  validate_integer:
-    non_integer: "§Förväntade argument av typen heltal men tog emot `<received>`."
-    min_exceed: "§cArgument måste vara minst `<expected>` men tog emot `<received>`."
-    max_exceed: "§cArgument måste vara minst `<expected>` men tog emot `<received>`."
+  validate_non_integer: "§c`<argument>` måste vara ett heltal men fick `<received>`.\n\nAnvändning:\n<help_texts>"
+  validate_non_number: "§c`<argument>` måste vara ett nummer men fick `<received>`.\n\nAnvändning:\n<help_texts>"
+  min_exceed: "§c`<argument>` måste va minst `<expected>` men fick `<received>`.\n\nAnvändning:\n<help_texts>"
+  max_exceed: "§c`<argument>` får va högst `<expected>` men fick `<received>`.\n\nAnvändning:\n<help_texts>"
 
-race_canceled: "§cRacet har blivit inställt p.g.a. för få deltagande."
+race_canceled: "§eRacet har blivit inställt p.g.a. för få deltagande."
 race_start_noshow_disqualified: "§e<player_name> uteblev från racet och är därmed diskvalificerad."
 race_start_quit_disqualified: "§e<player_name> lämnade och är därmed diskvalificerad."
 edit_no_edit_mode: "§cDu kan inte ändra på race `<race_name>` eftersom racet inte är under konstruktion. Skriv §7/rc setstate <race_name> under_construction§c för att sätta det under konstruktion."
 race_win: "§e<player_name> har vunnit race §a<race_name>§e med tiden <time>."
 race_participate_click_text: "/rc join <race_name>"
 race_participate_hover_text: "Klicka för att delta"
-race_participate_text: "§e<command_sender> har startat race §a<race_name>§e som startar om <time_left>. Skriv §7/rc join <race_name>§e för att delta."
+race_participate_text: |
+  §eRace §a<race_name>§e har påbörjats och startar om <time_left>.
+  Varv: <laps>
+  Initiativtagare: <command_sender>
+  §6>> Klicka här för att delta <<
+race_participate_text_fee: |
+  §eRace §a<race_name>§e har påbörjats och startar om <time_left>.
+  Varv: <laps>
+  Anmälningsavgift: <entry_fee>
+  Initiativtagare: <command_sender>
+  §6>> Klicka här för att delta <<
 race_participate_text_timeleft: "§eDet är <time_left> kvar innan racet startar. Skriv §7/rc join <race_name>§e för att delta."
 race_countdown_subtitle: "sekunder innan racet börjar"
 race_next_lap_actionbar: "§6Varv <ordinal>"
 race_final_lap_actionbar: "§6Sista varvet"
+race_elytra_respawn_info: "§eDu kan slå i luften för att teleportera tillbaka till startpositionen i elytra races."
+race_skipwait_hover_text: "Klicka här för att starta direkt"
+race_skipwait_click_text: "/rc skipwait <race_name>"
+race_skipwait: "§e[Starta direkt]"
+race_stop_hover_text: "Klicka här för att stoppa racet"
+race_stop_click_text: "/rc stop <race_name>"
+race_stop: "§e[Stoppa racet]"
 
 no_permission_command: "§cDu har inte tillåtelse att utföra detta kommando."
 missing_arguments_command: "§cVissa argument till kommandot saknas.\n\nAnvändning:\n<usage>"

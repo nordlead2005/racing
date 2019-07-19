@@ -28,6 +28,7 @@ public class CommandSetRaceState extends RacingCommand implements ICommandHandle
 
     if(race.getState() == RaceState.ENABLED && racingManager.hasOngoingSession(race)) {
       MessageManager.sendMessage(commandSender, MessageKey.RACE_SET_STATE_ONGOING);
+      return;
     }
 
     RaceState oldState = race.getState();

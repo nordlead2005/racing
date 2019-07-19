@@ -1,6 +1,7 @@
 package com.github.hornta.race.commands.validators;
 
 import com.github.hornta.ValidationHandler;
+import com.github.hornta.ValidationResult;
 import com.github.hornta.race.RacingManager;
 import com.github.hornta.race.message.MessageKey;
 import com.github.hornta.race.message.MessageManager;
@@ -16,23 +17,23 @@ public class RaceExistValidator implements ValidationHandler {
   }
 
   @Override
-  public boolean test(CommandSender commandSender, String[] arguments) {
+  public boolean test(CommandSender commandSender, String argument, String[] prevArgs) {
     if(shouldExist) {
-      return racingManager.hasRace(arguments[0]);
+      return racingManager.hasRace(argument);
     } else {
-      return !racingManager.hasRace(arguments[0]);
+      return !racingManager.hasRace(argument);
     }
   }
 
   @Override
-  public void whenInvalid(CommandSender sender, String[] args) {
+  public void whenInvalid(ValidationResult result) {
     MessageKey message;
     if(this.shouldExist) {
       message = MessageKey.RACE_NOT_FOUND;
     } else {
       message = MessageKey.RACE_ALREADY_EXIST;
     }
-    MessageManager.setValue("race_name", args[0]);
-    MessageManager.sendMessage(sender, message);
+    MessageManager.setValue("race_name", result.getValue());
+    MessageManager.sendMessage(result.getCommandSender(), message);
   }
 }

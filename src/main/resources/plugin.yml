@@ -9,7 +9,7 @@ main: com.github.hornta.race.Racing
 database: false
 depend: [ProtocolLib]
 #prefix: ""
-softdepend: [NoteBlockAPI, HolographicDisplays]
+softdepend: [NoteBlockAPI, HolographicDisplays, Vault, mcMMO]
 loadbefore: []
 commands:
   racing:

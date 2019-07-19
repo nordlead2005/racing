@@ -20,7 +20,7 @@ public class CommandHelp implements ICommandHandler {
       player = (Player)commandSender;
     }
 
-    List<String> helpTexts = Racing.getInstance().getCarbon().getCommandManager().getHelpTexts(player);
+    List<String> helpTexts = Racing.getInstance().getCarbon().getHelpTexts(player);
 
     MessageManager.sendMessage(commandSender, MessageKey.RACE_HELP_TITLE);
 

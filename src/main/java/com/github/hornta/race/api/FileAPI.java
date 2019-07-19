@@ -5,6 +5,7 @@ import com.github.hornta.race.config.ConfigKey;
 import com.github.hornta.race.config.RaceConfiguration;
 import com.github.hornta.race.enums.RaceState;
 import com.github.hornta.race.enums.RaceType;
+import com.github.hornta.race.enums.RaceVersion;
 import com.github.hornta.race.objects.Race;
 import com.github.hornta.race.objects.RaceCheckpoint;
 import com.github.hornta.race.objects.RaceStartPoint;
@@ -35,11 +36,21 @@ import java.util.stream.Collectors;
 public class FileAPI implements RacingAPI {
   private static final String CHECKPOINTS_LOCATION = "checkpoints";
   private static final String START_POINTS_LOCATION = "startPoints";
+  private static final String ID_FIELD = "id";
+  private static final String VERSION_FIELD = "version";
+  private static final String NAME_FIELD = "name";
+  private static final String STATE_FIELD = "state";
+  private static final String TYPE_FIELD = "type";
+  private static final String SONG_FIELD = "song";
+  private static final String CREATED_AT_FIELD = "created_at";
+  private static final String FIELD_ENTRY_FEE = "entry_fee";
   private ExecutorService fileService = Executors.newSingleThreadExecutor();
   private File racesDirectory;
+  private MigrationManager migrationManager = new MigrationManager();
 
   public FileAPI(Plugin plugin) {
     racesDirectory = new File(plugin.getDataFolder(), RaceConfiguration.getValue(ConfigKey.FILE_RACE_DIRECTORY));
+    migrationManager.addMigration(new EntryFeeMigration());
   }
 
   @Override
@@ -58,6 +69,12 @@ public class FileAPI implements RacingAPI {
           YamlConfiguration yaml = YamlConfiguration.loadConfiguration(file);
 
           try {
+            migrationManager.migrate(yaml);
+            try {
+              yaml.save(file);
+            } catch (IOException e) {
+              Racing.getInstance().getLogger().log(Level.SEVERE, "Failed to save race");
+            }
             Race race = parseRace(yaml);
             races.add(race);
           } catch (ParseRaceException ex) {
@@ -75,13 +92,14 @@ public class FileAPI implements RacingAPI {
     File file = new File(racesDirectory, race.getId() + ".yml");
 
     YamlConfiguration yaml = new YamlConfiguration();
-    yaml.set("id", race.getId().toString());
-    yaml.set("version", Racing.getInstance().getDescription().getVersion());
-    yaml.set("name", race.getName());
-    yaml.set("state", race.getState().name());
-    yaml.set("type", race.getType().name());
-    yaml.set("song", race.getSong());
-    yaml.set("created_at", race.getCreatedAt().getEpochSecond());
+    yaml.set(ID_FIELD, race.getId().toString());
+    yaml.set(VERSION_FIELD, Racing.getInstance().getDescription().getVersion());
+    yaml.set(NAME_FIELD, race.getName());
+    yaml.set(STATE_FIELD, race.getState().name());
+    yaml.set(TYPE_FIELD, race.getType().name());
+    yaml.set(SONG_FIELD, race.getSong());
+    yaml.set(FIELD_ENTRY_FEE, race.getEntryFee());
+    yaml.set(CREATED_AT_FIELD, race.getCreatedAt().getEpochSecond());
     yaml.set("spawn.x", race.getSpawn().getX());
     yaml.set("spawn.y", race.getSpawn().getY());
     yaml.set("spawn.z", race.getSpawn().getZ());
@@ -272,10 +290,15 @@ public class FileAPI implements RacingAPI {
   }
 
   private Race parseRace(YamlConfiguration yaml) throws ParseRaceException {
-    String idString = yaml.getString("id");
+    String idString = yaml.getString(ID_FIELD);
 
     if(idString == null) {
-      throw new ParseRaceException("`id` is missing from race");
+      throw new ParseRaceException("`" + ID_FIELD + "` is missing from race");
+    }
+
+    RaceVersion version = RaceVersion.fromString(yaml.getString("version"));
+    if(version == null) {
+      throw new ParseRaceException("`" + VERSION_FIELD + "` is missing from race");
     }
 
     UUID id;
@@ -285,11 +308,6 @@ public class FileAPI implements RacingAPI {
       throw new ParseRaceException("Couldn't convert id to UUID");
     }
 
-    String version = yaml.getString("version");
-    if(version == null) {
-      throw new ParseRaceException("Couldn't find version");
-    }
-
     Location spawn;
     try {
       spawn = parseLocation(yaml, "spawn");
@@ -297,38 +315,49 @@ public class FileAPI implements RacingAPI {
       throw new ParseRaceException("Couldn't parse spawn: " + ex.getMessage());
     }
 
-    String name = yaml.getString("name");
+    String name = yaml.getString(NAME_FIELD);
     if(name == null) {
-      throw new ParseRaceException("`name` is missing from race");
+      throw new ParseRaceException("`" + NAME_FIELD + "` is missing from race");
     }
 
     Instant createdAt;
     try {
-      createdAt = Instant.ofEpochSecond(yaml.getLong("created_at"));
+      createdAt = Instant.ofEpochSecond(yaml.getLong(CREATED_AT_FIELD));
     } catch (DateTimeException ex) {
-      throw new ParseRaceException("`created_at` is invalid");
+      throw new ParseRaceException("`" + CREATED_AT_FIELD + "` is invalid");
     }
 
     RaceType type;
     try {
-      type = RaceType.valueOf(yaml.getString("type"));
+      type = RaceType.valueOf(yaml.getString(TYPE_FIELD));
     } catch (IllegalArgumentException ex) {
-      throw new ParseRaceException("`type` is invalid");
+      throw new ParseRaceException("`" + TYPE_FIELD + "` is invalid");
     }
 
     RaceState state;
     try {
-      state = RaceState.valueOf(yaml.getString("state"));
+      state = RaceState.valueOf(yaml.getString(STATE_FIELD));
     } catch (IllegalArgumentException ex) {
-      throw new ParseRaceException("`state` is invalid");
+      throw new ParseRaceException("`" + STATE_FIELD + "` is invalid");
+    }
+
+    if(!yaml.contains(FIELD_ENTRY_FEE) || (!yaml.isDouble(FIELD_ENTRY_FEE) && !yaml.isInt(FIELD_ENTRY_FEE))) {
+      throw new ParseRaceException("Missing field `" + FIELD_ENTRY_FEE + "`");
+    }
+
+    double entryFee;
+    if(yaml.isDouble(FIELD_ENTRY_FEE)) {
+      entryFee = yaml.getDouble(FIELD_ENTRY_FEE);
+    } else {
+      entryFee = yaml.getInt(FIELD_ENTRY_FEE);
     }
 
     List<RaceCheckpoint> checkpoints = parseCheckpoints(yaml);
     List<RaceStartPoint> startPoints = parseStartPoints(yaml);
 
-    String song = yaml.getString("song", null);
+    String song = yaml.getString(SONG_FIELD, null);
 
-    return new Race(id, version, name, spawn, state, createdAt, checkpoints, startPoints, type, song);
+    return new Race(id, version, name, spawn, state, createdAt, checkpoints, startPoints, type, song, entryFee);
   }
 
   private List<RaceCheckpoint> parseCheckpoints(YamlConfiguration yaml) {
