@@ -13,3 +13,6 @@ server.properties
 target
 .idea
 racing.iml
+server/usercache.json
+server/plugins/TheNewEconomy/Economy.trace.db
+server/plugins/TheNewEconomy/Economy.mv.db
