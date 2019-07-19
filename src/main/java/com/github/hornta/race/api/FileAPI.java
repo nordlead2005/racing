@@ -93,7 +93,7 @@ public class FileAPI implements RacingAPI {
 
     YamlConfiguration yaml = new YamlConfiguration();
     yaml.set(ID_FIELD, race.getId().toString());
-    yaml.set(VERSION_FIELD, Racing.getInstance().getDescription().getVersion());
+    yaml.set(VERSION_FIELD, race.getVersion());
     yaml.set(NAME_FIELD, race.getName());
     yaml.set(STATE_FIELD, race.getState().name());
     yaml.set(TYPE_FIELD, race.getType().name());
