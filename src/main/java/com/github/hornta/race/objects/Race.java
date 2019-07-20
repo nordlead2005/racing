@@ -23,6 +23,7 @@ public class Race implements Listener {
   private RaceType type;
   private String song;
   private double entryFee;
+  private float walkSpeed;
 
   public Race(
     UUID id,
@@ -35,7 +36,8 @@ public class Race implements Listener {
     List<RaceStartPoint> startPoints,
     RaceType type,
     String song,
-    double entryFee
+    double entryFee,
+    float walkSpeed
   ) {
     this.id = id;
     this.version = version;
@@ -48,6 +50,15 @@ public class Race implements Listener {
     this.type = type;
     this.song = song;
     this.entryFee = entryFee;
+    this.walkSpeed = walkSpeed;
+  }
+
+  public float getWalkSpeed() {
+    return walkSpeed;
+  }
+
+  public void setWalkSpeed(float walkSpeed) {
+    this.walkSpeed = walkSpeed;
   }
 
   public UUID getId() {

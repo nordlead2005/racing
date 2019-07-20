@@ -46,6 +46,7 @@ public enum MessageKey {
   RACE_HELP_TITLE("commands.race_help.title"),
   RACE_HELP_ITEM("commands.race_help.item"),
   RACE_SET_ENTRYFEE("commands.race_set_entryfee.success"),
+  RACE_SET_WALKSPEED("commands.race_set_walkspeed.success"),
 
   RACE_NOT_FOUND("validators.race_not_found"),
   RACE_ALREADY_EXIST("validators.race_already_exist"),

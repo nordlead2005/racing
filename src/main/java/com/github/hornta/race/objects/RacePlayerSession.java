@@ -26,7 +26,6 @@ public class RacePlayerSession {
   private static final int PREVENT_SPRINT_FOOD_LEVEL = 6;
   private static final double MAX_HEALTH = 20;
   private static final int MAX_FOOD_LEVEL = 20;
-  private static final float DEFAULT_WALK_SPEED = 0.2F;
   private static final double HORSE_JUMP_STRENGTH = 0.7;
   private static final double HORSE_SPEED = 0.225;
   private final Race race;
@@ -155,9 +154,11 @@ public class RacePlayerSession {
   }
 
   void startRace() {
-    player.setWalkSpeed(DEFAULT_WALK_SPEED);
+    player.setWalkSpeed(race.getWalkSpeed());
     player.setFoodLevel(MAX_FOOD_LEVEL);
     player.removePotionEffect(PotionEffectType.JUMP);
+
+    player.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, Integer.MAX_VALUE, 10, false, false, false));
 
     if(pig != null) {
       player.getInventory().setItemInMainHand(new ItemStack(Material.CARROT_ON_A_STICK, 1));
@@ -321,6 +322,11 @@ public class RacePlayerSession {
       nextCheckpoint = null;
     }
     player.setWalkSpeed(walkSpeed);
+
+    for(PotionEffect effect : player.getActivePotionEffects()) {
+      player.removePotionEffect(effect.getType());
+    }
+
     player.addPotionEffects(potionEffects);
     player.setFoodLevel(foodLevel);
     player.getInventory().setContents(inventory);

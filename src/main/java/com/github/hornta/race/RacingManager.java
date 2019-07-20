@@ -321,7 +321,8 @@ public class RacingManager implements Listener {
       Collections.emptyList(),
       RaceType.PLAYER,
       null,
-      0);
+      0,
+      0.2F);
 
     api.createRace(race, (Boolean result) -> Bukkit.getScheduler().scheduleSyncDelayedTask(Racing.getInstance(), () -> {
       if(result) {

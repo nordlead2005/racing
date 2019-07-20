@@ -62,6 +62,8 @@ commands:
     item: "§e<text>"
   race_set_entryfee:
     success: "§eEntry fee set to <entry_fee>."
+  race_set_walkspeed:
+    success: "§eWalk speed has been set to <walk_speed>."
 
 validators:
   race_not_found: "§cA race with name `<race_name>` couldn't be found."

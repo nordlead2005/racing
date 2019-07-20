@@ -242,6 +242,17 @@ public class Racing extends JavaPlugin {
     }
 
     carbon
+      .addCommand("racing setwalkspeed")
+      .withHandler(new CommandSetWalkSpeed(racingManager))
+      .withArgument(raceArgument)
+      .withArgument(
+        new CarbonArgument("speed")
+        .ofType(CarbonArgumentType.NUMBER)
+        .setMinMax(0, Double.MAX_VALUE)
+      )
+      .requiresPermission(Permission.RACING_MODIFY.toString());
+
+    carbon
       .addCommand("racing addstartpoint")
       .withHandler(new CommandAddStartpoint(racingManager))
       .withArgument(raceArgument)

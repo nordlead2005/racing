@@ -62,6 +62,8 @@ commands:
     item: "§e<text>"
   race_set_entryfee:
     success: "§eAnmälningsavgift satt till <entry_fee>."
+  race_set_walkspeed:
+    success: "§eFörflyttningshastighet har satts till <walk_speed>."
 
 validators:
   race_not_found: "§cDet finns inget race med namn `<race_name>`."

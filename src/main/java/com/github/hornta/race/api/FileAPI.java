@@ -43,7 +43,8 @@ public class FileAPI implements RacingAPI {
   private static final String TYPE_FIELD = "type";
   private static final String SONG_FIELD = "song";
   private static final String CREATED_AT_FIELD = "created_at";
-  private static final String FIELD_ENTRY_FEE = "entry_fee";
+  public static final String ENTRY_FEE_FIELD = "entry_fee";
+  public static final String WALK_SPEED_FIELD = "walk_speed";
   private ExecutorService fileService = Executors.newSingleThreadExecutor();
   private File racesDirectory;
   private MigrationManager migrationManager = new MigrationManager();
@@ -51,6 +52,7 @@ public class FileAPI implements RacingAPI {
   public FileAPI(Plugin plugin) {
     racesDirectory = new File(plugin.getDataFolder(), RaceConfiguration.getValue(ConfigKey.FILE_RACE_DIRECTORY));
     migrationManager.addMigration(new EntryFeeMigration());
+    migrationManager.addMigration(new WalkSpeedMigration());
   }
 
   @Override
@@ -98,7 +100,7 @@ public class FileAPI implements RacingAPI {
     yaml.set(STATE_FIELD, race.getState().name());
     yaml.set(TYPE_FIELD, race.getType().name());
     yaml.set(SONG_FIELD, race.getSong());
-    yaml.set(FIELD_ENTRY_FEE, race.getEntryFee());
+    yaml.set(ENTRY_FEE_FIELD, race.getEntryFee());
     yaml.set(CREATED_AT_FIELD, race.getCreatedAt().getEpochSecond());
     yaml.set("spawn.x", race.getSpawn().getX());
     yaml.set("spawn.y", race.getSpawn().getY());
@@ -341,15 +343,15 @@ public class FileAPI implements RacingAPI {
       throw new ParseRaceException("`" + STATE_FIELD + "` is invalid");
     }
 
-    if(!yaml.contains(FIELD_ENTRY_FEE) || (!yaml.isDouble(FIELD_ENTRY_FEE) && !yaml.isInt(FIELD_ENTRY_FEE))) {
-      throw new ParseRaceException("Missing field `" + FIELD_ENTRY_FEE + "`");
+    if(!yaml.contains(ENTRY_FEE_FIELD) || (!yaml.isDouble(ENTRY_FEE_FIELD) && !yaml.isInt(ENTRY_FEE_FIELD))) {
+      throw new ParseRaceException("Missing field `" + ENTRY_FEE_FIELD + "`");
     }
 
     double entryFee;
-    if(yaml.isDouble(FIELD_ENTRY_FEE)) {
-      entryFee = yaml.getDouble(FIELD_ENTRY_FEE);
+    if(yaml.isDouble(ENTRY_FEE_FIELD)) {
+      entryFee = yaml.getDouble(ENTRY_FEE_FIELD);
     } else {
-      entryFee = yaml.getInt(FIELD_ENTRY_FEE);
+      entryFee = yaml.getInt(ENTRY_FEE_FIELD);
     }
 
     List<RaceCheckpoint> checkpoints = parseCheckpoints(yaml);
@@ -357,7 +359,18 @@ public class FileAPI implements RacingAPI {
 
     String song = yaml.getString(SONG_FIELD, null);
 
-    return new Race(id, version, name, spawn, state, createdAt, checkpoints, startPoints, type, song, entryFee);
+    if(!yaml.contains(WALK_SPEED_FIELD) || (!yaml.isDouble(WALK_SPEED_FIELD) && !yaml.isInt(WALK_SPEED_FIELD))) {
+      throw new ParseRaceException("Missing field `" + WALK_SPEED_FIELD + "`");
+    }
+
+    float walkSpeed;
+    if(yaml.isDouble(WALK_SPEED_FIELD)) {
+      walkSpeed = (float)yaml.getDouble(WALK_SPEED_FIELD);
+    } else {
+      walkSpeed = yaml.getInt(WALK_SPEED_FIELD);
+    }
+
+    return new Race(id, version, name, spawn, state, createdAt, checkpoints, startPoints, type, song, entryFee, walkSpeed);
   }
 
   private List<RaceCheckpoint> parseCheckpoints(YamlConfiguration yaml) {
