@@ -21,6 +21,7 @@ import org.bukkit.potion.PotionEffectType;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.UUID;
 
 public class RacePlayerSession {
   private static final int PREVENT_SPRINT_FOOD_LEVEL = 6;
@@ -29,8 +30,10 @@ public class RacePlayerSession {
   private static final double HORSE_JUMP_STRENGTH = 0.7;
   private static final double HORSE_SPEED = 0.225;
   private final Race race;
-  private final Player player;
   private final double chargedEntryFee;
+  private final UUID playerId;
+  private final String playerName;
+  private Player player;
   private RaceStartPoint startPoint;
   private Location startLocation;
   private RaceCheckpoint currentCheckpoint;
@@ -55,14 +58,24 @@ public class RacePlayerSession {
     this.race = race;
     this.player = player;
     this.chargedEntryFee = chargedEntryFee;
+    this.playerId = player.getUniqueId();
+    this.playerName = player.getName();
+  }
+
+  public void setPlayer(Player player) {
+    this.player = player;
+  }
+
+  public UUID getPlayerId() {
+    return playerId;
+  }
+
+  public String getPlayerName() {
+    return playerName;
   }
 
   public Horse getHorse() {
     return horse;
-  }
-
-  public Pig getPig() {
-    return pig;
   }
 
   public Boat getBoat() {

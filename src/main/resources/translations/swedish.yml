@@ -37,12 +37,13 @@ commands:
     error_missing_startpoint: "§cRacet måste ha minst 1 startposition."
     error_missing_checkpoint: "§cRacet måste ha minst 1 checkpoint."
     error_missing_checkpoints: "§cRacet måste ha minst 2 checkpoints."
-    error_not_enabled: "§Detta race måste vara öppnat för att kunna starta. Skriv §7/rc setstate enabled §cför att öppna det."
+    error_not_enabled: "§Detta race måste vara öppnat för att kunna starta. Skriv §7/rc setstate <race_name> enabled §cför att öppna det."
   stop_race:
     success: "§eRacet har stoppats."
     error_not_started: "§cRacet kan inte avslutas eftersom det inte är startat."
   join_race:
     success: "§e<player_name> gick med i race `<race_name>`. (<current_participants>/<max_participants> deltagande)"
+    charged: "§e<fee> har tagits från ditt konto."
     error_not_open: "§cDetta race är inte öppet för deltagande."
     error_is_full: "§cDet finns inga platser kvar."
     error_is_participating: "§cDu deltar redan i detta race."
@@ -70,6 +71,11 @@ commands:
     success: "§eTrolldryckseffekt `<potion_effect>` har tagits bort från race `<race_name>`."
   race_clear_potion_effects:
     success: "§eAlla trolldryckseffekter har tagits bort från race `<race_name>`."
+  race_leave:
+    error_not_participating: "§cDu deltar inte i något race."
+    success: "§eDu har lämnat race `<race_name>`."
+    leave_broadcast: "§e<player_name> har lämnat race `<race_name>`."
+    leave_payback: "§eDu har fått tillbaka <entry_fee>."
 
 validators:
   race_not_found: "§cDet finns inget race med namn `<race_name>`."

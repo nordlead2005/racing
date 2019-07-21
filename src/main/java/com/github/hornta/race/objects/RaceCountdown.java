@@ -6,17 +6,19 @@ import com.github.hornta.race.message.MessageManager;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 class RaceCountdown {
   public static final int COUNTDOWN_IN_SECONDS = 10;
   private static final int HALF_SECOND = 10;
   private static final int ONE_SECOND = 20;
-  private Map<Player, RacePlayerSession> playerSessions;
+  private final Collection<RacePlayerSession> playerSessions;
   private int countdown = COUNTDOWN_IN_SECONDS;
   private BukkitRunnable task;
 
-  RaceCountdown(Map<Player, RacePlayerSession> playerSessions) {
+  RaceCountdown(Collection<RacePlayerSession> playerSessions) {
     this.playerSessions = playerSessions;
   }
 
@@ -31,7 +33,7 @@ class RaceCountdown {
           return;
         }
 
-        for(RacePlayerSession session : playerSessions.values()) {
+        for(RacePlayerSession session : playerSessions) {
           // show the title for a tick longer to prevent blinking between titles
           session.getPlayer().sendTitle(String.valueOf(countdown), MessageManager.getMessage(MessageKey.RACE_COUNTDOWN), 0, ONE_SECOND + 1, 0);
         }

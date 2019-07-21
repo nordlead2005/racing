@@ -236,15 +236,6 @@ public class RacingManager implements Listener {
     }
   }
 
-  @EventHandler
-  void onPlayerDisqualified(PlayerDisqualifiedEvent event) {
-    Economy economy = Racing.getInstance().getEconomy();
-
-    if (economy != null && event.getReason() == DisqualifyReason.NOSHOW) {
-      economy.depositPlayer(event.getSession().getPlayer(), event.getSession().getChargedEntryFee());
-    }
-  }
-
   public void setAPI(RacingAPI api) {
     this.api = api;
   }

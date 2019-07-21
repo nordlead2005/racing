@@ -37,12 +37,13 @@ commands:
     error_missing_startpoint: "§cRace must at least have 1 start point."
     error_missing_checkpoint: "§cRace must at least have 1 checkpoint."
     error_missing_checkpoints: "§cRace must at least have 2 checkpoints."
-    error_not_enabled: "§cThis race must be enabled in order to start. Write §7/rc setstate enabled §cto enable it."
+    error_not_enabled: "§cThis race must be enabled in order to start. Write §7/rc setstate <race_name> enabled §cto enable it."
   stop_race:
     success: "§eRace been stopped."
     error_not_started: "§cRace is not started."
   join_race:
     success: "§e<player_name> entered race `<race_name>`. (<current_participants>/<max_participants> participants)"
+    charged: "§e<fee> has been withdrawn from your account."
     error_not_open: "§cThis race is not open for participation."
     error_is_full: "§cThere are not open slots left."
     error_is_participating: "§cYou are already participating in this race."
@@ -70,6 +71,11 @@ commands:
     success: "§ePotion effect `<potion_effect>` has been removed from race `<race_name>`."
   race_clear_potion_effects:
     success: "§eAll potion effects has been removed from race `<race_name>`."
+  race_leave:
+    error_not_participating: "§cYou are not participating in any race."
+    success: "§eYou have left race `<race_name>`."
+    leave_broadcast: "§e<player_name> has left race `<race_name>`."
+    leave_payback: "§eYou have been paid your entry fee of <entry_fee> back."
 
 validators:
   race_not_found: "§cA race with name `<race_name>` couldn't be found."

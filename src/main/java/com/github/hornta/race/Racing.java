@@ -385,9 +385,10 @@ public class Racing extends JavaPlugin {
       .requiresPermission(Permission.RACING_MODERATOR.toString());
 
     carbon
-      .addCommand("racing quit")
-      .withHandler(new CommandQuit(racingManager))
-      .requiresPermission(Permission.RACING_PLAYER.toString());
+      .addCommand("racing leave")
+      .withHandler(new CommandLeave(racingManager))
+      .requiresPermission(Permission.RACING_PLAYER.toString())
+      .preventConsoleCommandSender();
 
     carbon
       .addCommand("racing reload")

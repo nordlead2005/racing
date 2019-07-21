@@ -12,7 +12,6 @@ public enum ConfigKey {
   SONGS_DIRECTORY("songs_directory", ConfigType.STRING, "songs"),
   STORAGE("storage.current", ConfigType.STRING, StorageType.FILE, StorageType::valueOf),
   FILE_RACE_DIRECTORY("storage.file.directory", ConfigType.STRING, "races"),
-  DEBUG("debug", ConfigType.BOOLEAN, false),
   RACE_PREPARE_TIME("prepare_time", ConfigType.INTEGER, 300),
   RACE_ANNOUNCE_INTERVALS("race_announce_intervals", ConfigType.LIST, new int[] { 180, 60, 30 });
 

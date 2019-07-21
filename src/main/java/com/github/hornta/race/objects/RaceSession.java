@@ -5,10 +5,8 @@ import com.github.hornta.race.SongManager;
 import com.github.hornta.race.Util;
 import com.github.hornta.race.config.ConfigKey;
 import com.github.hornta.race.config.RaceConfiguration;
-import com.github.hornta.race.enums.DisqualifyReason;
 import com.github.hornta.race.enums.RaceSessionState;
 import com.github.hornta.race.enums.RaceType;
-import com.github.hornta.race.events.PlayerDisqualifiedEvent;
 import com.github.hornta.race.events.RacePlayerGoalEvent;
 import com.github.hornta.race.events.RaceSessionResultEvent;
 import com.github.hornta.race.events.RaceSessionStopEvent;
@@ -41,7 +39,6 @@ import org.bukkit.event.vehicle.VehicleEnterEvent;
 import org.bukkit.event.vehicle.VehicleExitEvent;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.scheduler.BukkitTask;
-import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Team;
 
 import java.time.Duration;
@@ -68,8 +65,7 @@ public class RaceSession implements Listener {
   private RaceCountdown countdown;
   private Instant start;
   private int numFinished;
-  private Set<Player> participants = new HashSet<>();
-  private Map<Player, RacePlayerSession> playerSessions = new HashMap<>();
+  private Map<UUID, RacePlayerSession> playerSessions = new HashMap<>();
   private Team team;
   private RaceSessionResult result;
 
@@ -90,12 +86,7 @@ public class RaceSession implements Listener {
   }
 
   public void setState(RaceSessionState state) {
-    log("Change state from " + this.state + " to " + state);
     this.state = state;
-  }
-
-  public Set<Player> getParticipants() {
-    return new HashSet<>(participants);
   }
 
   public Race getRace() {
@@ -188,14 +179,17 @@ public class RaceSession implements Listener {
   private void actualStart() {
     // check if players are online before countdown starts
     for(RacePlayerSession session : playerSessions.values()) {
-      if(!session.getPlayer().isOnline()) {
-        participants.remove(session.getPlayer());
-        playerSessions.remove(session.getPlayer());
+      if(session.getPlayer() == null) {
+        playerSessions.remove(session.getPlayerId());
         for(RacePlayerSession session1 : playerSessions.values()) {
-          MessageManager.setValue("player_name", session.getPlayer().getName());
+          MessageManager.setValue("player_name", session.getPlayerName());
           MessageManager.sendMessage(session1.getPlayer(), MessageKey.NOSHOW_DISQUALIFIED);
         }
-        Bukkit.getPluginManager().callEvent(new PlayerDisqualifiedEvent(session, DisqualifyReason.NOSHOW));
+
+        Economy economy = Racing.getInstance().getEconomy();
+        if (economy != null && session.getChargedEntryFee() > 0) {
+          economy.depositPlayer(Bukkit.getOfflinePlayer(session.getPlayerId()), session.getChargedEntryFee());
+        }
       }
     }
 
@@ -224,7 +218,7 @@ public class RaceSession implements Listener {
       startPointIndex += 1;
     }
 
-    countdown = new RaceCountdown(playerSessions);
+    countdown = new RaceCountdown(playerSessions.values());
     countdown.start(() -> {
       setState(RaceSessionState.STARTED);
       String teamName = id.toString().substring(0, 15);
@@ -280,8 +274,6 @@ public class RaceSession implements Listener {
   }
 
   public void stop() {
-    log("Stopped");
-
     if(countdown != null) {
       countdown.stop();
       countdown = null;
@@ -303,7 +295,6 @@ public class RaceSession implements Listener {
       songPlayer.setPlaying(false);
     }
 
-    participants.clear();
     playerSessions.clear();
 
     if(state != RaceSessionState.PREPARING) {
@@ -327,17 +318,45 @@ public class RaceSession implements Listener {
     Bukkit.getPluginManager().callEvent(new RaceSessionStopEvent(this));
   }
 
+  public void leave(Player player) {
+    RacePlayerSession playerSession = playerSessions.get(player.getUniqueId());
+    playerSession.restore();
+    playerSessions.remove(player.getUniqueId());
+
+    Economy economy = Racing.getInstance().getEconomy();
+    if(economy != null && playerSession.getChargedEntryFee() > 0) {
+      economy.depositPlayer(player, playerSession.getChargedEntryFee());
+      MessageManager.setValue("entry_fee", economy.format(playerSession.getChargedEntryFee()));
+      MessageManager.sendMessage(player, MessageKey.RACE_LEAVE_PAYBACK);
+    }
+
+    for(RacePlayerSession session : playerSessions.values()) {
+      if(session.getPlayer() != null) {
+        MessageManager.setValue("player_name", player.getName());
+        MessageManager.setValue("race_name", race.getName());
+        MessageManager.sendMessage(session.getPlayer(), MessageKey.RACE_LEAVE_BROADCAST);
+      }
+    }
+
+    if(playerSessions.isEmpty() && (state == RaceSessionState.COUNTDOWN || state == RaceSessionState.STARTED)) {
+      stop();
+    }
+  }
+
   public boolean isFull() {
-    return participants.size() == race.getStartPoints().size();
+    return playerSessions.size() == race.getStartPoints().size();
   }
 
   public boolean isParticipating(Player player) {
-    return participants.contains(player);
+    return playerSessions.containsKey(player.getUniqueId());
+  }
+
+  public int getAmountOfParticipants() {
+    return playerSessions.size();
   }
 
   public void participate(Player player, double chargedEntryFee) {
-    participants.add(player);
-    playerSessions.put(player, new RacePlayerSession(race, player, chargedEntryFee));
+    playerSessions.put(player.getUniqueId(), new RacePlayerSession(race, player, chargedEntryFee));
   }
 
   public void addStartTimerTask(int id) {
@@ -408,7 +427,9 @@ public class RaceSession implements Listener {
   @EventHandler
   void onPlayerMove(PlayerMoveEvent event) {
     if(isParticipating(event.getPlayer()) && (state == RaceSessionState.COUNTDOWN || state == RaceSessionState.STARTED)) {
-      tryIncrementCheckpoint(playerSessions.get(event.getPlayer()));
+      RacePlayerSession playerSession = playerSessions.get(event.getPlayer().getUniqueId());
+
+      tryIncrementCheckpoint(playerSession);
 
       // prevent player from moving after being teleported to the start point
       // will happen when player for example is holding walk forward button while being teleported
@@ -417,7 +438,6 @@ public class RaceSession implements Listener {
         return;
       }
 
-      RacePlayerSession playerSession = playerSessions.get(event.getPlayer());
       if(playerSession.getHorse() != null || playerSession.getBoat() != null) {
         if(playerSession.getStartLocation().distanceSquared(event.getTo()) >= 1) {
           playerSession.respawnInVehicle();
@@ -461,28 +481,43 @@ public class RaceSession implements Listener {
   void onPlayerKick(PlayerKickEvent event) {
     Player player = event.getPlayer();
     if(isParticipating(player) && (state == RaceSessionState.COUNTDOWN || state == RaceSessionState.STARTED)) {
-      playerSessions.get(player).restore();
+      playerSessions.get(player.getUniqueId()).restore();
+    }
+  }
+
+  @EventHandler
+  void onPlayerJoin(PlayerJoinEvent event) {
+    if(isParticipating(event.getPlayer()) && state == RaceSessionState.PREPARING) {
+     RacePlayerSession playerSession = playerSessions.get(event.getPlayer().getUniqueId());
+     playerSession.setPlayer(event.getPlayer());
     }
   }
 
   @EventHandler
   void onPlayerQuit(PlayerQuitEvent event) {
     Player player = event.getPlayer();
-    if(isParticipating(player) && (state == RaceSessionState.COUNTDOWN || state == RaceSessionState.STARTED)) {
-      RacePlayerSession playerSession = playerSessions.get(player);
-      playerSession.restore();
-      playerSessions.remove(player);
-      participants.remove(player);
-      log("onPlayerQuit: " + playerSessions.size() + " players left");
-      for(Player player1 : participants) {
-        MessageManager.setValue("player_name", player.getName());
-        MessageManager.sendMessage(player1, MessageKey.QUIT_DISQULIAFIED);
-      }
 
-      if(playerSessions.isEmpty()) {
-        stop();
-      }
-      Bukkit.getPluginManager().callEvent(new PlayerDisqualifiedEvent(playerSession, DisqualifyReason.QUIT));
+    if(!isParticipating(player)) {
+      return;
+    }
+
+    RacePlayerSession playerSession = playerSessions.get(player.getUniqueId());
+
+    if (state == RaceSessionState.PREPARING) {
+      playerSession.setPlayer(null);
+      return;
+    }
+
+    playerSession.restore();
+    playerSessions.remove(player.getUniqueId());
+
+    for(RacePlayerSession session : playerSessions.values()) {
+      MessageManager.setValue("player_name", player.getName());
+      MessageManager.sendMessage(session.getPlayer(), MessageKey.QUIT_DISQULIAFIED);
+    }
+
+    if(playerSessions.isEmpty()) {
+      stop();
     }
   }
 
@@ -499,7 +534,7 @@ public class RaceSession implements Listener {
     }
 
     if(event.getFinalDamage() >= player.getHealth()) {
-      playerSessions.get(player).respawnOnDeath(event);
+      playerSessions.get(player.getUniqueId()).respawnOnDeath(event);
     }
   }
 
@@ -515,20 +550,16 @@ public class RaceSession implements Listener {
       return;
     }
 
-    RacePlayerSession session = playerSessions.get(player);
+    RacePlayerSession session = playerSessions.get(player.getUniqueId());
 
     // if player is already mounted we need to cancel a new attempt to mount
     if(!session.isAllowedToEnterVehicle()) {
       event.setCancelled(true);
-      log("Deny enter vehicle " + event.getVehicle().getEntityId());
 
       // because the player attempted to mount another vehicle, they become automatically dismounted from their current vehicle
       if(session.getVehicle() != event.getVehicle()) {
         // remount them onto their real vehicle
-        Bukkit.getScheduler().scheduleSyncDelayedTask(Racing.getInstance(), () -> {
-          session.enterVehicle();
-          log("Reenter into vehicle " + session.getVehicle().getEntityId());
-        });
+        Bukkit.getScheduler().scheduleSyncDelayedTask(Racing.getInstance(), session::enterVehicle);
       }
 
       return;
@@ -536,12 +567,10 @@ public class RaceSession implements Listener {
 
     if(race.getType() == RaceType.PIG && event.getVehicle().getType() != EntityType.PIG) {
       event.setCancelled(true);
-      log("Deny enter vehicle " + event.getVehicle().getEntityId());
     }
 
     if(race.getType() == RaceType.HORSE && event.getVehicle().getType() != EntityType.HORSE) {
       event.setCancelled(true);
-      log("Deny enter vehicle " + event.getVehicle().getEntityId());
     }
   }
 
@@ -557,7 +586,7 @@ public class RaceSession implements Listener {
       return;
     }
 
-    if(!playerSessions.get(player).isAllowedToExitVehicle()) {
+    if(!playerSessions.get(player.getUniqueId()).isAllowedToExitVehicle()) {
       event.setCancelled(true);
     }
   }
@@ -627,23 +656,17 @@ public class RaceSession implements Listener {
 
   @EventHandler
   void onPlayerInteract(PlayerInteractEvent event) {
-    if(!isParticipating(event.getPlayer())) {
+    if(
+      !isParticipating(event.getPlayer()) ||
+      race.getType() != RaceType.ELYTRA ||
+      state != RaceSessionState.STARTED
+    ) {
       return;
     }
 
-    if(race.getType() != RaceType.ELYTRA) {
-      return;
-    }
-
-    RacePlayerSession playerSession = playerSessions.get(event.getPlayer());
+    RacePlayerSession playerSession = playerSessions.get(event.getPlayer().getUniqueId());
     playerSession.getPlayer().setFallDistance(0);
     playerSession.getPlayer().teleport(playerSession.getStartLocation());
-  }
-
-  private void log(String message) {
-    if(RaceConfiguration.getValue(ConfigKey.DEBUG)) {
-      Racing.logger().log(Level.INFO, "§a[RaceSession " + race.getName() + "] " + message);
-    }
   }
 
   private String getBossBarTitle(RacePlayerSession session) {

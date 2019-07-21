@@ -60,13 +60,15 @@ public class CommandJoinRace extends RacingCommand implements ICommandHandler {
       }
 
       economy.withdrawPlayer(player, race.getEntryFee());
+      MessageManager.setValue("fee", economy.format(race.getEntryFee()));
+      MessageManager.sendMessage(player, MessageKey.JOIN_RACE_CHARGED);
     }
 
     session.participate(player, race.getEntryFee());
 
     MessageManager.setValue("player_name", player.getName());
     MessageManager.setValue("race_name", race.getName());
-    MessageManager.setValue("current_participants", session.getParticipants().size());
+    MessageManager.setValue("current_participants", session.getAmountOfParticipants());
     MessageManager.setValue("max_participants", race.getStartPoints().size());
     MessageManager.broadcast(MessageKey.JOIN_RACE_SUCCESS);
   }

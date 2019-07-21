@@ -24,6 +24,7 @@ public class CommandStartRace extends RacingCommand implements ICommandHandler {
     int laps = args.length == 1 ? 1 : Integer.parseInt(args[1]);
 
     if(race.getState() != RaceState.ENABLED) {
+      MessageManager.setValue("race_name", race.getName());
       MessageManager.sendMessage(commandSender, MessageKey.START_RACE_NOT_ENABLED);
       return;
     }
