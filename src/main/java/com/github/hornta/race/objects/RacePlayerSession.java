@@ -158,8 +158,6 @@ public class RacePlayerSession {
     player.setFoodLevel(MAX_FOOD_LEVEL);
     player.removePotionEffect(PotionEffectType.JUMP);
 
-    player.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, Integer.MAX_VALUE, 10, false, false, false));
-
     if(pig != null) {
       player.getInventory().setItemInMainHand(new ItemStack(Material.CARROT_ON_A_STICK, 1));
     }

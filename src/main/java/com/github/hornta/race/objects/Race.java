@@ -5,14 +5,13 @@ import com.github.hornta.race.enums.RaceType;
 import com.github.hornta.race.enums.RaceVersion;
 import org.bukkit.Location;
 import org.bukkit.event.Listener;
+import org.bukkit.potion.PotionEffectType;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public class Race implements Listener {
-  private UUID id;
+  private final UUID id;
   private RaceVersion version;
   private String name;
   private Location spawn;
@@ -24,6 +23,7 @@ public class Race implements Listener {
   private String song;
   private double entryFee;
   private float walkSpeed;
+  private Set<RacePotionEffect> potionEffects;
 
   public Race(
     UUID id,
@@ -37,7 +37,8 @@ public class Race implements Listener {
     RaceType type,
     String song,
     double entryFee,
-    float walkSpeed
+    float walkSpeed,
+    Set<RacePotionEffect> potionEffects
   ) {
     this.id = id;
     this.version = version;
@@ -51,6 +52,30 @@ public class Race implements Listener {
     this.song = song;
     this.entryFee = entryFee;
     this.walkSpeed = walkSpeed;
+    this.potionEffects = potionEffects;
+  }
+
+  public Set<RacePotionEffect> getPotionEffects() {
+    return potionEffects;
+  }
+
+  public void addPotionEffect(RacePotionEffect potionEffect) {
+    removePotionEffect(potionEffect.getType());
+    potionEffects.add(potionEffect);
+  }
+
+  public void removePotionEffect(PotionEffectType type) {
+    Iterator it = potionEffects.iterator();
+    while(it.hasNext()) {
+      if(((RacePotionEffect)it.next()).getType() == type) {
+        it.remove();
+        return;
+      }
+    }
+  }
+
+  public void clearPotionEffects() {
+    potionEffects.clear();
   }
 
   public float getWalkSpeed() {

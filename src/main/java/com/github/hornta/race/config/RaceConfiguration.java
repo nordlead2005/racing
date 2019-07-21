@@ -152,7 +152,7 @@ public class RaceConfiguration {
       errors
         .stream()
         .map((String s) -> "*** " + s + " ***")
-        .forEach(Bukkit.getLogger()::severe);
+        .forEach(Racing.logger()::severe);
       return false;
     }
 

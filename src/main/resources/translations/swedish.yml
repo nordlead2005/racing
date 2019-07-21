@@ -64,6 +64,12 @@ commands:
     success: "§eAnmälningsavgift satt till <entry_fee>."
   race_set_walkspeed:
     success: "§eFörflyttningshastighet har satts till <walk_speed>."
+  race_add_potion_effect:
+    success: "§Trolldryckseffekt `<potion_effect>` med förstärkare `<amplifier>` i race `<race_name>` tillagd."
+  race_remove_potion_effect:
+    success: "§eTrolldryckseffekt `<potion_effect>` har tagits bort från race `<race_name>`."
+  race_clear_potion_effects:
+    success: "§eAlla trolldryckseffekter har tagits bort från race `<race_name>`."
 
 validators:
   race_not_found: "§cDet finns inget race med namn `<race_name>`."
@@ -79,6 +85,8 @@ validators:
   validate_non_number: "§c`<argument>` måste vara ett nummer men fick `<received>`.\n\nAnvändning:\n<help_texts>"
   min_exceed: "§c`<argument>` måste va minst `<expected>` men fick `<received>`.\n\nAnvändning:\n<help_texts>"
   max_exceed: "§c`<argument>` får va högst `<expected>` men fick `<received>`.\n\nAnvändning:\n<help_texts>"
+  race_potion_effect_not_found: "§cDet finns ingen trolldryckseffekt med namnet `<potion_effect>` i race `<race_name>`."
+  potion_effect_not_found: "§cDet finns ingen trolldryckseffekt med namnet `<potion_effect>`."
 
 race_canceled: "§eRacet har blivit inställt p.g.a. för få deltagande."
 race_start_noshow_disqualified: "§e<player_name> uteblev från racet och är därmed diskvalificerad."

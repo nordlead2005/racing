@@ -21,6 +21,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
+import javax.security.auth.callback.Callback;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -309,27 +310,13 @@ public class RacingManager implements Listener {
     }));
   }
 
-  public void createRace(Location location, String name, Consumer<Race> consumer) {
-    Race race = new Race(
-      UUID.randomUUID(),
-      RaceVersion.getLast(),
-      name,
-      location,
-      RaceState.UNDER_CONSTRUCTION,
-      Instant.now(),
-      Collections.emptyList(),
-      Collections.emptyList(),
-      RaceType.PLAYER,
-      null,
-      0,
-      0.2F);
-
-    api.createRace(race, (Boolean result) -> Bukkit.getScheduler().scheduleSyncDelayedTask(Racing.getInstance(), () -> {
+  public void createRace(Race race, Runnable callback) {
+    api.updateRace(race, (Boolean result) -> Bukkit.getScheduler().scheduleSyncDelayedTask(Racing.getInstance(), () -> {
       if(result) {
-        racesByName.put(name, race);
+        racesByName.put(race.getName(), race);
         races.add(race);
         Bukkit.getPluginManager().callEvent(new CreateRaceEvent(race));
-        consumer.accept(race);
+        callback.run();
       }
     }));
   }

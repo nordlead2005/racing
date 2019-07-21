@@ -64,6 +64,12 @@ commands:
     success: "§eEntry fee set to <entry_fee>."
   race_set_walkspeed:
     success: "§eWalk speed has been set to <walk_speed>."
+  race_add_potion_effect:
+    success: "§ePotion effect `<potion_effect>` with amplifier `<amplifier>` set in race `<race_name>`."
+  race_remove_potion_effect:
+    success: "§ePotion effect `<potion_effect>` has been removed from race `<race_name>`."
+  race_clear_potion_effects:
+    success: "§eAll potion effects has been removed from race `<race_name>`."
 
 validators:
   race_not_found: "§cA race with name `<race_name>` couldn't be found."
@@ -79,6 +85,8 @@ validators:
   validate_non_number: "§cExpected argument `<argument>` to be an number but got `<received>`.\n\nUsage:\n<help_texts>"
   min_exceed: "§cExpected argument `<argument>` to be at least `<expected>` but got `<received>`.\n\nUsage:\n<help_texts>"
   max_exceed: "§cExpected argument `<argument>` to be at most `<expected>` but got `<received>`.\n\nUsage:\n<help_texts>"
+  race_potion_effect_not_found: "§cThere is no potion effect with name `<potion_effect>` in race `<race_name>`."
+  potion_effect_not_found: "§cThere is no potion effect with name `<potion_effect>`."
 
 race_canceled: "§eRace has been cancelled due to lack of participants."
 race_start_noshow_disqualified: "§e<player_name> was absent and is now disqualified."

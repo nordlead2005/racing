@@ -101,6 +101,7 @@ public class Racing extends JavaPlugin {
 
     carbon.handleValidation((ValidationResult result) -> {
       switch (result.getStatus()) {
+
         case ERR_INCORRECT_TYPE:
           MessageManager.setValue("help_texts", result.getCommand().getHelpTexts().stream().collect(Collectors.joining("\n")));
           MessageManager.setValue("argument", result.getArgument().getName());
@@ -111,6 +112,7 @@ public class Racing extends JavaPlugin {
             MessageManager.sendMessage(result.getCommandSender(), MessageKey.VALIDATE_NON_INTEGER);
           }
           break;
+
         case ERR_MIN_LIMIT:
         case ERR_MAX_LIMIT:
           MessageManager.setValue("help_texts", result.getCommand().getHelpTexts().stream().collect(Collectors.joining("\n")));
@@ -123,6 +125,11 @@ public class Racing extends JavaPlugin {
             MessageManager.setValue("expected", result.getArgument().getMax());
             MessageManager.sendMessage(result.getCommandSender(), MessageKey.VALIDATE_MAX_EXCEED);
           }
+          break;
+
+        case ERR_POTION_EFFECT_NOT_FOUND:
+          MessageManager.setValue("potion_effect", result.getValue());
+          MessageManager.sendMessage(result.getCommandSender(), MessageKey.POTION_EFFECT_NOT_FOUND);
           break;
       }
     });
@@ -253,6 +260,38 @@ public class Racing extends JavaPlugin {
       .requiresPermission(Permission.RACING_MODIFY.toString());
 
     carbon
+      .addCommand("racing addpotioneffect")
+      .withHandler(new CommandAddPotionEffect(racingManager))
+      .withArgument(raceArgument)
+      .withArgument(
+        new CarbonArgument("effect")
+        .ofType(CarbonArgumentType.POTION_EFFECT)
+      )
+      .withArgument(
+        new CarbonArgument("amplifier")
+        .ofType(CarbonArgumentType.INTEGER)
+        .setMinMax(0, 255)
+      )
+      .requiresPermission(Permission.RACING_MODIFY.toString());
+
+    carbon
+      .addCommand("racing removepotioneffect")
+      .withHandler(new CommandRemovePotionEffect(racingManager))
+      .withArgument(raceArgument)
+      .withArgument(
+        new CarbonArgument("effect")
+        .ofType(CarbonArgumentType.OTHER)
+        .setTabCompleter(new RacePotionEffectCompleter(racingManager))
+        .validate(new RacePotionEffectValidator(racingManager))
+        .dependsOn(raceArgument)
+      );
+
+    carbon
+      .addCommand("racing clearpotioneffects")
+      .withHandler(new CommandClearPotionEffects(racingManager))
+      .withArgument(raceArgument);
+
+    carbon
       .addCommand("racing addstartpoint")
       .withHandler(new CommandAddStartpoint(racingManager))
       .withArgument(raceArgument)
@@ -344,6 +383,11 @@ public class Racing extends JavaPlugin {
       .withHandler(new CommandSkipWait(racingManager))
       .withArgument(raceArgument)
       .requiresPermission(Permission.RACING_MODERATOR.toString());
+
+    carbon
+      .addCommand("racing quit")
+      .withHandler(new CommandQuit(racingManager))
+      .requiresPermission(Permission.RACING_PLAYER.toString());
 
     carbon
       .addCommand("racing reload")

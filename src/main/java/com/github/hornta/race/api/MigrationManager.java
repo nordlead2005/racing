@@ -1,5 +1,6 @@
 package com.github.hornta.race.api;
 
+import com.github.hornta.race.Racing;
 import com.github.hornta.race.enums.RaceVersion;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -56,7 +57,7 @@ public class MigrationManager {
       if(migration.from().equals(fromVersion)) {
         migration.migrate(yaml);
         yaml.set("version", migration.to().toString());
-        Bukkit.getLogger().info("Migrate race from version " + fromVersion.toString() + " to " + migration.to().toString());
+        Racing.logger().info("Migrate race from version " + fromVersion.toString() + " to " + migration.to().toString());
       }
     }
   }

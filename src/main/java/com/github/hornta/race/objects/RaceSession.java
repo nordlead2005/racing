@@ -39,6 +39,7 @@ import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.event.vehicle.VehicleEnterEvent;
 import org.bukkit.event.vehicle.VehicleExitEvent;
+import org.bukkit.potion.PotionEffect;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Team;
@@ -233,8 +234,27 @@ public class RaceSession implements Listener {
       }
       team.setOption(Team.Option.COLLISION_RULE, Team.OptionStatus.NEVER);
 
+      List<PotionEffect> potionEffects = new ArrayList<>();
+      for(RacePotionEffect racePotionEffect : race.getPotionEffects()) {
+        potionEffects.add(
+          new PotionEffect(
+            racePotionEffect.getType(),
+            Integer.MAX_VALUE,
+            racePotionEffect.getAmplifier(),
+            false,
+            false,
+            false
+          )
+        );
+      }
+
       for(RacePlayerSession session : playerSessions.values()) {
         session.startRace();
+
+        for(PotionEffect potionEffect : potionEffects) {
+          session.getPlayer().addPotionEffect(potionEffect);
+        }
+
         if(songPlayer != null) {
           songPlayer.addPlayer(session.getPlayer());
         }

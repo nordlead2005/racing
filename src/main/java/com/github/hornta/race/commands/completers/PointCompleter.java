@@ -1,6 +1,6 @@
 package com.github.hornta.race.commands.completers;
 
-import com.github.hornta.BaseTabCompleter;
+import com.github.hornta.completers.ITabCompleter;
 import com.github.hornta.race.RacingManager;
 import org.bukkit.command.CommandSender;
 
@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 
-public class PointCompleter implements BaseTabCompleter {
+public class PointCompleter implements ITabCompleter {
   private RacingManager racingManager;
 
   public PointCompleter(RacingManager racingManager) {

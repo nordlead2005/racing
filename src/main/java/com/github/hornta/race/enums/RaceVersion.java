@@ -5,7 +5,8 @@ import java.util.EnumSet;
 public enum RaceVersion {
   V1,
   V2,
-  V3;
+  V3,
+  V4;
 
   private static final RaceVersion[] copyOfValues = values();
 

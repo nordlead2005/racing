@@ -47,6 +47,9 @@ public enum MessageKey {
   RACE_HELP_ITEM("commands.race_help.item"),
   RACE_SET_ENTRYFEE("commands.race_set_entryfee.success"),
   RACE_SET_WALKSPEED("commands.race_set_walkspeed.success"),
+  RACE_ADD_POTION_EFFECT("commands.race_add_potion_effect.success"),
+  RACE_REMOVE_POTION_EFFECT("commands.race_remove_potion_effect.success"),
+  RACE_CLEAR_POTION_EFFECTS("commands.race_clear_potion_effects.success"),
 
   RACE_NOT_FOUND("validators.race_not_found"),
   RACE_ALREADY_EXIST("validators.race_already_exist"),
@@ -61,6 +64,8 @@ public enum MessageKey {
   VALIDATE_NON_NUMBER("validators.validate_non_number"),
   VALIDATE_MIN_EXCEED("validators.min_exceed"),
   VALIDATE_MAX_EXCEED("validators.max_exceed"),
+  RACE_POTION_EFFECT_NOT_FOUND("validators.race_potion_effect_not_found"),
+  POTION_EFFECT_NOT_FOUND("potion_effect_not_found"),
 
   RACE_CANCELED("race_canceled"),
   NOSHOW_DISQUALIFIED("race_start_noshow_disqualified"),

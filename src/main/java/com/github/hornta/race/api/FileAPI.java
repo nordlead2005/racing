@@ -1,6 +1,9 @@
 package com.github.hornta.race.api;
 
 import com.github.hornta.race.Racing;
+import com.github.hornta.race.api.migrations.EntryFeeMigration;
+import com.github.hornta.race.api.migrations.PotionEffectsMigration;
+import com.github.hornta.race.api.migrations.WalkSpeedMigration;
 import com.github.hornta.race.config.ConfigKey;
 import com.github.hornta.race.config.RaceConfiguration;
 import com.github.hornta.race.enums.RaceState;
@@ -8,6 +11,7 @@ import com.github.hornta.race.enums.RaceType;
 import com.github.hornta.race.enums.RaceVersion;
 import com.github.hornta.race.objects.Race;
 import com.github.hornta.race.objects.RaceCheckpoint;
+import com.github.hornta.race.objects.RacePotionEffect;
 import com.github.hornta.race.objects.RaceStartPoint;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -15,6 +19,7 @@ import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.potion.PotionEffectType;
 
 import java.io.File;
 import java.io.IOException;
@@ -23,9 +28,7 @@ import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.time.DateTimeException;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -34,8 +37,6 @@ import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 public class FileAPI implements RacingAPI {
-  private static final String CHECKPOINTS_LOCATION = "checkpoints";
-  private static final String START_POINTS_LOCATION = "startPoints";
   private static final String ID_FIELD = "id";
   private static final String VERSION_FIELD = "version";
   private static final String NAME_FIELD = "name";
@@ -45,6 +46,15 @@ public class FileAPI implements RacingAPI {
   private static final String CREATED_AT_FIELD = "created_at";
   public static final String ENTRY_FEE_FIELD = "entry_fee";
   public static final String WALK_SPEED_FIELD = "walk_speed";
+  private static final String SPAWN_X = "spawn.x";
+  private static final String SPAWN_Y = "spawn.y";
+  private static final String SPAWN_Z = "spawn.z";
+  private static final String SPAWN_PITCH = "spawn.pitch";
+  private static final String SPAWN_YAW = "spawn.yaw";
+  private static final String SPAWN_WORLD = "spawn.world";
+  private static final String CHECKPOINTS_LOCATION = "checkpoints";
+  private static final String START_POINTS_LOCATION = "startPoints";
+  public static final String POTION_EFFECTS_FIELD = "potion_effects";
   private ExecutorService fileService = Executors.newSingleThreadExecutor();
   private File racesDirectory;
   private MigrationManager migrationManager = new MigrationManager();
@@ -53,6 +63,7 @@ public class FileAPI implements RacingAPI {
     racesDirectory = new File(plugin.getDataFolder(), RaceConfiguration.getValue(ConfigKey.FILE_RACE_DIRECTORY));
     migrationManager.addMigration(new EntryFeeMigration());
     migrationManager.addMigration(new WalkSpeedMigration());
+    migrationManager.addMigration(new PotionEffectsMigration());
   }
 
   @Override
@@ -90,40 +101,6 @@ public class FileAPI implements RacingAPI {
   }
 
   @Override
-  public void createRace(Race race, Consumer<Boolean> callback) {
-    File file = new File(racesDirectory, race.getId() + ".yml");
-
-    YamlConfiguration yaml = new YamlConfiguration();
-    yaml.set(ID_FIELD, race.getId().toString());
-    yaml.set(VERSION_FIELD, race.getVersion());
-    yaml.set(NAME_FIELD, race.getName());
-    yaml.set(STATE_FIELD, race.getState().name());
-    yaml.set(TYPE_FIELD, race.getType().name());
-    yaml.set(SONG_FIELD, race.getSong());
-    yaml.set(ENTRY_FEE_FIELD, race.getEntryFee());
-    yaml.set(CREATED_AT_FIELD, race.getCreatedAt().getEpochSecond());
-    yaml.set("spawn.x", race.getSpawn().getX());
-    yaml.set("spawn.y", race.getSpawn().getY());
-    yaml.set("spawn.z", race.getSpawn().getZ());
-    yaml.set("spawn.pitch", race.getSpawn().getPitch());
-    yaml.set("spawn.yaw", race.getSpawn().getYaw());
-    yaml.set("spawn.world", race.getSpawn().getWorld().getName());
-    writeCheckpoints(race.getCheckpoints(), yaml);
-    writeStartPoints(race.getStartPoints(), yaml);
-
-    CompletableFuture.supplyAsync(() -> {
-      try {
-        yaml.save(file);
-      } catch (IOException ex) {
-        Racing.logger().log(Level.SEVERE, ex.getMessage(), ex);
-        return false;
-      }
-
-      return true;
-    }, fileService).thenAccept(callback);
-  }
-
-  @Override
   public void deleteRace(Race race, Consumer<Boolean> callback) {
     File raceFile = new File(racesDirectory, race.getId() + ".yml");
 
@@ -149,17 +126,25 @@ public class FileAPI implements RacingAPI {
     File raceFile = new File(racesDirectory, race.getId() + ".yml");
 
     CompletableFuture.supplyAsync(() -> {
-      YamlConfiguration yaml = YamlConfiguration.loadConfiguration(raceFile);
-      yaml.set("name", race.getName());
-      yaml.set("state", race.getState().name());
-      yaml.set("type", race.getType().name());
-      yaml.set("song", race.getSong());
-      yaml.set("spawn.x", race.getSpawn().getX());
-      yaml.set("spawn.y", race.getSpawn().getY());
-      yaml.set("spawn.z", race.getSpawn().getZ());
-      yaml.set("spawn.pitch", race.getSpawn().getPitch());
-      yaml.set("spawn.yaw", race.getSpawn().getYaw());
-      yaml.set("spawn.world", race.getSpawn().getWorld().getName());
+      YamlConfiguration yaml = new YamlConfiguration();
+      yaml.set(ID_FIELD, race.getId().toString());
+      yaml.set(VERSION_FIELD, race.getVersion().name());
+      yaml.set(NAME_FIELD, race.getName());
+      yaml.set(STATE_FIELD, race.getState().name());
+      yaml.set(TYPE_FIELD, race.getType().name());
+      yaml.set(SONG_FIELD, race.getSong());
+      yaml.set(CREATED_AT_FIELD, race.getCreatedAt().getEpochSecond());
+      yaml.set(ENTRY_FEE_FIELD, race.getEntryFee());
+      yaml.set(WALK_SPEED_FIELD, race.getWalkSpeed());
+      yaml.set(SPAWN_X, race.getSpawn().getX());
+      yaml.set(SPAWN_Y, race.getSpawn().getY());
+      yaml.set(SPAWN_Z, race.getSpawn().getZ());
+      yaml.set(SPAWN_PITCH, race.getSpawn().getPitch());
+      yaml.set(SPAWN_YAW, race.getSpawn().getYaw());
+      yaml.set(SPAWN_WORLD, race.getSpawn().getWorld().getName());
+      writeCheckpoints(race.getCheckpoints(), yaml);
+      writeStartPoints(race.getStartPoints(), yaml);
+      writePotionEffects(race.getPotionEffects(), yaml);
 
       try {
         yaml.save(raceFile);
@@ -170,7 +155,7 @@ public class FileAPI implements RacingAPI {
 
       return true;
 
-    }).thenAccept(callback);
+    }, fileService).thenAccept(callback);
   }
 
   @Override
@@ -356,6 +341,7 @@ public class FileAPI implements RacingAPI {
 
     List<RaceCheckpoint> checkpoints = parseCheckpoints(yaml);
     List<RaceStartPoint> startPoints = parseStartPoints(yaml);
+    Set<RacePotionEffect> potionEffects = parsePotionEffects(yaml);
 
     String song = yaml.getString(SONG_FIELD, null);
 
@@ -370,7 +356,21 @@ public class FileAPI implements RacingAPI {
       walkSpeed = yaml.getInt(WALK_SPEED_FIELD);
     }
 
-    return new Race(id, version, name, spawn, state, createdAt, checkpoints, startPoints, type, song, entryFee, walkSpeed);
+    return new Race(
+      id,
+      version,
+      name,
+      spawn,
+      state,
+      createdAt,
+      checkpoints,
+      startPoints,
+      type,
+      song,
+      entryFee,
+      walkSpeed,
+      potionEffects
+    );
   }
 
   private List<RaceCheckpoint> parseCheckpoints(YamlConfiguration yaml) {
@@ -474,6 +474,54 @@ public class FileAPI implements RacingAPI {
     return startPoints;
   }
 
+  private void writeStartPoints(List<RaceStartPoint> startPoints, YamlConfiguration yaml) {
+    yaml.set(START_POINTS_LOCATION, null);
+    if(!yaml.contains(START_POINTS_LOCATION)) {
+      yaml.createSection(START_POINTS_LOCATION);
+    }
+
+    for(RaceStartPoint startPoint : startPoints) {
+      String key = START_POINTS_LOCATION + "." + startPoint.getId();
+      yaml.set(key + ".position", startPoint.getPosition());
+      yaml.set(key + ".location", startPoint.getPosition());
+      writeLocation(startPoint.getLocation(), yaml, key + ".location");
+    }
+  }
+
+  private Set<RacePotionEffect> parsePotionEffects(YamlConfiguration yaml) {
+    Set<RacePotionEffect> potionEffects = new HashSet<>();
+    ConfigurationSection section = yaml.getConfigurationSection(POTION_EFFECTS_FIELD);
+
+    if(section == null) {
+      throw new ParseRaceException("Missing field `" + POTION_EFFECTS_FIELD + "`");
+    }
+
+    for(String key : section.getKeys(false)) {
+      PotionEffectType type = PotionEffectType.getByName(key);
+      if(type == null) {
+        throw new ParseRaceException("Couldn't parse PotionEffectType");
+      }
+
+      String amplifierPath = key + ".amplifier";
+      if(!section.isInt(amplifierPath)) {
+        throw new ParseRaceException("Couldn't parse amplifier");
+      }
+
+      potionEffects.add(new RacePotionEffect(type, section.getInt(amplifierPath)));
+    }
+
+    return potionEffects;
+  }
+
+  private void writePotionEffects(Set<RacePotionEffect> potionEffects, YamlConfiguration yaml) {
+    yaml.createSection(POTION_EFFECTS_FIELD);
+
+    for(RacePotionEffect potionEffect : potionEffects) {
+      String key = POTION_EFFECTS_FIELD + "." + potionEffect.getType().getName();
+      yaml.set(key + ".amplifier", potionEffect.getAmplifier());
+    }
+  }
+
   private Location parseLocation(ConfigurationSection section, String path) throws ParseYamlLocationException {
     String xPath = path + ".x";
     if(!section.isDouble(xPath)) {
@@ -520,20 +568,6 @@ public class FileAPI implements RacingAPI {
       (float)section.getDouble(yawPath),
       (float)section.getDouble(pitchPath)
     );
-  }
-
-  private void writeStartPoints(List<RaceStartPoint> startPoints, YamlConfiguration yaml) {
-    yaml.set(START_POINTS_LOCATION, null);
-    if(!yaml.contains(START_POINTS_LOCATION)) {
-      yaml.createSection(START_POINTS_LOCATION);
-    }
-
-    for(RaceStartPoint startPoint : startPoints) {
-      String key = START_POINTS_LOCATION + "." + startPoint.getId();
-      yaml.set(key + ".position", startPoint.getPosition());
-      yaml.set(key + ".location", startPoint.getPosition());
-      writeLocation(startPoint.getLocation(), yaml, key + ".location");
-    }
   }
 
   private void writeLocation(Location location, YamlConfiguration yaml, String path) {
