@@ -16,4 +16,4 @@ racing.iml
 server/usercache.json
 server/plugins/TheNewEconomy/Economy.trace.db
 server/plugins/TheNewEconomy/Economy.mv.db
-server/plugins/*.jar
+server/plugins/racing*.jar
