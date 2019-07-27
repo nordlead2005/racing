@@ -8,12 +8,7 @@ import com.github.hornta.race.message.MessageManager;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.boss.BossBar;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Horse;
-import org.bukkit.entity.Boat;
-import org.bukkit.entity.Pig;
-import org.bukkit.entity.Player;
+import org.bukkit.entity.*;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
@@ -49,6 +44,7 @@ public class RacePlayerSession {
   private Pig pig;
   private Horse horse;
   private Boat boat;
+  private Minecart minecart;
   private int currentLap;
   private boolean isAllowedToEnterVehicle;
   private boolean isAllowedToExitVehicle;
@@ -80,6 +76,10 @@ public class RacePlayerSession {
 
   public Boat getBoat() {
     return boat;
+  }
+
+  public Minecart getMinecart() {
+    return minecart;
   }
 
   void startCooldown() {
@@ -137,6 +137,11 @@ public class RacePlayerSession {
         enterVehicle();
         break;
 
+      case MINECART:
+        spawnMinecart();
+        enterVehicle();
+        break;
+
       default:
     }
 
@@ -157,6 +162,10 @@ public class RacePlayerSession {
 
     if(boat != null) {
       return boat;
+    }
+
+    if(minecart != null) {
+      return minecart;
     }
 
     return null;
@@ -217,6 +226,10 @@ public class RacePlayerSession {
             spawnBoat();
             break;
 
+          case MINECART:
+            spawnMinecart();
+            break;
+
           default:
         }
         player.teleport(getRespawnLocation());
@@ -236,10 +249,16 @@ public class RacePlayerSession {
     }
 
     Bukkit.getScheduler().scheduleSyncDelayedTask(Racing.getInstance(), () -> {
-      if(race.getType() == RaceType.HORSE) {
-        spawnHorse(true, horse);
-      } else if(race.getType() == RaceType.BOAT) {
-        spawnBoat();
+      switch (race.getType()) {
+        case MINECART:
+          spawnMinecart();
+          break;
+        case HORSE:
+          spawnHorse(true, horse);
+          break;
+        case BOAT:
+          spawnBoat();
+          break;
       }
       player.teleport(getRespawnLocation());
       enterVehicle();
@@ -278,6 +297,11 @@ public class RacePlayerSession {
     boat = (Boat) startLocation.getWorld().spawnEntity(getRespawnLocation(), EntityType.BOAT);
     boat.setInvulnerable(true);
     boat.setWoodType(TreeSpecies.GENERIC);
+  }
+
+  private void spawnMinecart() {
+    minecart = (Minecart) startLocation.getWorld().spawnEntity(getRespawnLocation(), EntityType.MINECART);
+    minecart.setInvulnerable(true);
   }
 
   private void unfreezeHorse() {
@@ -353,6 +377,7 @@ public class RacePlayerSession {
     pig = null;
     horse = null;
     boat = null;
+    minecart = null;
 
     isDirty = false;
   }

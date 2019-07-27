@@ -37,6 +37,7 @@ import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.event.vehicle.VehicleEnterEvent;
 import org.bukkit.event.vehicle.VehicleExitEvent;
+import org.bukkit.event.vehicle.VehicleMoveEvent;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.scoreboard.Team;
@@ -359,11 +360,11 @@ public class RaceSession implements Listener {
     playerSessions.put(player.getUniqueId(), new RacePlayerSession(race, player, chargedEntryFee));
   }
 
-  public void addStartTimerTask(int id) {
+  private void addStartTimerTask(int id) {
     startTimerTasks.add(Bukkit.getScheduler().getPendingTasks().stream().filter(t -> t.getTaskId() == id).findFirst().get());
   }
 
-  void tryIncrementCheckpoint(RacePlayerSession playerSession) {
+  private void tryIncrementCheckpoint(RacePlayerSession playerSession) {
     RaceCheckpoint nextCheckpoint = playerSession.getNextCheckpoint();
     boolean hasFinished = playerSession.getCurrentCheckpoint() != null && nextCheckpoint == null;
     if(hasFinished) {
@@ -425,6 +426,37 @@ public class RaceSession implements Listener {
   }
 
   @EventHandler
+  void onVehicleMove(VehicleMoveEvent event) {
+    if (
+      race.getType() != RaceType.MINECART ||
+      event.getVehicle().getPassengers().isEmpty() ||
+      !(event.getVehicle().getPassengers().get(0) instanceof Player)
+    ) {
+      return;
+    }
+
+    Player player = (Player) event.getVehicle().getPassengers().get(0);
+    if(!isParticipating(player)) {
+      return;
+    }
+
+    RacePlayerSession playerSession = playerSessions.get(player.getUniqueId());
+
+    if(state == RaceSessionState.COUNTDOWN || state == RaceSessionState.STARTED) {
+      tryIncrementCheckpoint(playerSession);
+    }
+
+    if(state != RaceSessionState.COUNTDOWN) {
+      return;
+    }
+
+    Bukkit.getLogger().info("" + playerSession.getStartLocation().distanceSquared(event.getTo()));
+    if(playerSession.getStartLocation().distanceSquared(event.getTo()) >= 1) {
+      playerSession.respawnInVehicle();
+    }
+  }
+
+  @EventHandler
   void onPlayerMove(PlayerMoveEvent event) {
     if(isParticipating(event.getPlayer()) && (state == RaceSessionState.COUNTDOWN || state == RaceSessionState.STARTED)) {
       RacePlayerSession playerSession = playerSessions.get(event.getPlayer().getUniqueId());
@@ -438,7 +470,11 @@ public class RaceSession implements Listener {
         return;
       }
 
-      if(playerSession.getHorse() != null || playerSession.getBoat() != null) {
+      if(
+        playerSession.getHorse() != null ||
+        playerSession.getBoat() != null ||
+        playerSession.getMinecart() != null
+      ) {
         if(playerSession.getStartLocation().distanceSquared(event.getTo()) >= 1) {
           playerSession.respawnInVehicle();
         }
@@ -570,6 +606,10 @@ public class RaceSession implements Listener {
     }
 
     if(race.getType() == RaceType.HORSE && event.getVehicle().getType() != EntityType.HORSE) {
+      event.setCancelled(true);
+    }
+
+    if(race.getType() == RaceType.MINECART && event.getVehicle().getType() != EntityType.MINECART) {
       event.setCancelled(true);
     }
   }
