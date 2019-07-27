@@ -38,6 +38,7 @@ commands:
     error_missing_checkpoint: "§cRace must at least have 1 checkpoint."
     error_missing_checkpoints: "§cRace must at least have 2 checkpoints."
     error_not_enabled: "§cThis race must be enabled in order to start. Write §7/rc setstate <race_name> enabled §cto enable it."
+    error_no_enabled: "§cThere are no enabled race."
   stop_race:
     success: "§eRace been stopped."
     error_not_started: "§cRace is not started."
@@ -87,10 +88,10 @@ validators:
   type_not_found: "§cThere is no type called `<type>`. Possible types: <types>."
   state_not_found: "§cThere is no state called `<state>`. Possible states: <states>."
   song_not_found: "§cThere is not song called `<song_name>`."
-  validate_non_integer: "§cExpected argument `<argument>` to be an integer but got `<received>`.\n\nUsage:\n<help_texts>"
-  validate_non_number: "§cExpected argument `<argument>` to be an number but got `<received>`.\n\nUsage:\n<help_texts>"
-  min_exceed: "§cExpected argument `<argument>` to be at least `<expected>` but got `<received>`.\n\nUsage:\n<help_texts>"
-  max_exceed: "§cExpected argument `<argument>` to be at most `<expected>` but got `<received>`.\n\nUsage:\n<help_texts>"
+  validate_non_integer: "§cExpected argument `<argument>` to be an integer but got `<received>`.\n\nUsage:\n<help_text>"
+  validate_non_number: "§cExpected argument `<argument>` to be an number but got `<received>`.\n\nUsage:\n<help_text>"
+  min_exceed: "§cExpected argument `<argument>` to be at least `<expected>` but got `<received>`.\n\nUsage:\n<help_text>"
+  max_exceed: "§cExpected argument `<argument>` to be at most `<expected>` but got `<received>`.\n\nUsage:\n<help_text>"
   race_potion_effect_not_found: "§cThere is no potion effect with name `<potion_effect>` in race `<race_name>`."
   potion_effect_not_found: "§cThere is no potion effect with name `<potion_effect>`."
 

@@ -38,6 +38,7 @@ commands:
     error_missing_checkpoint: "§cRacet måste ha minst 1 checkpoint."
     error_missing_checkpoints: "§cRacet måste ha minst 2 checkpoints."
     error_not_enabled: "§Detta race måste vara öppnat för att kunna starta. Skriv §7/rc setstate <race_name> enabled §cför att öppna det."
+    error_no_enabled: "§cDet finns inget aktiverat race."
   stop_race:
     success: "§eRacet har stoppats."
     error_not_started: "§cRacet kan inte avslutas eftersom det inte är startat."
@@ -87,10 +88,10 @@ validators:
   type_not_found: "§cDet finns ingen typ `<type>`. Möjliga typer: <types>."
   state_not_found: "§cDet finns ingen status `<state>`. Möjliga statusar: <states>."
   song_not_found: "§cDet finns ingen låt med namnet `<song_name>`."
-  validate_non_integer: "§c`<argument>` måste vara ett heltal men fick `<received>`.\n\nAnvändning:\n<help_texts>"
-  validate_non_number: "§c`<argument>` måste vara ett nummer men fick `<received>`.\n\nAnvändning:\n<help_texts>"
-  min_exceed: "§c`<argument>` måste va minst `<expected>` men fick `<received>`.\n\nAnvändning:\n<help_texts>"
-  max_exceed: "§c`<argument>` får va högst `<expected>` men fick `<received>`.\n\nAnvändning:\n<help_texts>"
+  validate_non_integer: "§c`<argument>` måste vara ett heltal men fick `<received>`.\n\nAnvändning:\n<help_text>"
+  validate_non_number: "§c`<argument>` måste vara ett nummer men fick `<received>`.\n\nAnvändning:\n<help_text>"
+  min_exceed: "§c`<argument>` måste va minst `<expected>` men fick `<received>`.\n\nAnvändning:\n<help_text>"
+  max_exceed: "§c`<argument>` får va högst `<expected>` men fick `<received>`.\n\nAnvändning:\n<help_text>"
   race_potion_effect_not_found: "§cDet finns ingen trolldryckseffekt med namnet `<potion_effect>` i race `<race_name>`."
   potion_effect_not_found: "§cDet finns ingen trolldryckseffekt med namnet `<potion_effect>`."
 

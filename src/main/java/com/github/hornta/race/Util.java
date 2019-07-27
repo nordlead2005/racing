@@ -13,6 +13,7 @@ import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class Util {
   private static final double HALF_RIGHT_ANGLE = 45;
@@ -58,7 +59,12 @@ public class Util {
   }
 
   public static int randomRangeInt(int min, int max) {
-    return (int)((Math.random() < 0.5) ? ((1.0 - Math.random()) * (max - min + 1) + min) : (Math.random() * (max - min + 1) + min));
+    if (min > max) {
+      throw new IllegalArgumentException("min must not be greater than max");
+    }
+
+    Random r = new Random();
+    return r.nextInt((max - min) + 1) + min;
   }
 
   private static byte[] createChecksum(InputStream input) throws NoSuchAlgorithmException, IOException {

@@ -29,6 +29,7 @@ public enum MessageKey {
   START_RACE_MISSING_CHECKPOINT("commands.start_race.error_missing_checkpoint"),
   START_RACE_MISSING_CHECKPOINTS("commands.start_race.error_missing_checkpoints"),
   START_RACE_NOT_ENABLED("commands.start_race.error_not_enabled"),
+  START_RACE_NO_ENABLED("commands.start_race.error_no_enabled"),
   STOP_RACE_SUCCESS("commands.stop_race.success"),
   STOP_RACE_NOT_STARTED("commands.stop_race.error_not_started"),
   JOIN_RACE_SUCCESS("commands.join_race.success"),
@@ -70,7 +71,7 @@ public enum MessageKey {
   VALIDATE_MIN_EXCEED("validators.min_exceed"),
   VALIDATE_MAX_EXCEED("validators.max_exceed"),
   RACE_POTION_EFFECT_NOT_FOUND("validators.race_potion_effect_not_found"),
-  POTION_EFFECT_NOT_FOUND("potion_effect_not_found"),
+  POTION_EFFECT_NOT_FOUND("validators.potion_effect_not_found"),
 
   RACE_CANCELED("race_canceled"),
   NOSHOW_DISQUALIFIED("race_start_noshow_disqualified"),
@@ -121,7 +122,7 @@ public enum MessageKey {
 
       for(char character : key.getIdentifier().toCharArray()) {
         if(Character.getType(character) == Character.UPPERCASE_LETTER) {
-          throw new Error("All characters in a message identifier must be lowercase");
+          throw new Error("All characters in a message identifier must be lowercase. Found " + key.getIdentifier());
         }
       }
 
