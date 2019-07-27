@@ -1,0 +1,50 @@
+lang:
+  messages:
+    place: '&eYou placed a car! Cars can be driven with similar controls to a horse!'
+    noDrivePerm: You don't have the permission ucars.cars required to drive a car!
+    noPlacePerm: You don't have the permission %perm% required to place a car!
+    noPlaceHere: '&4You are not allowed to place a car here!'
+    hitByCar: You were hit by a car!
+    rightClickWith: 'Right click with '
+    driveOver: 'Drive over '
+    playersOnly: Players only!
+    reload: The config has been reloaded!
+    noProtocolLib: Hello operator, ProtocolLib (http://dev.bukkit.org/bukkit-plugins/protocollib/)
+      was not detected and is required for ucars in MC 1.6 or higher. Please install
+      it if necessary!
+  error:
+    pluginNull: '&4Error in ucars: Caused by: plugin = null? Report on bukkitdev immediately!'
+  cars:
+    remove: '&e%amount%&a cars in world &e%world%&a were removed!'
+  boosts:
+    already: '&4Already boosting!'
+    low: Initiated low level boost!
+    med: Initiated medium level boost!
+    high: Initiated high level boost!
+  fuel:
+    empty: You don't have any fuel left!
+    disabled: Fuel is not enabled!
+    unit: litres
+    isItem: '&9[Important:]&eItem fuel is enabled-The above is irrelevant!'
+    invalidAmount: Amount invalid!
+    noMoney: You have no money!
+    notEnoughMoney: That purchase costs %amount% %unit%! You only have %balance% %unit%!
+    success: Successfully purchased %quantity% of fuel for %amount% %unit%! You now
+      have %balance% %unit% left!
+    sellSuccess: Successfully sold %quantity% of fuel for %amount% %unit%! You now
+      have %balance% %unit% left!
+  licenses:
+    next: Now do %command% to continue!
+    nocheat: You need to do all the stages of ulicense to obtain a license! You need
+      to do %command%!
+    basics: A car is just a minecart placed on the ground, not rails. To place a car
+      simply look and the floor while holding a minecart and right click!
+    controls: 1) Look where you would like to go. 2) Use the 'w' key to go forward
+      and 's' to go backwards. 3) Use the 'd' key to slow down/brake and the 'a' key
+      to activate any action assgined to the car!
+    effects: Car speed can change depending on what block you may drive over. These
+      can be short term boosts or a speedmod block. Do /ucars for more info on boosts!
+    itemBoosts: Right clicking with certain items can give you different boosts. Do
+      /ucars for more info!
+    success: Congratulations! You can now drive a ucar!
+    noLicense: To drive a car you need a license, do /ulicense to obtain one!
