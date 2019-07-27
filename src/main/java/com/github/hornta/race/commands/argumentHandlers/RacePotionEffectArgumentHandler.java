@@ -1,31 +1,42 @@
-package com.github.hornta.race.commands.validators;
+package com.github.hornta.race.commands.argumentHandlers;
 
-import com.github.hornta.ValidationHandler;
 import com.github.hornta.ValidationResult;
+import com.github.hornta.completers.IArgumentHandler;
 import com.github.hornta.race.RacingManager;
 import com.github.hornta.race.message.MessageKey;
 import com.github.hornta.race.message.MessageManager;
-import com.github.hornta.race.objects.Race;
 import com.github.hornta.race.objects.RacePotionEffect;
 import org.bukkit.command.CommandSender;
 import org.bukkit.potion.PotionEffectType;
 
-public class RacePotionEffectValidator implements ValidationHandler {
+import java.util.LinkedHashSet;
+import java.util.Locale;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+public class RacePotionEffectArgumentHandler implements IArgumentHandler {
   private RacingManager racingManager;
 
-  public RacePotionEffectValidator(RacingManager racingManager) {
+  public RacePotionEffectArgumentHandler(RacingManager racingManager) {
     this.racingManager = racingManager;
   }
+
   @Override
-  public boolean test(CommandSender commandSender, String argument, String[] prevArgs) {
-    Race race = racingManager.getRace(prevArgs[0]);
-    return race.getPotionEffects()
+  public Set<String> getItems(CommandSender sender, String argument, String[] prevArgs) {
+    return racingManager
+      .getRace(prevArgs[0])
+      .getPotionEffects()
       .stream()
       .map(RacePotionEffect::getType)
       .map(PotionEffectType::getName)
-      .anyMatch((String name) -> name.equalsIgnoreCase(argument));
+      .filter(type -> type.toLowerCase(Locale.ENGLISH).startsWith(argument.toLowerCase(Locale.ENGLISH)))
+      .collect(Collectors.toCollection(LinkedHashSet::new));
   }
 
+  @Override
+  public boolean test(Set<String> items, String argument) {
+    return items.contains(argument);
+  }
   @Override
   public void whenInvalid(ValidationResult result) {
     MessageManager.setValue("race_name", result.getPrevArgs()[0]);

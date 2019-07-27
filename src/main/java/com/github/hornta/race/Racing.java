@@ -6,8 +6,7 @@ import com.github.hornta.*;
 import com.github.hornta.race.api.FileAPI;
 import com.github.hornta.race.api.StorageType;
 import com.github.hornta.race.commands.*;
-import com.github.hornta.race.commands.completers.*;
-import com.github.hornta.race.commands.validators.*;
+import com.github.hornta.race.commands.argumentHandlers.*;
 import com.github.hornta.race.config.ConfigKey;
 import com.github.hornta.race.config.RaceConfiguration;
 import com.github.hornta.race.mcmmo.McMMOListener;
@@ -73,37 +72,26 @@ public class Racing extends JavaPlugin {
   }
 
   private void setupCommands() {
-    RaceCompleter raceCompleter = new RaceCompleter(racingManager);
-    PointExistValidator checkpointShouldExist = new PointExistValidator(racingManager, true);
-    PointCompleter checkpointCompleter = new PointCompleter(racingManager);
-    StartPointExistValidator startPointShouldExist = new StartPointExistValidator(racingManager, true);
-    StartPointCompleter startPointCompleter = new StartPointCompleter(racingManager);
-    SongExistValidator songExistValidator = new SongExistValidator();
-    SongCompleter songCompleter = new SongCompleter();
-
     carbon.setNoPermissionHandler((CommandSender commandSender, CarbonCommand command) -> {
       MessageManager.sendMessage(commandSender, MessageKey.NO_PERMISSION_COMMAND);
     });
 
     carbon.setMissingArgumentHandler((CommandSender commandSender, CarbonCommand command) -> {
-      String helpTexts = String.join("\n", command.getHelpTexts().toArray(new String[0]));
-      MessageManager.setValue("usage", helpTexts);
+      MessageManager.setValue("usage", command.getHelpText());
       MessageManager.sendMessage(commandSender, MessageKey.MISSING_ARGUMENTS_COMMAND);
     });
 
     carbon.setMissingCommandHandler((CommandSender sender, List<CarbonCommand> suggestions) -> {
       MessageManager.setValue("suggestions", suggestions.stream()
-        .map(CarbonCommand::getHelpTexts)
-        .flatMap(List::stream)
+        .map(CarbonCommand::getHelpText)
         .collect(Collectors.joining("\n")));
       MessageManager.sendMessage(sender, MessageKey.COMMAND_NOT_FOUND);
     });
 
     carbon.handleValidation((ValidationResult result) -> {
       switch (result.getStatus()) {
-
         case ERR_INCORRECT_TYPE:
-          MessageManager.setValue("help_texts", result.getCommand().getHelpTexts().stream().collect(Collectors.joining("\n")));
+          MessageManager.setValue("help_text", result.getCommand().getHelpText());
           MessageManager.setValue("argument", result.getArgument().getName());
           MessageManager.setValue("received", result.getValue());
           if (result.getArgument().getType() == CarbonArgumentType.INTEGER) {
@@ -115,7 +103,7 @@ public class Racing extends JavaPlugin {
 
         case ERR_MIN_LIMIT:
         case ERR_MAX_LIMIT:
-          MessageManager.setValue("help_texts", result.getCommand().getHelpTexts().stream().collect(Collectors.joining("\n")));
+          MessageManager.setValue("help_text", result.getCommand().getHelpText());
           MessageManager.setValue("argument", result.getArgument().getName());
           MessageManager.setValue("received", result.getValue());
           if(result.getStatus() == ValidationStatus.ERR_MIN_LIMIT) {
@@ -127,25 +115,27 @@ public class Racing extends JavaPlugin {
           }
           break;
 
-        case ERR_POTION_EFFECT_NOT_FOUND:
-          MessageManager.setValue("potion_effect", result.getValue());
-          MessageManager.sendMessage(result.getCommandSender(), MessageKey.POTION_EFFECT_NOT_FOUND);
+        case ERR_OTHER:
+          if(result.getArgument().getType() == CarbonArgumentType.POTION_EFFECT) {
+            MessageManager.setValue("potion_effect", result.getValue());
+            MessageManager.sendMessage(result.getCommandSender(), MessageKey.POTION_EFFECT_NOT_FOUND);
+          }
           break;
       }
     });
 
-    CarbonArgument raceArgument = new CarbonArgument("race");
-    raceArgument.ofType(CarbonArgumentType.OTHER);
-    raceArgument.validate(new RaceExistValidator(racingManager, true));
-    raceArgument.setTabCompleter(raceCompleter);
+    CarbonArgument raceArgument =
+      new CarbonArgument.Builder("race")
+      .setHandler(new RaceArgumentHandler(racingManager, true))
+      .create();
 
     carbon
       .addCommand("racing create")
       .withHandler(new CommandCreateRace(racingManager))
       .withArgument(
-        new CarbonArgument("race")
-        .ofType(CarbonArgumentType.OTHER)
-        .validate(new RaceExistValidator(racingManager, false))
+        new CarbonArgument.Builder("race")
+          .setHandler(new RaceArgumentHandler(racingManager, false))
+          .create()
       )
       .requiresPermission(Permission.RACING_MODIFY.toString())
       .preventConsoleCommandSender();
@@ -168,10 +158,10 @@ public class Racing extends JavaPlugin {
       .requiresPermission(Permission.RACING_MODIFY.toString())
       .preventConsoleCommandSender();
 
-    CarbonArgument checkpointArgument = new CarbonArgument("point");
-    checkpointArgument.validate(checkpointShouldExist);
-    checkpointArgument.setTabCompleter(checkpointCompleter);
-    checkpointArgument.dependsOn(raceArgument);
+    CarbonArgument checkpointArgument = new CarbonArgument.Builder("point")
+      .setHandler(new CheckpointArgumentHandler(racingManager, true))
+      .dependsOn(raceArgument)
+      .create();
 
     carbon
       .addCommand("racing deletecheckpoint")
@@ -207,10 +197,9 @@ public class Racing extends JavaPlugin {
       .withHandler(new CommandSetRaceState(racingManager))
       .withArgument(raceArgument)
       .withArgument(
-        new CarbonArgument("state")
-          .ofType(CarbonArgumentType.OTHER)
-        .validate(new RaceStateValidator())
-        .setTabCompleter(new RaceStateCompleter())
+        new CarbonArgument.Builder("state")
+          .setHandler(new RaceStateArgumentHandler())
+          .create()
       )
       .requiresPermission(Permission.RACING_MODIFY.toString());
 
@@ -219,8 +208,9 @@ public class Racing extends JavaPlugin {
       .withHandler(new CommandSetRaceName(racingManager))
       .withArgument(raceArgument)
       .withArgument(
-        new CarbonArgument("name")
-        .ofType(CarbonArgumentType.STRING)
+        new CarbonArgument.Builder("name")
+          .setType(CarbonArgumentType.STRING)
+          .create()
       )
       .requiresPermission(Permission.RACING_MODIFY.toString());
 
@@ -229,9 +219,9 @@ public class Racing extends JavaPlugin {
       .withHandler(new CommandSetType(racingManager))
       .withArgument(raceArgument)
       .withArgument(
-        new CarbonArgument("type")
-        .validate(new RaceTypeValidator())
-        .setTabCompleter(new RaceTypeCompleter())
+        new CarbonArgument.Builder("type")
+          .setHandler(new RaceTypeArgumentHandler())
+          .create()
       )
       .requiresPermission(Permission.RACING_MODIFY.toString());
 
@@ -241,9 +231,10 @@ public class Racing extends JavaPlugin {
         .withHandler(new CommandSetEntryFee(racingManager))
         .withArgument(raceArgument)
         .withArgument(
-          new CarbonArgument("fee")
-            .ofType(CarbonArgumentType.NUMBER)
+          new CarbonArgument.Builder("fee")
+            .setType(CarbonArgumentType.NUMBER)
             .setMin(0)
+            .create()
         )
         .requiresPermission(Permission.RACING_MODIFY.toString());
     }
@@ -253,9 +244,10 @@ public class Racing extends JavaPlugin {
       .withHandler(new CommandSetWalkSpeed(racingManager))
       .withArgument(raceArgument)
       .withArgument(
-        new CarbonArgument("speed")
-        .ofType(CarbonArgumentType.NUMBER)
-        .setMinMax(0, Double.MAX_VALUE)
+        new CarbonArgument.Builder("speed")
+          .setType(CarbonArgumentType.NUMBER)
+          .setMin(0)
+          .create()
       )
       .requiresPermission(Permission.RACING_MODIFY.toString());
 
@@ -264,13 +256,16 @@ public class Racing extends JavaPlugin {
       .withHandler(new CommandAddPotionEffect(racingManager))
       .withArgument(raceArgument)
       .withArgument(
-        new CarbonArgument("effect")
-        .ofType(CarbonArgumentType.POTION_EFFECT)
+        new CarbonArgument.Builder("effect")
+          .setType(CarbonArgumentType.POTION_EFFECT)
+          .create()
       )
       .withArgument(
-        new CarbonArgument("amplifier")
-        .ofType(CarbonArgumentType.INTEGER)
-        .setMinMax(0, 255)
+        new CarbonArgument.Builder("amplifier")
+          .setType(CarbonArgumentType.INTEGER)
+          .setMin(0)
+          .setMax(255)
+          .create()
       )
       .requiresPermission(Permission.RACING_MODIFY.toString());
 
@@ -279,11 +274,10 @@ public class Racing extends JavaPlugin {
       .withHandler(new CommandRemovePotionEffect(racingManager))
       .withArgument(raceArgument)
       .withArgument(
-        new CarbonArgument("effect")
-        .ofType(CarbonArgumentType.OTHER)
-        .setTabCompleter(new RacePotionEffectCompleter(racingManager))
-        .validate(new RacePotionEffectValidator(racingManager))
-        .dependsOn(raceArgument)
+        new CarbonArgument.Builder("effect")
+          .setHandler(new RacePotionEffectArgumentHandler(racingManager))
+          .dependsOn(raceArgument)
+          .create()
       );
 
     carbon
@@ -299,10 +293,11 @@ public class Racing extends JavaPlugin {
       .preventConsoleCommandSender();
 
 
-    CarbonArgument startPointArgument = new CarbonArgument("point");
-    startPointArgument.validate(startPointShouldExist);
-    startPointArgument.setTabCompleter(startPointCompleter);
-    startPointArgument.dependsOn(raceArgument);
+    CarbonArgument startPointArgument =
+      new CarbonArgument.Builder("point")
+        .setHandler(new StartPointArgumentHandler(racingManager, true))
+        .dependsOn(raceArgument)
+        .create();
 
     carbon
       .addCommand("racing deletestartpoint")
@@ -320,9 +315,10 @@ public class Racing extends JavaPlugin {
       .preventConsoleCommandSender();
 
     if(isNoteBlockAPILoaded) {
-      CarbonArgument songArgument = new CarbonArgument("song");
-      songArgument.validate(songExistValidator);
-      songArgument.setTabCompleter(songCompleter);
+      CarbonArgument songArgument =
+        new CarbonArgument.Builder("song")
+          .setHandler(new SongArgumentHandler())
+          .create();
 
       carbon
         .addCommand("racing setsong")
@@ -351,17 +347,24 @@ public class Racing extends JavaPlugin {
         .preventConsoleCommandSender();
     }
 
+    CarbonArgument lapsArgument = new CarbonArgument.Builder("laps")
+      .setType(CarbonArgumentType.INTEGER)
+      .setDefaultValue(1)
+      .setMin(1)
+      .create();
+
     carbon
       .addCommand("racing start")
       .withHandler(new CommandStartRace(racingManager))
       .withArgument(raceArgument)
-      .withArgument(
-        new CarbonArgument("laps")
-        .ofType(CarbonArgumentType.INTEGER)
-        .defaultsTo(1)
-        .setMin(1)
-        .setOptional(true)
-      )
+      .withArgument(lapsArgument)
+      .requiresPermission(Permission.RACING_MODERATOR.toString())
+      .preventConsoleCommandSender();
+
+    carbon
+      .addCommand("racing startrandom")
+      .withHandler(new CommandStartRace(racingManager))
+      .withArgument(lapsArgument)
       .requiresPermission(Permission.RACING_MODERATOR.toString())
       .preventConsoleCommandSender();
 
