@@ -450,7 +450,6 @@ public class RaceSession implements Listener {
       return;
     }
 
-    Bukkit.getLogger().info("" + playerSession.getStartLocation().distanceSquared(event.getTo()));
     if(playerSession.getStartLocation().distanceSquared(event.getTo()) >= 1) {
       playerSession.respawnInVehicle();
     }
