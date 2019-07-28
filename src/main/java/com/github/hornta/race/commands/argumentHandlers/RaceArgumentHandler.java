@@ -8,6 +8,7 @@ import com.github.hornta.race.message.MessageManager;
 import com.github.hornta.race.objects.Race;
 import org.bukkit.command.CommandSender;
 
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Locale;
 import java.util.Set;
@@ -24,6 +25,10 @@ public class RaceArgumentHandler implements IArgumentHandler {
 
   @Override
   public Set<String> getItems(CommandSender sender, String argument, String[] prevArgs) {
+    if(!shouldExist) {
+      return Collections.emptySet();
+    }
+
     return racingManager
       .getRaces()
       .stream()
