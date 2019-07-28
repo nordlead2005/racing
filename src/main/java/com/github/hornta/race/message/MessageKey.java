@@ -87,6 +87,7 @@ public enum MessageKey {
   RACE_NEXT_LAP("race_next_lap_actionbar"),
   RACE_FINAL_LAP("race_final_lap_actionbar"),
   ELYTRA_INFO("race_elytra_respawn_info"),
+  MINECART_INFO("race_minecart_respawn_info"),
   SKIP_WAIT_HOVER_TEXT("race_skipwait_hover_text"),
   SKIP_WAIT_CLICK_TEXT("race_skipwait_click_text"),
   SKIP_WAIT("race_skipwait"),

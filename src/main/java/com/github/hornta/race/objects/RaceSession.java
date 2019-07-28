@@ -697,15 +697,24 @@ public class RaceSession implements Listener {
   void onPlayerInteract(PlayerInteractEvent event) {
     if(
       !isParticipating(event.getPlayer()) ||
-      race.getType() != RaceType.ELYTRA ||
       state != RaceSessionState.STARTED
     ) {
       return;
     }
 
+    if(race.getType() != RaceType.ELYTRA && race.getType() != RaceType.MINECART) {
+      return;
+    }
+
     RacePlayerSession playerSession = playerSessions.get(event.getPlayer().getUniqueId());
+    // set fall distance to zero so players doesn't take damage when they are falling
     playerSession.getPlayer().setFallDistance(0);
-    playerSession.getPlayer().teleport(playerSession.getStartLocation());
+
+    if(race.getType() == RaceType.MINECART) {
+      playerSession.respawnInVehicle();
+    } else if(race.getType() == RaceType.ELYTRA) {
+      playerSession.getPlayer().teleport(playerSession.getStartLocation());
+    }
   }
 
   private String getBossBarTitle(RacePlayerSession session) {

@@ -25,10 +25,6 @@ public class RaceArgumentHandler implements IArgumentHandler {
 
   @Override
   public Set<String> getItems(CommandSender sender, String argument, String[] prevArgs) {
-    if(!shouldExist) {
-      return Collections.emptySet();
-    }
-
     return racingManager
       .getRaces()
       .stream()

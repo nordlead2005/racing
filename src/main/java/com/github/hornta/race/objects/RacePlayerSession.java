@@ -138,6 +138,7 @@ public class RacePlayerSession {
         break;
 
       case MINECART:
+        MessageManager.sendMessage(player, MessageKey.MINECART_INFO);
         spawnMinecart();
         enterVehicle();
         break;

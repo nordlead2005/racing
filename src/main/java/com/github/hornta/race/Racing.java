@@ -135,6 +135,7 @@ public class Racing extends JavaPlugin {
       .withArgument(
         new CarbonArgument.Builder("race")
           .setHandler(new RaceArgumentHandler(racingManager, false))
+          .showTabCompletion(false)
           .create()
       )
       .requiresPermission(Permission.RACING_MODIFY.toString())
