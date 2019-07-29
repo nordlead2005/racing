@@ -71,6 +71,7 @@ public class SongManager {
   }
 
   public void loadSongs(File directory) {
+    directory.mkdirs();
     if(songsByName != null) {
       songsByName.clear();
       songNames.clear();
