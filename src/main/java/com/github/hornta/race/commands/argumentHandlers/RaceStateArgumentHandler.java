@@ -19,13 +19,14 @@ public class RaceStateArgumentHandler implements IArgumentHandler {
   public Set<String> getItems(CommandSender sender, String argument, String[] prevArgs) {
     return Arrays.stream(RaceState.values())
       .map(RaceState::name)
-      .filter(state -> state.toLowerCase(Locale.ENGLISH).startsWith(argument.toLowerCase(Locale.ENGLISH)))
+      .map((String s) -> s.toLowerCase(Locale.ENGLISH))
+      .filter(state -> state.startsWith(argument.toLowerCase(Locale.ENGLISH)))
       .collect(Collectors.toCollection(LinkedHashSet::new));
   }
 
   @Override
   public boolean test(Set<String> items, String argument) {
-    return items.contains(argument);
+    return items.contains(argument.toLowerCase(Locale.ENGLISH));
   }
 
   @Override

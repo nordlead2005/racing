@@ -23,7 +23,7 @@ public class SongArgumentHandler implements IArgumentHandler {
 
   @Override
   public boolean test(Set<String> items, String argument) {
-    return items.contains(argument);
+    return items.contains(argument.toLowerCase(Locale.ENGLISH));
   }
 
   @Override

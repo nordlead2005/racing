@@ -7,7 +7,7 @@ public enum RaceState {
 
   public static RaceState fromString(String string) {
     for(RaceState state : values()) {
-      if(state.name().compareToIgnoreCase(string) == 0) {
+      if(state.name().equalsIgnoreCase(string)) {
         return state;
       }
     }

@@ -29,13 +29,14 @@ public class RacePotionEffectArgumentHandler implements IArgumentHandler {
       .stream()
       .map(RacePotionEffect::getType)
       .map(PotionEffectType::getName)
-      .filter(type -> type.toLowerCase(Locale.ENGLISH).startsWith(argument.toLowerCase(Locale.ENGLISH)))
+      .map((String s) -> s.toLowerCase(Locale.ENGLISH))
+      .filter(type -> type.startsWith(argument.toLowerCase(Locale.ENGLISH)))
       .collect(Collectors.toCollection(LinkedHashSet::new));
   }
 
   @Override
   public boolean test(Set<String> items, String argument) {
-    return items.contains(argument);
+    return items.contains(argument.toLowerCase(Locale.ENGLISH));
   }
   @Override
   public void whenInvalid(ValidationResult result) {
