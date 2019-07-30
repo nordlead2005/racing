@@ -3,16 +3,14 @@ package com.github.hornta.race.message;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class MessageManager {
-  private static final Pattern placeholderPattern = Pattern.compile("<[a-z_]+>", Pattern.CASE_INSENSITIVE);
+  private static final Pattern placeholderPattern = Pattern.compile("<([a-z_]+)(?:\\|(.+))?>", Pattern.CASE_INSENSITIVE);
   private static LanguageTranslation languageTranslation;
-  private static Map<String, String> placeholderValues = new HashMap<>();
+  private static Map<String, List<String>> placeholderValues = new HashMap<>();
   private static Map<String, MessageKey> placeholderKeys = new HashMap<>();
 
   public static void setLanguageTranslation(LanguageTranslation languageTranslation) {
@@ -21,9 +19,20 @@ public class MessageManager {
 
   static String transformPattern(String input) {
     return StringReplacer.replace(input, placeholderPattern, (Matcher m) -> {
-      String placeholder = m.group().substring(1, m.group().length() - 1).toLowerCase(Locale.ENGLISH);
+      String placeholder = m.group(1);
+
+      Map<PlaceholderOption, String> options = Collections.emptyMap();
+
+      if (m.group(2) != null) {
+        options = getPlaceholderOptions(m.group(2));
+      }
+
+      String delimiter = "";
       if (placeholderValues.containsKey(placeholder)) {
-        return placeholderValues.get(placeholder);
+        if (options.containsKey(PlaceholderOption.DELIMITER) && options.get(PlaceholderOption.DELIMITER) != null) {
+          delimiter = options.get(PlaceholderOption.DELIMITER);
+        }
+        return String.join(delimiter, placeholderValues.get(placeholder));
       } else if(placeholderKeys.containsKey(placeholder)) {
         return languageTranslation.getTranslation(placeholderKeys.get(placeholder));
       } else {
@@ -52,10 +61,14 @@ public class MessageManager {
 
   public static void setValue(String key, Object value) {
     if (value == null) {
-      value = "";
+      value = Collections.emptyList();
     }
 
-    placeholderValues.put(key.toLowerCase(Locale.ENGLISH), value.toString());
+    if(!(value instanceof Collection<?>)) {
+      value = Collections.singletonList(value.toString());
+    }
+
+    placeholderValues.put(key.toLowerCase(Locale.ENGLISH), (List<String>) value);
   }
 
   public static void broadcast(MessageKey key) {
@@ -69,5 +82,28 @@ public class MessageManager {
   public static String getMessage(MessageKey key) {
     String message = languageTranslation.getTranslation(key);
     return transformPlaceholders(message);
+  }
+
+  private static Map<PlaceholderOption, String> getPlaceholderOptions(String options) {
+    options = options.trim();
+    Map<PlaceholderOption, String> map = new EnumMap<>(PlaceholderOption.class);
+    for (String option : options.split(",")) {
+      option = option.trim();
+      PlaceholderOption key;
+      String value;
+      if(option.contains(":")) {
+        key = PlaceholderOption.fromString(option.substring(0, option.lastIndexOf(":")).trim());
+        value = option.substring(option.lastIndexOf(":") + 1).trim();
+      } else {
+        key = PlaceholderOption.fromString(option);
+        value = null;
+      }
+
+      if(key != null) {
+        map.put(key, value);
+      }
+    }
+
+    return map;
   }
 }
