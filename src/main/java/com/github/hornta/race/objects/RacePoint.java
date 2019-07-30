@@ -1,6 +1,6 @@
 package com.github.hornta.race.objects;
 
-import com.github.hornta.race.Permission;
+import com.github.hornta.race.enums.Permission;
 import com.github.hornta.race.Racing;
 import com.gmail.filoghost.holographicdisplays.api.Hologram;
 import com.gmail.filoghost.holographicdisplays.api.HologramsAPI;

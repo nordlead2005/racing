@@ -5,7 +5,6 @@ import com.github.hornta.completers.IArgumentHandler;
 import com.github.hornta.race.enums.RaceType;
 import com.github.hornta.race.message.MessageKey;
 import com.github.hornta.race.message.MessageManager;
-import net.sf.cglib.core.Local;
 import org.bukkit.command.CommandSender;
 
 import java.util.Arrays;

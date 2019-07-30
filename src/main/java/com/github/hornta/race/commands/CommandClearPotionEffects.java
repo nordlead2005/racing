@@ -7,7 +7,6 @@ import com.github.hornta.race.message.MessageKey;
 import com.github.hornta.race.message.MessageManager;
 import com.github.hornta.race.objects.Race;
 import org.bukkit.command.CommandSender;
-import org.bukkit.potion.PotionEffectType;
 
 public class CommandClearPotionEffects extends RacingCommand implements ICommandHandler {
   public CommandClearPotionEffects(RacingManager racingManager) {

@@ -11,7 +11,6 @@ import com.github.hornta.race.objects.RaceCheckpoint;
 import com.github.hornta.race.objects.RacePlayerSession;
 import com.github.hornta.race.objects.RaceSession;
 import com.github.hornta.race.objects.RaceStartPoint;
-import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
@@ -21,10 +20,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
-import javax.security.auth.callback.Callback;
-import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

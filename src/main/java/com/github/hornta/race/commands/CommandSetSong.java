@@ -1,7 +1,5 @@
 package com.github.hornta.race.commands;
 
-import com.comphenix.protocol.PacketType;
-import com.comphenix.protocol.events.PacketContainer;
 import com.github.hornta.ICommandHandler;
 import com.github.hornta.race.RacingManager;
 import com.github.hornta.race.enums.RaceState;

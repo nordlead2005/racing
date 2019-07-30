@@ -3,12 +3,9 @@ package com.github.hornta.race.objects;
 import com.github.hornta.race.Racing;
 import com.github.hornta.race.message.MessageKey;
 import com.github.hornta.race.message.MessageManager;
-import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.Collection;
-import java.util.List;
-import java.util.Map;
 
 class RaceCountdown {
   public static final int COUNTDOWN_IN_SECONDS = 10;

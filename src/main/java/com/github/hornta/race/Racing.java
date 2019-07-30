@@ -9,6 +9,7 @@ import com.github.hornta.race.commands.*;
 import com.github.hornta.race.commands.argumentHandlers.*;
 import com.github.hornta.race.config.ConfigKey;
 import com.github.hornta.race.config.RaceConfiguration;
+import com.github.hornta.race.enums.Permission;
 import com.github.hornta.race.mcmmo.McMMOListener;
 import com.github.hornta.race.message.MessageKey;
 import com.github.hornta.race.message.MessageManager;

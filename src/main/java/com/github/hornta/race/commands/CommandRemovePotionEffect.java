@@ -6,7 +6,6 @@ import com.github.hornta.race.enums.RaceState;
 import com.github.hornta.race.message.MessageKey;
 import com.github.hornta.race.message.MessageManager;
 import com.github.hornta.race.objects.Race;
-import com.github.hornta.race.objects.RacePotionEffect;
 import org.bukkit.command.CommandSender;
 import org.bukkit.potion.PotionEffectType;
 
