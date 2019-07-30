@@ -44,7 +44,7 @@ public class RaceConfiguration {
   public static <T> T getValue(ConfigKey key) {
     Object obj = instance.getConfiguration().get(key.getPath());
 
-    Function<String, IEnumConfig> converter = key.getConverter();
+    Function<String, Object> converter = key.getConverter();
 
     if(converter != null) {
       return (T)converter.apply(((String)obj).toUpperCase(Locale.ENGLISH));

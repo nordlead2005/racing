@@ -4,11 +4,14 @@ import com.github.hornta.race.api.StorageType;
 import org.bukkit.configuration.ConfigurationSection;
 
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Set;
 import java.util.function.Function;
 
 public enum ConfigKey {
   LANGUAGE("language", ConfigType.STRING, "english"),
+  // https://www.loc.gov/standards/iso639-2/php/code_list.php
+  LOCALE("locale", ConfigType.STRING, "en", Locale::new),
   SONGS_DIRECTORY("songs_directory", ConfigType.STRING, "songs"),
   STORAGE("storage.current", ConfigType.STRING, StorageType.FILE, StorageType::valueOf),
   FILE_RACE_DIRECTORY("storage.file.directory", ConfigType.STRING, "races"),
@@ -50,7 +53,7 @@ public enum ConfigKey {
   private String path;
   private ConfigType type;
   private Object defaultValue;
-  private Function<String, IEnumConfig> converter;
+  private Function<String, Object> converter;
 
   ConfigKey(String path, ConfigType type, Object defaultValue) {
     this.path = path;
@@ -58,7 +61,7 @@ public enum ConfigKey {
     this.defaultValue = defaultValue;
   }
 
-  ConfigKey(String path, ConfigType type, Object defaultValue, Function<String, IEnumConfig> converter) {
+  ConfigKey(String path, ConfigType type, Object defaultValue, Function<String, Object> converter) {
     this.path = path;
     this.type = type;
     this.defaultValue = defaultValue;
@@ -124,7 +127,7 @@ public enum ConfigKey {
     return isExpectedType;
   }
 
-  public Function<String, IEnumConfig> getConverter() {
+  public Function<String, Object> getConverter() {
     return converter;
   }
 }

@@ -55,6 +55,7 @@ commands:
   reload:
     success: "§eConfiguration has been reloaded."
     not_races: "§cRaces has not been reloaded because there are currently ongoing races."
+    not_language: "§cLanguage has not been reloaded because the language `<language>` couldn't be found."
   race_set_state:
     success: "§eState has been changed from `<old_state>` to `<new_state>`."
     error_nochange: "§cState is already set to `<state>`."
@@ -77,6 +78,21 @@ commands:
     success: "§eYou have left race `<race_name>`."
     leave_broadcast: "§e<player_name> has left race `<race_name>`."
     leave_payback: "§eYou have been paid your entry fee of <entry_fee> back."
+  race_info:
+    success: |
+      §6§m----§r§6[ §eRace Info §6]§m----
+      §eName: §f<name>
+      §eType: §f<type>
+      §eState: §f<state>
+      §eCreated: §f<created>
+      §eStartpoints: §f<num_startpoints>
+      §eCheckpoints: §f<num_checkpoints>
+      <entry_fee>§eWalk speed: §f<walk_speed>
+      §ePotion effects: <none>
+      <potion_effects|delimiter:\n>
+    no_potion_effects: "§fNone"
+    potion_effect_item: "§f<potion_effect> : <amplifier>"
+    entry_fee_line: "§eEntry fee: §f<entry_fee>\n"
 
 validators:
   race_not_found: "§cA race with name `<race_name>` couldn't be found."

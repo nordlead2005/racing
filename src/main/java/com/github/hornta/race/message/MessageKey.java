@@ -42,6 +42,7 @@ public enum MessageKey {
   RACE_SKIP_WAIT_NOT_STARTED("commands.race_skip_wait.error_not_started"),
   RELOAD_SUCCESS("commands.reload.success"),
   RELOAD_NOT_RACES("commands.reload.not_races"),
+  RELOAD_NOT_LANGUAGE("commands.reload.not_language"),
   RACE_SET_STATE_SUCCESS("commands.race_set_state.success"),
   RACE_SET_STATE_NOCHANGE("commands.race_set_state.error_nochange"),
   RACE_SET_STATE_ONGOING("commands.race_set_state.error_ongoing"),
@@ -56,6 +57,10 @@ public enum MessageKey {
   RACE_LEAVE_SUCCESS("commands.race_leave.success"),
   RACE_LEAVE_BROADCAST("commands.race_leave.leave_broadcast"),
   RACE_LEAVE_PAYBACK("commands.race_leave.leave_payback"),
+  RACE_INFO_SUCCESS("commands.race_info.success"),
+  RACE_INFO_NO_POTION_EFFECTS("commands.race_info.no_potion_effects"),
+  RACE_INFO_POTION_EFFECT("commands.race_info.potion_effect_item"),
+  RACE_INFO_ENTRY_FEE_LINE("commands.race_info.entry_fee_line"),
 
   RACE_NOT_FOUND("validators.race_not_found"),
   RACE_ALREADY_EXIST("validators.race_already_exist"),

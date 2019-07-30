@@ -72,6 +72,14 @@ public class Racing extends JavaPlugin {
     return carbon;
   }
 
+  public Translations getTranslations() {
+    return translations;
+  }
+
+  public RacingManager getRacingManager() {
+    return racingManager;
+  }
+
   private void setupCommands() {
     carbon.setNoPermissionHandler((CommandSender commandSender, CarbonCommand command) -> {
       MessageManager.sendMessage(commandSender, MessageKey.NO_PERMISSION_COMMAND);
@@ -397,23 +405,18 @@ public class Racing extends JavaPlugin {
 
     carbon
       .addCommand("racing reload")
-      .withHandler((CommandSender sender, String[] args) -> {
-        RaceConfiguration.reload(this);
-        SongManager.getInstance().loadSongs((String) RaceConfiguration.getValue(ConfigKey.SONGS_DIRECTORY));
-
-        if(!racingManager.getRaceSessions().isEmpty()) {
-          MessageManager.sendMessage(sender, MessageKey.RELOAD_NOT_RACES);
-        } else {
-          racingManager.load();
-        }
-
-        MessageManager.sendMessage(sender, MessageKey.RELOAD_SUCCESS);
-      })
+      .withHandler(new CommandReload())
       .requiresPermission(Permission.RACING_ADMIN.toString());
 
     carbon
       .addCommand("racing help")
       .withHandler(new CommandHelp());
+
+    carbon
+      .addCommand("racing info")
+      .withArgument(raceArgument)
+      .withHandler(new CommandInfo(racingManager))
+      .requiresPermission(Permission.RACING_MODERATOR.toString());
   }
 
   @Override

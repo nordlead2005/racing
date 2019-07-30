@@ -55,6 +55,7 @@ commands:
   reload:
     success: "§eKonfiguration har laddats om."
     not_races: "§cRaces har inte laddats om eftersom ett eller flera race pågår."
+    not_language: "§cSpråket har inte laddats om eftersom det inte finns ett språk med namnet `<language>`."
   race_set_state:
     success: "§eStatus har ändrats från `<old_state>` till `<new_state>`."
     error_nochange: "§Status är redan satt till `<state>`."
@@ -77,6 +78,21 @@ commands:
     success: "§eDu har lämnat race `<race_name>`."
     leave_broadcast: "§e<player_name> har lämnat race `<race_name>`."
     leave_payback: "§eDu har fått tillbaka <entry_fee>."
+  race_info:
+    success: |
+      §6§m----§r§6[ §eRace Info §6]§m----
+      §eNamn: §f<name>
+      §eTyp: §f<type>
+      §eStatus: §f<state>
+      §eSkapad: §f<created>
+      §eStartpositioner: §f<num_startpoints>
+      §eCheckpoints: §f<num_checkpoints>
+      <entry_fee>§eRörelsehastighet: §f<walk_speed>
+      §eTrolldryckseffekter: <none>
+      <potion_effects|delimiter:\n>
+    no_potion_effects: "§fInga"
+    potion_effect_item: "§f<potion_effect> : <amplifier>"
+    entry_fee_line: "§eAnmälningsavgift: §f<entry_fee>\n"
 
 validators:
   race_not_found: "§cDet finns inget race med namn `<race_name>`."
