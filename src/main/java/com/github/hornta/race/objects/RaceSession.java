@@ -7,6 +7,7 @@ import com.github.hornta.race.config.ConfigKey;
 import com.github.hornta.race.config.RaceConfiguration;
 import com.github.hornta.race.enums.RaceSessionState;
 import com.github.hornta.race.enums.RaceType;
+import com.github.hornta.race.enums.RespawnType;
 import com.github.hornta.race.events.RacePlayerGoalEvent;
 import com.github.hornta.race.events.RaceSessionResultEvent;
 import com.github.hornta.race.events.RaceSessionStopEvent;
@@ -154,7 +155,7 @@ public class RaceSession implements Listener {
 
     initiator.spigot().sendMessage(tc);
     
-    List<Integer> announceIntervals = RaceConfiguration.getValue(ConfigKey.RACE_ANNOUNCE_INTERVALS);
+    ArrayList<Integer> announceIntervals = RaceConfiguration.getValue(ConfigKey.RACE_ANNOUNCE_INTERVALS);
     for(int interval : announceIntervals) {
       if(interval >= prepareTime) {
         return;
@@ -242,6 +243,18 @@ public class RaceSession implements Listener {
 
       for(RacePlayerSession session : playerSessions.values()) {
         session.startRace();
+
+        RespawnType type = getRespawnInteractType(race.getType());
+        switch (type) {
+          case FROM_LAST_CHECKPOINT:
+            MessageManager.sendMessage(session.getPlayer(), MessageKey.RESPAWN_INTERACT_LAST);
+            break;
+          case FROM_START:
+            MessageManager.sendMessage(session.getPlayer(), MessageKey.RESPAWN_INTERACT_START);
+            break;
+          case NONE:
+          default:
+        }
 
         for(PotionEffect potionEffect : potionEffects) {
           session.getPlayer().addPotionEffect(potionEffect);
@@ -443,12 +456,11 @@ public class RaceSession implements Listener {
       tryIncrementCheckpoint(playerSession);
     }
 
-    if(state != RaceSessionState.COUNTDOWN) {
-      return;
-    }
-
-    if(playerSession.getStartLocation().distanceSquared(event.getTo()) >= 1) {
+    if(state == RaceSessionState.COUNTDOWN && playerSession.getStartLocation().distanceSquared(event.getTo()) >= 1) {
       playerSession.respawnInVehicle();
+      if(race.getType() == RaceType.HORSE) {
+        playerSession.freezeHorse();
+      }
     }
   }
 
@@ -473,6 +485,7 @@ public class RaceSession implements Listener {
       ) {
         if(playerSession.getStartLocation().distanceSquared(event.getTo()) >= 1) {
           playerSession.respawnInVehicle();
+          playerSession.freezeHorse();
         }
       } else {
         if(
@@ -545,7 +558,7 @@ public class RaceSession implements Listener {
 
     for(RacePlayerSession session : playerSessions.values()) {
       MessageManager.setValue("player_name", player.getName());
-      MessageManager.sendMessage(session.getPlayer(), MessageKey.QUIT_DISQULIAFIED);
+      MessageManager.sendMessage(session.getPlayer(), MessageKey.QUIT_DISQUALIFIED);
     }
 
     if(playerSessions.isEmpty()) {
@@ -566,7 +579,39 @@ public class RaceSession implements Listener {
     }
 
     if(event.getFinalDamage() >= player.getHealth()) {
-      playerSessions.get(player.getUniqueId()).respawnOnDeath(event);
+      RespawnType respawnType = getRespawnDeathType(race.getType());
+      event.setCancelled(true);
+      player.setFoodLevel(RacePlayerSession.MAX_FOOD_LEVEL);
+      player.setHealth(RacePlayerSession.MAX_HEALTH);
+      RacePlayerSession playerSession = playerSessions.get(player.getUniqueId());
+      switch (respawnType) {
+        case FROM_LAST_CHECKPOINT:
+        case FROM_START:
+          playerSession.respawn(respawnType, null, null);
+          break;
+        case NONE:
+          if (state != RaceSessionState.STARTED) {
+            playerSession.respawn(RespawnType.FROM_START, null, null);
+            break;
+          }
+
+          playerSession.restore();
+          playerSessions.remove(player.getUniqueId());
+          player.setFallDistance(0);
+          player.teleport(race.getSpawn());
+          MessageManager.sendMessage(player, MessageKey.DEATH_DISQUALIFIED_TARGET);
+
+          for(RacePlayerSession session : playerSessions.values()) {
+            MessageManager.setValue("player_name", player.getName());
+            MessageManager.sendMessage(session.getPlayer(), MessageKey.DEATH_DISQUALIFIED);
+          }
+
+          if(playerSessions.isEmpty()) {
+            stop();
+          }
+          break;
+        default:
+      }
     }
   }
 
@@ -699,18 +744,10 @@ public class RaceSession implements Listener {
       return;
     }
 
-    if(race.getType() != RaceType.ELYTRA && race.getType() != RaceType.MINECART) {
-      return;
-    }
-
     RacePlayerSession playerSession = playerSessions.get(event.getPlayer().getUniqueId());
-    // set fall distance to zero so players doesn't take damage when they are falling
-    playerSession.getPlayer().setFallDistance(0);
-
-    if(race.getType() == RaceType.MINECART) {
-      playerSession.respawnInVehicle();
-    } else if(race.getType() == RaceType.ELYTRA) {
-      playerSession.getPlayer().teleport(playerSession.getStartLocation());
+    RespawnType respawnType = getRespawnInteractType(race.getType());
+    if(respawnType == RespawnType.FROM_LAST_CHECKPOINT || respawnType == RespawnType.FROM_START) {
+      playerSession.respawn(respawnType, null, null);
     }
   }
 
@@ -720,6 +757,44 @@ public class RaceSession implements Listener {
     }
 
     return race.getName() + " lap " + session.getCurrentLap() + "/" + laps;
+  }
+
+  private RespawnType getRespawnInteractType(RaceType type) {
+    switch (type) {
+      case HORSE:
+        return RaceConfiguration.getValue(ConfigKey.RESPAWN_HORSE_INTERACT);
+      case PIG:
+        return RaceConfiguration.getValue(ConfigKey.RESPAWN_PIG_INTERACT);
+      case BOAT:
+        return RaceConfiguration.getValue(ConfigKey.RESPAWN_BOAT_INTERACT);
+      case ELYTRA:
+        return RaceConfiguration.getValue(ConfigKey.RESPAWN_ELYTRA_INTERACT);
+      case PLAYER:
+        return RaceConfiguration.getValue(ConfigKey.RESPAWN_PLAYER_INTERACT);
+      case MINECART:
+        return RaceConfiguration.getValue(ConfigKey.RESPAWN_MINECART_INTERACT);
+      default:
+        throw new IllegalArgumentException();
+    }
+  }
+
+  private RespawnType getRespawnDeathType(RaceType type) {
+    switch (type) {
+      case HORSE:
+        return RaceConfiguration.getValue(ConfigKey.RESPAWN_HORSE_DEATH);
+      case PIG:
+        return RaceConfiguration.getValue(ConfigKey.RESPAWN_PIG_DEATH);
+      case BOAT:
+        return RaceConfiguration.getValue(ConfigKey.RESPAWN_BOAT_DEATH);
+      case ELYTRA:
+        return RaceConfiguration.getValue(ConfigKey.RESPAWN_ELYTRA_DEATH);
+      case PLAYER:
+        return RaceConfiguration.getValue(ConfigKey.RESPAWN_PLAYER_DEATH);
+      case MINECART:
+        return RaceConfiguration.getValue(ConfigKey.RESPAWN_MINECART_DEATH);
+      default:
+        throw new IllegalArgumentException();
+    }
   }
 }
 

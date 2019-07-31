@@ -3,6 +3,7 @@ package com.github.hornta.race.objects;
 import com.github.hornta.race.Racing;
 import com.github.hornta.race.Util;
 import com.github.hornta.race.enums.RaceType;
+import com.github.hornta.race.enums.RespawnType;
 import com.github.hornta.race.message.MessageKey;
 import com.github.hornta.race.message.MessageManager;
 import org.bukkit.*;
@@ -16,12 +17,13 @@ import org.bukkit.potion.PotionEffectType;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Locale;
 import java.util.UUID;
 
 public class RacePlayerSession {
   private static final int PREVENT_SPRINT_FOOD_LEVEL = 6;
-  private static final double MAX_HEALTH = 20;
-  private static final int MAX_FOOD_LEVEL = 20;
+  public static final double MAX_HEALTH = 20;
+  public static final int MAX_FOOD_LEVEL = 20;
   private static final double HORSE_JUMP_STRENGTH = 0.7;
   private static final double HORSE_SPEED = 0.225;
   private final Race race;
@@ -29,7 +31,6 @@ public class RacePlayerSession {
   private final UUID playerId;
   private final String playerName;
   private Player player;
-  private RaceStartPoint startPoint;
   private Location startLocation;
   private RaceCheckpoint currentCheckpoint;
   private RaceCheckpoint nextCheckpoint;
@@ -40,6 +41,7 @@ public class RacePlayerSession {
   private double health;
   private GameMode gameMode;
   private int fireTicks;
+  private boolean allowFlight;
   private BossBar bossBar;
   private Pig pig;
   private Horse horse;
@@ -90,6 +92,7 @@ public class RacePlayerSession {
     health = player.getHealth();
     gameMode = player.getGameMode();
     fireTicks = player.getFireTicks();
+    allowFlight = player.getAllowFlight();
 
     player.setWalkSpeed(0);
     player.setFoodLevel(PREVENT_SPRINT_FOOD_LEVEL);
@@ -98,13 +101,8 @@ public class RacePlayerSession {
       player.removePotionEffect(effect.getType());
     }
     player.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, RaceCountdown.COUNTDOWN_IN_SECONDS * 20, 128));
-    player.setHealth(MAX_HEALTH);
     player.setGameMode(GameMode.ADVENTURE);
-    player.setFireTicks(0);
     player.closeInventory();
-
-    // prevent taking damage and playing fall damage particles when teleporting during falling
-    player.setFallDistance(0);
 
     if(player.isInsideVehicle()) {
       isAllowedToExitVehicle = true;
@@ -112,42 +110,27 @@ public class RacePlayerSession {
       isAllowedToExitVehicle = false;
     }
 
-    // always teleport the player regardless of race type
-    // because if the player is too far away from the vehicle when entering
-    // then sometimes it won't be teleported to the vehicle
-    player.teleport(startLocation);
-
     switch (race.getType()) {
-      case PIG:
-        spawnPig();
-        enterVehicle();
-        break;
-
       case HORSE:
-        spawnHorse(true);
-        enterVehicle();
-        break;
-
-      case ELYTRA:
-        MessageManager.sendMessage(player, MessageKey.ELYTRA_INFO);
-        break;
-
       case BOAT:
-        spawnBoat();
-        enterVehicle();
-        break;
-
+      case PIG:
       case MINECART:
-        MessageManager.sendMessage(player, MessageKey.MINECART_INFO);
-        spawnMinecart();
-        enterVehicle();
+        player.setAllowFlight(true);
         break;
-
+      case ELYTRA:
+      case PLAYER:
+        player.setAllowFlight(false);
+        break;
       default:
     }
 
-    // play sound after being teleported because else we would be teleported away from the sound location
-    player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 2);
+    respawn(RespawnType.FROM_START, () -> {
+      player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 2);
+    }, () -> player.setHealth(MAX_HEALTH));
+
+    if(race.getType() == RaceType.HORSE) {
+      freezeHorse();
+    }
 
     isDirty = true;
   }
@@ -194,98 +177,112 @@ public class RacePlayerSession {
     }
   }
 
-  private Location getRespawnLocation() {
+  public void respawnInVehicle() {
+    Location location;
     if (currentCheckpoint == null || race.getType() == RaceType.ELYTRA) {
-      return startPoint.getLocation();
+      location = startLocation;
     } else {
-      return currentCheckpoint.getLocation().getWorld().getHighestBlockAt(
+      location = currentCheckpoint.getLocation().getWorld().getHighestBlockAt(
         currentCheckpoint.getLocation()
       ).getLocation();
     }
+
+    respawnInVehicle(location, null, null);
   }
 
-  void respawnOnDeath(EntityDamageEvent event) {
-    event.setCancelled(true);
-    player.setFoodLevel(MAX_FOOD_LEVEL);
-    player.setHealth(MAX_HEALTH);
-
+  public void respawnInVehicle(Location location, Runnable runnable, Runnable fireTicksResetCallback) {
     if(getVehicle() != null) {
       exitVehicle();
       getVehicle().remove();
-
-      Bukkit.getScheduler().scheduleSyncDelayedTask(Racing.getInstance(), () -> {
-        switch (race.getType()) {
-          case PIG:
-            spawnPig();
-            break;
-
-          case HORSE:
-            spawnHorse(false, horse);
-            break;
-
-          case BOAT:
-            spawnBoat();
-            break;
-
-          case MINECART:
-            spawnMinecart();
-            break;
-
-          default:
-        }
-        player.teleport(getRespawnLocation());
-        player.setFireTicks(0);
-        enterVehicle();
-      }, 1L);
-    } else {
-      player.teleport(getRespawnLocation());
-      player.setFireTicks(0);
     }
-  }
 
-  public void respawnInVehicle() {
-    if(getVehicle() != null) {
-      exitVehicle();
-      getVehicle().remove();
+    switch (race.getType()) {
+      case PIG:
+        spawnPig(location);
+        break;
+
+      case MINECART:
+        spawnMinecart(location);
+        break;
+
+      case HORSE:
+        spawnHorse(location, horse);
+        break;
+
+      case BOAT:
+        spawnBoat(location);
+        break;
     }
 
     Bukkit.getScheduler().scheduleSyncDelayedTask(Racing.getInstance(), () -> {
-      switch (race.getType()) {
-        case MINECART:
-          spawnMinecart();
-          break;
-        case HORSE:
-          spawnHorse(true, horse);
-          break;
-        case BOAT:
-          spawnBoat();
-          break;
-      }
-      player.teleport(getRespawnLocation());
+      player.teleport(location);
+      // important to set this after teleporting away from a potential source of fire.
+      // 2 ticks looks like the minimum amount of ticks needed to wait after setting it to zero...
+      Bukkit.getScheduler().scheduleSyncDelayedTask(Racing.getInstance(), () -> {
+        player.setFireTicks(0);
+        if(fireTicksResetCallback != null) {
+          fireTicksResetCallback.run();
+        }
+      }, 2);
       enterVehicle();
+      if(runnable != null) {
+        runnable.run();
+      }
     }, 1L);
   }
 
-  private void spawnPig() {
-    pig = (Pig) startLocation.getWorld().spawnEntity(getRespawnLocation(), EntityType.PIG);
+  public void respawn(RespawnType type, Runnable runnable, Runnable fireTicksResetCallback) {
+    if(type == null) {
+      throw new NullPointerException();
+    }
+
+    Location loc;
+    if(type == RespawnType.FROM_START || currentCheckpoint == null) {
+      loc = startLocation;
+    } else {
+      loc = currentCheckpoint.getLocation().getWorld().getHighestBlockAt(
+        currentCheckpoint.getLocation()
+      ).getLocation();
+    }
+
+    player.setFallDistance(0);
+
+    switch (race.getType()) {
+      case PLAYER:
+      case ELYTRA:
+        player.teleport(loc);
+        Bukkit.getScheduler().scheduleSyncDelayedTask(Racing.getInstance(), () -> {
+          player.setFireTicks(0);
+          if(fireTicksResetCallback != null) {
+            fireTicksResetCallback.run();
+          }
+        }, 2);
+        break;
+      case MINECART:
+      case BOAT:
+      case HORSE:
+      case PIG:
+        respawnInVehicle(loc, runnable, fireTicksResetCallback);
+        break;
+    }
+  }
+
+  private void spawnPig(Location location) {
+    pig = (Pig) startLocation.getWorld().spawnEntity(location, EntityType.PIG);
     pig.setInvulnerable(true);
     pig.setAI(false);
     pig.setSaddle(true);
   }
 
-  private void spawnHorse(boolean freeze) {
-    spawnHorse(freeze, null);
-  }
-
-  private void spawnHorse(boolean freeze, Horse oldHorse) {
-    horse = (Horse) startLocation.getWorld().spawnEntity(getRespawnLocation(), EntityType.HORSE);
+  private void spawnHorse(Location location, Horse oldHorse) {
+    horse = (Horse) startLocation.getWorld().spawnEntity(location, EntityType.HORSE);
     horse.setInvulnerable(true);
     horse.setAI(false);
     horse.setTamed(true);
     horse.setOwner(player);
     horse.getInventory().setSaddle(new ItemStack(Material.SADDLE, 1));
-    horse.setJumpStrength(freeze ? 0 : HORSE_JUMP_STRENGTH);
-    horse.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).setBaseValue(freeze ? 0 : HORSE_SPEED);
+    horse.setJumpStrength(HORSE_JUMP_STRENGTH);
+    horse.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).setBaseValue(HORSE_SPEED);
 
     if(oldHorse != null) {
       horse.setColor(oldHorse.getColor());
@@ -294,15 +291,9 @@ public class RacePlayerSession {
     }
   }
 
-  private void spawnBoat() {
-    boat = (Boat) startLocation.getWorld().spawnEntity(getRespawnLocation(), EntityType.BOAT);
-    boat.setInvulnerable(true);
-    boat.setWoodType(TreeSpecies.GENERIC);
-  }
-
-  private void spawnMinecart() {
-    minecart = (Minecart) startLocation.getWorld().spawnEntity(getRespawnLocation(), EntityType.MINECART);
-    minecart.setInvulnerable(true);
+  public void freezeHorse() {
+    horse.setJumpStrength(0);
+    horse.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).setBaseValue(0);
   }
 
   private void unfreezeHorse() {
@@ -310,8 +301,18 @@ public class RacePlayerSession {
     horse.setJumpStrength(HORSE_JUMP_STRENGTH);
   }
 
+  private void spawnBoat(Location location) {
+    boat = (Boat) startLocation.getWorld().spawnEntity(location, EntityType.BOAT);
+    boat.setInvulnerable(true);
+    boat.setWoodType(TreeSpecies.GENERIC);
+  }
+
+  private void spawnMinecart(Location location) {
+    minecart = (Minecart) startLocation.getWorld().spawnEntity(location, EntityType.MINECART);
+    minecart.setInvulnerable(true);
+  }
+
   void setStartPoint(RaceStartPoint startPoint) {
-    this.startPoint = startPoint;
     startLocation = Util.snapAngles(startPoint.getLocation());
   }
 
@@ -348,7 +349,6 @@ public class RacePlayerSession {
       return;
     }
 
-    startPoint = null;
     startLocation = null;
     currentCheckpoint = null;
 
@@ -369,6 +369,7 @@ public class RacePlayerSession {
     player.setHealth(health);
     player.setGameMode(gameMode);
     player.setFireTicks(fireTicks);
+    player.setAllowFlight(allowFlight);
     bossBar.removeAll();
     bossBar = null;
     if(getVehicle() != null) {

@@ -51,8 +51,8 @@ public class CommandJoinRace extends RacingCommand implements ICommandHandler {
     }
 
     Economy economy = Racing.getInstance().getEconomy();
-    if (economy != null) {
-      if(economy.getBalance(player) < race.getEntryFee()) {
+    if (economy != null && race.getEntryFee() > 0) {
+      if (economy.getBalance(player) < race.getEntryFee()) {
         MessageManager.setValue("entry_fee", economy.format(race.getEntryFee()));
         MessageManager.setValue("balance", economy.format(economy.getBalance(player)));
         MessageManager.sendMessage(commandSender, MessageKey.JOIN_RACE_NOT_AFFORD);

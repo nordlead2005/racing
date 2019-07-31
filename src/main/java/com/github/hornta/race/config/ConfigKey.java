@@ -1,8 +1,10 @@
 package com.github.hornta.race.config;
 
 import com.github.hornta.race.api.StorageType;
+import com.github.hornta.race.enums.RespawnType;
 import org.bukkit.configuration.ConfigurationSection;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
@@ -16,7 +18,25 @@ public enum ConfigKey {
   STORAGE("storage.current", ConfigType.STRING, StorageType.FILE, StorageType::valueOf),
   FILE_RACE_DIRECTORY("storage.file.directory", ConfigType.STRING, "races"),
   RACE_PREPARE_TIME("prepare_time", ConfigType.INTEGER, 300),
-  RACE_ANNOUNCE_INTERVALS("race_announce_intervals", ConfigType.LIST, new int[] { 180, 60, 30 });
+  RACE_ANNOUNCE_INTERVALS("race_announce_intervals", ConfigType.LIST, Arrays.asList(180, 60, 30)),
+
+  RESPAWN_PLAYER_DEATH("respawn.player.death", ConfigType.STRING, RespawnType.FROM_LAST_CHECKPOINT, RespawnType::valueOf),
+  RESPAWN_PLAYER_INTERACT("respawn.player.interact", ConfigType.STRING, RespawnType.NONE, RespawnType::valueOf),
+
+  RESPAWN_ELYTRA_DEATH("respawn.elytra.death", ConfigType.STRING, RespawnType.FROM_START, RespawnType::valueOf),
+  RESPAWN_ELYTRA_INTERACT("respawn.elytra.interact", ConfigType.STRING, RespawnType.FROM_START, RespawnType::valueOf),
+
+  RESPAWN_PIG_DEATH("respawn.pig.death", ConfigType.STRING, RespawnType.FROM_LAST_CHECKPOINT, RespawnType::valueOf),
+  RESPAWN_PIG_INTERACT("respawn.pig.interact", ConfigType.STRING, RespawnType.NONE, RespawnType::valueOf),
+
+  RESPAWN_HORSE_DEATH("respawn.horse.death", ConfigType.STRING, RespawnType.FROM_LAST_CHECKPOINT, RespawnType::valueOf),
+  RESPAWN_HORSE_INTERACT("respawn.horse.interact", ConfigType.STRING, RespawnType.NONE, RespawnType::valueOf),
+
+  RESPAWN_BOAT_DEATH("respawn.boat.death", ConfigType.STRING, RespawnType.FROM_LAST_CHECKPOINT, RespawnType::valueOf),
+  RESPAWN_BOAT_INTERACT("respawn.boat.interact", ConfigType.STRING, RespawnType.NONE, RespawnType::valueOf),
+
+  RESPAWN_MINECART_DEATH("respawn.minecart.death", ConfigType.STRING, RespawnType.FROM_LAST_CHECKPOINT, RespawnType::valueOf),
+  RESPAWN_MINECART_INTERACT("respawn.minecart.interact", ConfigType.STRING, RespawnType.FROM_LAST_CHECKPOINT, RespawnType::valueOf);
 
   private static final Set<String> configPaths = new HashSet<>();
 
