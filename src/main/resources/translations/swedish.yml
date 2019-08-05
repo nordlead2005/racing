@@ -143,6 +143,16 @@ race_skipwait: "§e[Starta direkt]"
 race_stop_hover_text: "Klicka här för att stoppa racet"
 race_stop_click_text: "/rc stop <race_name>"
 race_stop: "§e[Stoppa racet]"
+race_sign_registered: "§eSkylt för race `<race_name>` är registrerad."
+race_sign_unregistered: "§eSkylt för race `<race_name>` är avregistrerad."
+race_sign_lines: |
+  [Race]
+  <race_name>
+  §l§8<current_participants>/<max_participants>
+  <status>
+race_sign_status_not_started: "§8§l• Inte startad •"
+race_sign_status_lobby: "§d§l• Lobby •"
+race_sign_status_in_game: "§4§l• I spelet •"
 
 no_permission_command: "§cDu har inte tillåtelse att utföra detta kommando."
 missing_arguments_command: "§cVissa argument till kommandot saknas.\n\nAnvändning:\n<usage>"

@@ -5,12 +5,8 @@ import com.github.hornta.race.enums.*;
 import com.github.hornta.race.events.*;
 import com.github.hornta.race.message.MessageKey;
 import com.github.hornta.race.message.MessageManager;
-import com.github.hornta.race.objects.PlayerSessionResult;
-import com.github.hornta.race.objects.Race;
-import com.github.hornta.race.objects.RaceCheckpoint;
-import com.github.hornta.race.objects.RacePlayerSession;
-import com.github.hornta.race.objects.RaceSession;
-import com.github.hornta.race.objects.RaceStartPoint;
+import com.github.hornta.race.objects.*;
+import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
@@ -43,8 +39,8 @@ public class RacingManager implements Listener {
 
   public void startNewSession(CommandSender initiator, Race race, int laps) {
     RaceSession raceSession = new RaceSession(initiator, race, laps);
-    raceSession.start();
     raceSessions.add(raceSession);
+    raceSession.start();
   }
 
   public List<RaceSession> getRaceSessions() {
@@ -247,13 +243,13 @@ public class RacingManager implements Listener {
     racesByName.clear();
     races.clear();
 
-    api.fetchAllRaces((List<Race> fetchedRaces) -> Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(Racing.getInstance(), () -> {
+    api.fetchAllRaces((List<Race> fetchedRaces) -> {
       for(Race race : fetchedRaces) {
         racesByName.put(race.getName(), race);
         races.add(race);
         Bukkit.getPluginManager().callEvent(new CreateRaceEvent(race));
       }
-    }));
+    });
   }
 
   public void updateRace(Race race, Runnable runnable) {
@@ -359,10 +355,6 @@ public class RacingManager implements Listener {
   public List<Race> getRaces() {
     return new ArrayList<>(races);
   }
-
-  public boolean hasRace(String name) {
-    return racesByName.containsKey(name);
-  }
   
   public RaceSession getParticipatingRace(Player player) {
     for(RaceSession session : raceSessions) {
@@ -371,5 +363,55 @@ public class RacingManager implements Listener {
       }
     }
     return null;
+  }
+
+  public void joinRace(Race race, Player player) {
+    List<RaceSession> sessions = getRaceSessions(race);
+    RaceSession session = null;
+    if(!sessions.isEmpty()) {
+      session = sessions.get(0);
+    }
+
+    if(session == null || session.getState() != RaceSessionState.PREPARING) {
+      MessageManager.sendMessage(player, MessageKey.JOIN_RACE_NOT_OPEN);
+      return;
+    }
+
+    if(session.isParticipating(player)) {
+      MessageManager.sendMessage(player, MessageKey.JOIN_RACE_IS_PARTICIPATING);
+      return;
+    }
+
+    if(getParticipatingRace(player) != null) {
+      MessageManager.sendMessage(player, MessageKey.JOIN_RACE_IS_PARTICIPATING_OTHER);
+      return;
+    }
+
+    if(session.isFull()) {
+      MessageManager.sendMessage(player, MessageKey.JOIN_RACE_IS_FULL);
+      return;
+    }
+
+    Economy economy = Racing.getInstance().getEconomy();
+    if (economy != null && race.getEntryFee() > 0) {
+      if (economy.getBalance(player) < race.getEntryFee()) {
+        MessageManager.setValue("entry_fee", economy.format(race.getEntryFee()));
+        MessageManager.setValue("balance", economy.format(economy.getBalance(player)));
+        MessageManager.sendMessage(player, MessageKey.JOIN_RACE_NOT_AFFORD);
+        return;
+      }
+
+      economy.withdrawPlayer(player, race.getEntryFee());
+      MessageManager.setValue("fee", economy.format(race.getEntryFee()));
+      MessageManager.sendMessage(player, MessageKey.JOIN_RACE_CHARGED);
+    }
+
+    session.participate(player, race.getEntryFee());
+
+    MessageManager.setValue("player_name", player.getName());
+    MessageManager.setValue("race_name", race.getName());
+    MessageManager.setValue("current_participants", session.getAmountOfParticipants());
+    MessageManager.setValue("max_participants", race.getStartPoints().size());
+    MessageManager.broadcast(MessageKey.JOIN_RACE_SUCCESS);
   }
 }

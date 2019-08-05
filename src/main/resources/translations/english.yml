@@ -143,6 +143,16 @@ race_skipwait: "§e[Skip waiting]"
 race_stop_hover_text: "Click here to stop the race"
 race_stop_click_text: "/rc stop <race_name>"
 race_stop: "§e[Stop race]"
+race_sign_registered: "§eSign for race `<race_name>` has been registered."
+race_sign_unregistered: "§eSign for race `<race_name>` has been unregistered."
+race_sign_lines: |
+  [Race]
+  <race_name>
+  §l§8<current_participants>/<max_participants>
+  <status>
+race_sign_status_not_started: "§8§l• Not started •"
+race_sign_status_lobby: "§d§l• Lobby •"
+race_sign_status_in_game: "§4§l• In game •"
 
 no_permission_command: "§cYou don't have permission to execute this command."
 missing_arguments_command: "§cSome arguments for this command is missing.\n\nUsage:\n<usage>"

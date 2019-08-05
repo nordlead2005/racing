@@ -9,12 +9,17 @@ import java.util.regex.Pattern;
 
 public class MessageManager {
   private static final Pattern placeholderPattern = Pattern.compile("<([a-z_]+)(?:\\|(.+))?>", Pattern.CASE_INSENSITIVE);
-  private static LanguageTranslation languageTranslation;
+  private static Translation translation;
+  private static Translation fallbackTranslation;
   private static Map<String, List<String>> placeholderValues = new HashMap<>();
   private static Map<String, MessageKey> placeholderKeys = new HashMap<>();
 
-  public static void setLanguageTranslation(LanguageTranslation languageTranslation) {
-    MessageManager.languageTranslation = languageTranslation;
+  public static void setTranslation(Translation translation) {
+    MessageManager.translation = translation;
+  }
+
+  public static void setFallbackTranslation(Translation fallbackTranslation) {
+    MessageManager.fallbackTranslation = fallbackTranslation;
   }
 
   static String transformPattern(String input) {
@@ -34,7 +39,7 @@ public class MessageManager {
         }
         return String.join(delimiter, placeholderValues.get(placeholder));
       } else if(placeholderKeys.containsKey(placeholder)) {
-        return languageTranslation.getTranslation(placeholderKeys.get(placeholder));
+        return getTranslation(placeholderKeys.get(placeholder));
       } else {
         return m.group();
       }
@@ -42,7 +47,7 @@ public class MessageManager {
   }
 
   public static void sendMessage(CommandSender commandSender, MessageKey key) {
-    String message = languageTranslation.getTranslation(key);
+    String message = getTranslation(key);
     message = transformPlaceholders(message);
     commandSender.sendMessage(message);
   }
@@ -72,7 +77,7 @@ public class MessageManager {
   }
 
   public static void broadcast(MessageKey key) {
-    String message = languageTranslation.getTranslation(key);
+    String message = getTranslation(key);
 
     message = transformPlaceholders(message);
 
@@ -80,7 +85,7 @@ public class MessageManager {
   }
 
   public static String getMessage(MessageKey key) {
-    String message = languageTranslation.getTranslation(key);
+    String message = getTranslation(key);
     return transformPlaceholders(message);
   }
 
@@ -105,5 +110,14 @@ public class MessageManager {
     }
 
     return map;
+  }
+
+  private static String getTranslation(MessageKey key) {
+    if(translation.hasKey(key)) {
+      return translation.getTranslation(key);
+    } else if(fallbackTranslation != null) {
+      return fallbackTranslation.getTranslation(key);
+    }
+    return key.name();
   }
 }

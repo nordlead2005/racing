@@ -21,7 +21,6 @@ import java.util.regex.Pattern;
 public class Translations {
   private static final Pattern ymlResources = Pattern.compile(".+\\.yml$");
   private static final Pattern translationResource = Pattern.compile("^translations/.+\\.yml$");
-  private LanguageTranslation selectedLanguage;
   private Map<String, File> languageFiles = new HashMap<>();
   private File translationsDirectory;
   private JavaPlugin plugin;
@@ -51,14 +50,13 @@ public class Translations {
     return streams;
   }
 
-  public boolean selectLanguage(String language) {
+  public Translation createTranslation(String language) {
     if(!languageFiles.containsKey(language)) {
       Racing.logger().log(Level.SEVERE, "Couldn't find translation `" + language + "`");
-      return false;
+      return null;
     }
 
-    selectedLanguage = new LanguageTranslation(languageFiles.get(language));
-    return selectedLanguage.load();
+    return new Translation(languageFiles.get(language), language);
   }
 
   private void readLanguageFiles(File translationsDirectory) {
@@ -81,11 +79,6 @@ public class Translations {
       languageFiles.put(Util.getFilenameWithoutExtension(file), file);
     }
   }
-
-  public LanguageTranslation getSelectedLanguage() {
-    return selectedLanguage;
-  }
-
   private boolean saveDefaults() {
     translationsDirectory.mkdirs();
     for(Map.Entry<String, InputStream> entry : getResourceTranslationStreams().entrySet()) {

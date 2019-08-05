@@ -3,19 +3,20 @@ package com.github.hornta.race.api;
 import com.github.hornta.race.Racing;
 import com.github.hornta.race.api.migrations.EntryFeeMigration;
 import com.github.hornta.race.api.migrations.PotionEffectsMigration;
+import com.github.hornta.race.api.migrations.SignsMigration;
 import com.github.hornta.race.api.migrations.WalkSpeedMigration;
 import com.github.hornta.race.config.ConfigKey;
 import com.github.hornta.race.config.RaceConfiguration;
 import com.github.hornta.race.enums.RaceState;
 import com.github.hornta.race.enums.RaceType;
 import com.github.hornta.race.enums.RaceVersion;
-import com.github.hornta.race.objects.Race;
-import com.github.hornta.race.objects.RaceCheckpoint;
-import com.github.hornta.race.objects.RacePotionEffect;
-import com.github.hornta.race.objects.RaceStartPoint;
+import com.github.hornta.race.events.CreateRaceEvent;
+import com.github.hornta.race.objects.*;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.block.Block;
+import org.bukkit.block.Sign;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
@@ -55,6 +56,13 @@ public class FileAPI implements RacingAPI {
   private static final String CHECKPOINTS_LOCATION = "checkpoints";
   private static final String START_POINTS_LOCATION = "startPoints";
   public static final String POTION_EFFECTS_FIELD = "potion_effects";
+  public static final String SIGNS_FIELD = "signs";
+  private static final String SIGNS_FIELD_X = "x";
+  private static final String SIGNS_FIELD_Y = "y";
+  private static final String SIGNS_FIELD_Z = "z";
+  private static final String SIGNS_FIELD_WORLD = "world";
+  private static final String SIGNS_FIELD_AUTHOR = "author";
+  private static final String SIGNS_FIELD_CREATED_AT = "created_at";
   private ExecutorService fileService = Executors.newSingleThreadExecutor();
   private File racesDirectory;
   private MigrationManager migrationManager = new MigrationManager();
@@ -64,16 +72,16 @@ public class FileAPI implements RacingAPI {
     migrationManager.addMigration(new EntryFeeMigration());
     migrationManager.addMigration(new WalkSpeedMigration());
     migrationManager.addMigration(new PotionEffectsMigration());
+    migrationManager.addMigration(new SignsMigration());
   }
 
   @Override
   public void fetchAllRaces(Consumer<List<Race>> callback) {
     CompletableFuture.supplyAsync(() -> {
-      List<Race> races = new ArrayList<>();
+      List<YamlConfiguration> races = new ArrayList<>();
       File[] files = racesDirectory.listFiles();
 
       if (files == null) {
-        callback.accept(races);
         return races;
       }
 
@@ -88,16 +96,27 @@ public class FileAPI implements RacingAPI {
             } catch (IOException e) {
               Racing.getInstance().getLogger().log(Level.SEVERE, "Failed to save race");
             }
-            Race race = parseRace(yaml);
-            races.add(race);
-          } catch (ParseRaceException ex) {
+            races.add(yaml);
+          } catch (Exception ex) {
             Racing.logger().log(Level.SEVERE, ex.getMessage(), ex);
           }
         }
       }
 
       return races;
-    }).thenAccept(callback);
+    }).thenAccept((List<YamlConfiguration> configurations) -> Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(Racing.getInstance(), () -> {
+      List<Race> races = new ArrayList<>();
+
+      for (YamlConfiguration config : configurations) {
+        try {
+          races.add(parseRace(config));
+        } catch (Exception ex) {
+          Racing.logger().log(Level.SEVERE, ex.getMessage(), ex);
+        }
+      }
+
+      callback.accept(races);
+    }));
   }
 
   @Override
@@ -145,6 +164,7 @@ public class FileAPI implements RacingAPI {
       writeCheckpoints(race.getCheckpoints(), yaml);
       writeStartPoints(race.getStartPoints(), yaml);
       writePotionEffects(race.getPotionEffects(), yaml);
+      writeSigns(race.getSigns(), yaml);
 
       try {
         yaml.save(raceFile);
@@ -369,7 +389,8 @@ public class FileAPI implements RacingAPI {
       song,
       entryFee,
       walkSpeed,
-      potionEffects
+      potionEffects,
+      parseSigns(yaml)
     );
   }
 
@@ -520,6 +541,64 @@ public class FileAPI implements RacingAPI {
       String key = POTION_EFFECTS_FIELD + "." + potionEffect.getType().getName();
       yaml.set(key + ".amplifier", potionEffect.getAmplifier());
     }
+  }
+
+  private Set<RaceSign> parseSigns(YamlConfiguration yaml) {
+    Set<RaceSign> signs = new HashSet<>();
+    List<Map<String, Object>> entries = (List<Map<String, Object>>)yaml.getList(SIGNS_FIELD);
+    if(entries == null) {
+      throw new ParseRaceException("Couldn't parse signs list");
+    }
+
+    for (Map<String, Object> entry : entries) {
+      int x = (int) entry.get(SIGNS_FIELD_X);
+      int y = (int) entry.get(SIGNS_FIELD_Y);
+      int z = (int) entry.get(SIGNS_FIELD_Z);
+      String worldName = (String) entry.get(SIGNS_FIELD_WORLD);
+      World world = Bukkit.getWorld(worldName);
+      if(world == null) {
+        throw new ParseRaceException("Couldn't parse sign because a world with name " + worldName + " wasn't found");
+      }
+
+      Block block = world.getBlockAt(x, y, z);
+      if (!(block.getState() instanceof Sign)) {
+        Racing.logger().log(Level.WARNING, "Couldn't find sign at (" + x + ", " + y + ", " + z + ")");
+        continue;
+      }
+
+      UUID uuid;
+      try {
+        uuid = UUID.fromString((String) entry.get(SIGNS_FIELD_AUTHOR));
+      } catch (IllegalArgumentException ex) {
+        throw new ParseRaceException("Couldn't parse sign because author UUID is not valid");
+      }
+
+      Instant createdAt;
+      try {
+        createdAt = Instant.ofEpochSecond((int)entry.get(SIGNS_FIELD_CREATED_AT));
+      } catch (DateTimeException ex) {
+        throw new ParseRaceException("Couldn't parse sign because timestamp is invalid");
+      }
+
+      signs.add(new RaceSign((Sign) block.getState(), uuid, createdAt));
+    }
+
+    return signs;
+  }
+
+  private void writeSigns(Set<RaceSign> signs, YamlConfiguration yaml) {
+    List<Map<String, Object>> writeList = new ArrayList<>();
+    for(RaceSign sign : signs) {
+      Map<String, Object> writeSign = new LinkedHashMap<>();
+      writeSign.put(SIGNS_FIELD_X, sign.getSign().getLocation().getBlockX());
+      writeSign.put(SIGNS_FIELD_Y, sign.getSign().getLocation().getBlockY());
+      writeSign.put(SIGNS_FIELD_Z, sign.getSign().getLocation().getBlockZ());
+      writeSign.put(SIGNS_FIELD_WORLD, sign.getSign().getLocation().getWorld().getName());
+      writeSign.put(SIGNS_FIELD_AUTHOR, sign.getCreator().toString());
+      writeSign.put(SIGNS_FIELD_CREATED_AT, sign.getCreatedAt().getEpochSecond());
+      writeList.add(writeSign);
+    }
+    yaml.set(SIGNS_FIELD, writeList);
   }
 
   private Location parseLocation(ConfigurationSection section, String path) throws ParseYamlLocationException {

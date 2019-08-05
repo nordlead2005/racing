@@ -38,6 +38,7 @@ public class CommandCreateRace extends RacingCommand implements ICommandHandler 
       null,
       0,
       0.2F,
+      Collections.emptySet(),
       Collections.emptySet());
 
     racingManager.createRace(race, () -> {

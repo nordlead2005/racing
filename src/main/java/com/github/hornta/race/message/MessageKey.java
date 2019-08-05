@@ -101,6 +101,12 @@ public enum MessageKey {
   STOP_RACE_HOVER_TEXT("race_stop_hover_text"),
   STOP_RACE_CLICK_TEXT("race_stop_click_text"),
   STOP_RACE("race_stop"),
+  SIGN_REGISTERED("race_sign_registered"),
+  SIGN_UNREGISTERED("race_sign_unregistered"),
+  RACE_SIGN_LINES("race_sign_lines"),
+  SIGN_NOT_STARTED("race_sign_status_not_started"),
+  SIGN_LOBBY("race_sign_status_lobby"),
+  SIGN_STARTED("race_sign_status_in_game"),
 
   NO_PERMISSION_COMMAND("no_permission_command"),
   MISSING_ARGUMENTS_COMMAND("missing_arguments_command"),

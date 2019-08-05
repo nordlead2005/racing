@@ -11,6 +11,7 @@ import com.github.hornta.race.config.ConfigKey;
 import com.github.hornta.race.config.RaceConfiguration;
 import com.github.hornta.race.enums.Permission;
 import com.github.hornta.race.mcmmo.McMMOListener;
+import com.github.hornta.race.message.Translation;
 import com.github.hornta.race.message.MessageKey;
 import com.github.hornta.race.message.MessageManager;
 import com.github.hornta.race.message.Translations;
@@ -436,27 +437,42 @@ public class Racing extends JavaPlugin {
 
     carbon = new Carbon();
 
-    if(!RaceConfiguration.init(this)) {
+    if (!RaceConfiguration.init(this)) {
       getLogger().log(Level.SEVERE, "*** This plugin will be disabled. ***");
       setEnabled(false);
       return;
     }
 
     translations = new Translations(this);
-    if(!translations.selectLanguage(RaceConfiguration.getValue(ConfigKey.LANGUAGE))) {
+    Translation translation = translations.createTranslation(RaceConfiguration.getValue(ConfigKey.LANGUAGE));
+    if (translation == null || !translation.load()) {
       getLogger().log(Level.SEVERE, "*** This plugin will be disabled. ***");
       setEnabled(false);
       return;
     }
 
-    MessageManager.setLanguageTranslation(translations.getSelectedLanguage());
+    MessageManager.setTranslation(translation);
+
+    Translation fallbackTranslation = null;
+    if (!translation.getLanguage().equals("english")) {
+      fallbackTranslation = translations.createTranslation("english");
+      if (fallbackTranslation == null || !fallbackTranslation.load()) {
+        getLogger().log(Level.SEVERE, "*** This plugin will be disabled. ***");
+        setEnabled(false);
+        return;
+      }
+    }
+
+    MessageManager.setFallbackTranslation(fallbackTranslation);
 
     if(isNoteBlockAPILoaded) {
       SongManager.init(this);
     }
 
     racingManager = new RacingManager();
+    SignManager signManager = new SignManager(racingManager);
     getServer().getPluginManager().registerEvents(racingManager, this);
+    getServer().getPluginManager().registerEvents(signManager, this);
 
     StorageType storageType = RaceConfiguration.getValue(ConfigKey.STORAGE);
     switch (storageType) {

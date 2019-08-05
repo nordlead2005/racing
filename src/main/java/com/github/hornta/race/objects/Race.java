@@ -24,6 +24,7 @@ public class Race implements Listener {
   private double entryFee;
   private float walkSpeed;
   private Set<RacePotionEffect> potionEffects;
+  private Set<RaceSign> signs;
 
   public Race(
     UUID id,
@@ -38,7 +39,8 @@ public class Race implements Listener {
     String song,
     double entryFee,
     float walkSpeed,
-    Set<RacePotionEffect> potionEffects
+    Set<RacePotionEffect> potionEffects,
+    Set<RaceSign> signs
   ) {
     this.id = id;
     this.version = version;
@@ -53,6 +55,11 @@ public class Race implements Listener {
     this.entryFee = entryFee;
     this.walkSpeed = walkSpeed;
     this.potionEffects = potionEffects;
+    this.signs = signs;
+  }
+
+  public Set<RaceSign> getSigns() {
+    return signs;
   }
 
   public Set<RacePotionEffect> getPotionEffects() {

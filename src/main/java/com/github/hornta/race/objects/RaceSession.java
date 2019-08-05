@@ -8,9 +8,7 @@ import com.github.hornta.race.config.RaceConfiguration;
 import com.github.hornta.race.enums.RaceSessionState;
 import com.github.hornta.race.enums.RaceType;
 import com.github.hornta.race.enums.RespawnType;
-import com.github.hornta.race.events.RacePlayerGoalEvent;
-import com.github.hornta.race.events.RaceSessionResultEvent;
-import com.github.hornta.race.events.RaceSessionStopEvent;
+import com.github.hornta.race.events.*;
 import com.github.hornta.race.message.MessageKey;
 import com.github.hornta.race.message.MessageManager;
 import com.xxmicloxx.NoteBlockAPI.songplayer.RadioSongPlayer;
@@ -85,7 +83,9 @@ public class RaceSession implements Listener {
   }
 
   public void setState(RaceSessionState state) {
+    RaceSessionState oldState = this.state;
     this.state = state;
+    Bukkit.getPluginManager().callEvent(new SessionStateChangedEvent(this, oldState));
   }
 
   public Race getRace() {
@@ -349,6 +349,8 @@ public class RaceSession implements Listener {
       }
     }
 
+    Bukkit.getPluginManager().callEvent(new LeaveEvent(this, playerSession));
+
     if(playerSessions.isEmpty() && (state == RaceSessionState.COUNTDOWN || state == RaceSessionState.STARTED)) {
       stop();
     }
@@ -367,7 +369,9 @@ public class RaceSession implements Listener {
   }
 
   public void participate(Player player, double chargedEntryFee) {
-    playerSessions.put(player.getUniqueId(), new RacePlayerSession(race, player, chargedEntryFee));
+    RacePlayerSession session = new RacePlayerSession(race, player, chargedEntryFee);
+    playerSessions.put(player.getUniqueId(), session);
+    Bukkit.getPluginManager().callEvent(new ParticipateEvent(this, session));
   }
 
   private void addStartTimerTask(int id) {
