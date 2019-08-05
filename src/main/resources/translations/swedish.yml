@@ -37,7 +37,7 @@ commands:
     error_missing_startpoint: "§cRacet måste ha minst 1 startposition."
     error_missing_checkpoint: "§cRacet måste ha minst 1 checkpoint."
     error_missing_checkpoints: "§cRacet måste ha minst 2 checkpoints."
-    error_not_enabled: "§Detta race måste vara öppnat för att kunna starta. Skriv §7/rc setstate <race_name> enabled §cför att öppna det."
+    error_not_enabled: "§eDetta race måste vara öppnat för att kunna starta. Skriv §7/rc setstate <race_name> enabled §cför att öppna det."
     error_no_enabled: "§cDet finns inget aktiverat race."
   stop_race:
     success: "§eRacet har stoppats."
@@ -150,7 +150,7 @@ race_sign_lines: |
   <race_name>
   §l§8<current_participants>/<max_participants>
   <status>
-race_sign_status_not_started: "§8§l• Inte startad •"
+race_sign_status_not_started: "§8§l• Stängd •"
 race_sign_status_lobby: "§d§l• Lobby •"
 race_sign_status_in_game: "§4§l• I spelet •"
 
