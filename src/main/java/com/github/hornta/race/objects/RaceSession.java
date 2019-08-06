@@ -78,6 +78,14 @@ public class RaceSession implements Listener {
     }
   }
 
+  public CommandSender getInitiator() {
+    return initiator;
+  }
+
+  public int getLaps() {
+    return laps;
+  }
+
   public RaceSessionState getState() {
     return state;
   }

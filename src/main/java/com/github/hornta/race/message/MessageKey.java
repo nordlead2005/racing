@@ -89,6 +89,8 @@ public enum MessageKey {
   PARTICIPATE_HOVER_TEXT("race_participate_hover_text"),
   PARTICIPATE_TEXT("race_participate_text"),
   PARTICIPATE_TEXT_FEE("race_participate_text_fee"),
+  PARTICIPATE_DISCORD("race_participate_discord"),
+  PARTICIPATE_DISCORD_FEE("race_participate_discord_fee"),
   PARTICIPATE_TEXT_TIMELEFT("race_participate_text_timeleft"),
   RACE_COUNTDOWN("race_countdown_subtitle"),
   RACE_NEXT_LAP("race_next_lap_actionbar"),

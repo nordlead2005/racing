@@ -2,10 +2,13 @@ package com.github.hornta.race;
 
 import com.github.hornta.race.config.ConfigKey;
 import com.github.hornta.race.config.RaceConfiguration;
+import com.github.hornta.race.events.ConfigReloadedEvent;
 import com.xxmicloxx.NoteBlockAPI.model.Song;
 import com.xxmicloxx.NoteBlockAPI.songplayer.RadioSongPlayer;
 import com.xxmicloxx.NoteBlockAPI.utils.NBSDecoder;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -16,7 +19,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
-public class SongManager {
+public class SongManager implements Listener {
   private static SongManager instance;
   private JavaPlugin plugin;
   private Map<Player, RadioSongPlayer> playerRadios = new HashMap<>();
@@ -102,5 +105,10 @@ public class SongManager {
         songNames.add(name);
       }
     }
+  }
+
+  @EventHandler
+  void onConfigReloaded(ConfigReloadedEvent event) {
+    loadSongs((String) RaceConfiguration.getValue(ConfigKey.SONGS_DIRECTORY));
   }
 }

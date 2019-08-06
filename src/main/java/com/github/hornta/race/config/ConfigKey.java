@@ -36,7 +36,11 @@ public enum ConfigKey {
   RESPAWN_BOAT_INTERACT("respawn.boat.interact", ConfigType.STRING, RespawnType.NONE, RespawnType::valueOf),
 
   RESPAWN_MINECART_DEATH("respawn.minecart.death", ConfigType.STRING, RespawnType.FROM_LAST_CHECKPOINT, RespawnType::valueOf),
-  RESPAWN_MINECART_INTERACT("respawn.minecart.interact", ConfigType.STRING, RespawnType.FROM_LAST_CHECKPOINT, RespawnType::valueOf);
+  RESPAWN_MINECART_INTERACT("respawn.minecart.interact", ConfigType.STRING, RespawnType.FROM_LAST_CHECKPOINT, RespawnType::valueOf),
+
+  DISCORD_ENABLED("discord.enabled", ConfigType.BOOLEAN, false),
+  DISCORD_TOKEN("discord.bot_token", ConfigType.STRING, ""),
+  DISCORD_ANNOUNCE_CHANNEL("discord.announce_channel", ConfigType.STRING, "");
 
   private static final Set<String> configPaths = new HashSet<>();
 

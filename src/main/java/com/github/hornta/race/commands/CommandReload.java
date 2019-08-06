@@ -5,16 +5,18 @@ import com.github.hornta.race.Racing;
 import com.github.hornta.race.SongManager;
 import com.github.hornta.race.config.ConfigKey;
 import com.github.hornta.race.config.RaceConfiguration;
+import com.github.hornta.race.events.ConfigReloadedEvent;
 import com.github.hornta.race.message.Translation;
 import com.github.hornta.race.message.MessageKey;
 import com.github.hornta.race.message.MessageManager;
+import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 
 public class CommandReload implements ICommandHandler {
   @Override
   public void handle(CommandSender commandSender, String[] args) {
     RaceConfiguration.reload(Racing.getInstance());
-    SongManager.getInstance().loadSongs((String) RaceConfiguration.getValue(ConfigKey.SONGS_DIRECTORY));
+    Bukkit.getPluginManager().callEvent(new ConfigReloadedEvent());
 
     String language = RaceConfiguration.getValue(ConfigKey.LANGUAGE);
     Translation translation = Racing.getInstance().getTranslations().createTranslation(language);

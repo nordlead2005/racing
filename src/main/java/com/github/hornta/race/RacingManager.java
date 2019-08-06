@@ -41,6 +41,7 @@ public class RacingManager implements Listener {
     RaceSession raceSession = new RaceSession(initiator, race, laps);
     raceSessions.add(raceSession);
     raceSession.start();
+    Bukkit.getPluginManager().callEvent(new RaceSessionStartEvent(raceSession));
   }
 
   public List<RaceSession> getRaceSessions() {

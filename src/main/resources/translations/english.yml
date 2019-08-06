@@ -121,17 +121,30 @@ race_win: "§e<player_name> has won race §a<race_name>§e with time <time>."
 race_participate_click_text: "/rc join <race_name>"
 race_participate_hover_text: "Click here to participate."
 race_participate_text: |
-  §eRace §a<race_name>§e has been initiated and starts in <time_left>.
+  §eRace §a<race_name>§e has been started and begins in <time_left>.
   Laps: <laps>
   Initiator: <command_sender>
   §6>> Click here to participate <<
 race_participate_text_fee: |
-  §eRace §a<race_name>§e has been initiated and starts in <time_left>.
+  §eRace §a<race_name>§e has been started and begins in <time_left>.
   Laps: <laps>
   Entry fee: <entry_fee>
   Initiator: <command_sender>
   §6>> Click here to participate <<
-race_participate_text_timeleft: "§eThere are <time_left> left before the race begin. Write §7/rc join <race_name>§e to participate."
+race_participate_discord: |
+  @everyone
+  Race **<race_name>** has been started and begins in **<time_left>**.
+  Laps: <laps>
+  Initiator: <command_sender>
+  Enter the server and write **/rc join <race_name>** to participate.
+race_participate_discord_fee: |
+  @everyone
+  Race **<race_name>** has been started and begins in **<time_left>**.
+  Laps: <laps>
+  Entry fee: <entry_fee>
+  Initiator: <command_sender>
+  Enter the server and write **/rc join <race_name>** to participate.
+race_participate_text_timeleft: "§eThere are <time_left> left before the race begins. Write §7/rc join <race_name>§e to participate."
 race_countdown_subtitle: "seconds before the race begins."
 race_next_lap_actionbar: "§6Lap <ordinal>"
 race_final_lap_actionbar: "§6Final lap"

@@ -121,17 +121,30 @@ race_win: "§e<player_name> har vunnit race §a<race_name>§e med tiden <time>."
 race_participate_click_text: "/rc join <race_name>"
 race_participate_hover_text: "Klicka för att delta"
 race_participate_text: |
-  §eRace §a<race_name>§e har påbörjats och startar om <time_left>.
+  §eRace §a<race_name>§e har startats och börjar om <time_left>.
   Varv: <laps>
   Initiativtagare: <command_sender>
   §6>> Klicka här för att delta <<
 race_participate_text_fee: |
-  §eRace §a<race_name>§e har påbörjats och startar om <time_left>.
+  §eRace §a<race_name>§e har startats och börjar om <time_left>.
   Varv: <laps>
   Anmälningsavgift: <entry_fee>
   Initiativtagare: <command_sender>
   §6>> Klicka här för att delta <<
-race_participate_text_timeleft: "§eDet är <time_left> kvar innan racet startar. Skriv §7/rc join <race_name>§e för att delta."
+race_participate_discord: |
+  @everyone
+  Race **<race_name>** har startats och börjar om **<time_left>**.
+  Varv: <laps>
+  Initiativtagare: <command_sender>
+  Gå in på servern och skriv **/rc join <race_name>** för att delta.
+race_participate_discord_fee: |
+  @everyone
+  Race **<race_name>** har startats och börjar om **<time_left>**.
+  Varv: <laps>
+  Anmälningsavgift: <entry_fee>
+  Initiativtagare: <command_sender>
+  Gå in på servern och skriv **/rc join <race_name>** för att delta.
+race_participate_text_timeleft: "§eDet är <time_left> kvar innan racet börjar. Skriv §7/rc join <race_name>§e för att delta."
 race_countdown_subtitle: "sekunder innan racet börjar"
 race_next_lap_actionbar: "§6Varv <ordinal>"
 race_final_lap_actionbar: "§6Sista varvet"

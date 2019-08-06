@@ -16,6 +16,7 @@ import com.github.hornta.race.message.MessageKey;
 import com.github.hornta.race.message.MessageManager;
 import com.github.hornta.race.message.Translations;
 import com.gmail.nossr50.mcMMO;
+import net.dv8tion.jda.core.JDA;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -289,12 +290,14 @@ public class Racing extends JavaPlugin {
           .setHandler(new RacePotionEffectArgumentHandler(racingManager))
           .dependsOn(raceArgument)
           .create()
-      );
+      )
+      .requiresPermission(Permission.RACING_MODIFY.toString());
 
     carbon
       .addCommand("racing clearpotioneffects")
       .withHandler(new CommandClearPotionEffects(racingManager))
-      .withArgument(raceArgument);
+      .withArgument(raceArgument)
+      .requiresPermission(Permission.RACING_MODIFY.toString());
 
     carbon
       .addCommand("racing addstartpoint")
@@ -471,8 +474,12 @@ public class Racing extends JavaPlugin {
 
     racingManager = new RacingManager();
     SignManager signManager = new SignManager(racingManager);
+    DiscordManager discordManager = new DiscordManager();
+
     getServer().getPluginManager().registerEvents(racingManager, this);
     getServer().getPluginManager().registerEvents(signManager, this);
+    getServer().getPluginManager().registerEvents(SongManager.getInstance(), this);
+    getServer().getPluginManager().registerEvents(discordManager, this);
 
     StorageType storageType = RaceConfiguration.getValue(ConfigKey.STORAGE);
     switch (storageType) {
