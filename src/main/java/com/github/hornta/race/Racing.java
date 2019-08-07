@@ -470,6 +470,7 @@ public class Racing extends JavaPlugin {
 
     if(isNoteBlockAPILoaded) {
       SongManager.init(this);
+      getServer().getPluginManager().registerEvents(SongManager.getInstance(), this);
     }
 
     racingManager = new RacingManager();
@@ -478,7 +479,6 @@ public class Racing extends JavaPlugin {
 
     getServer().getPluginManager().registerEvents(racingManager, this);
     getServer().getPluginManager().registerEvents(signManager, this);
-    getServer().getPluginManager().registerEvents(SongManager.getInstance(), this);
     getServer().getPluginManager().registerEvents(discordManager, this);
 
     StorageType storageType = RaceConfiguration.getValue(ConfigKey.STORAGE);
