@@ -1,5 +1,6 @@
 package com.github.hornta.race;
 
+import com.github.hornta.DateUtil;
 import com.github.hornta.race.config.ConfigKey;
 import com.github.hornta.race.config.RaceConfiguration;
 import com.github.hornta.race.events.ConfigReloadedEvent;
@@ -21,7 +22,9 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 
 import javax.security.auth.login.LoginException;
+import java.util.Calendar;
 import java.util.Comparator;
+import java.util.GregorianCalendar;
 import java.util.logging.Level;
 
 public class DiscordManager implements Listener, EventListener {
@@ -77,7 +80,7 @@ public class DiscordManager implements Listener, EventListener {
 
     MessageManager.setValue("race_name", event.getRaceSession().getRace().getName());
     MessageManager.setValue("command_sender", event.getRaceSession().getInitiator().getName());
-    MessageManager.setValue("time_left", Util.getTimeLeft(prepareTime));
+    MessageManager.setValue("time_left", Util.getTimeLeft(prepareTime * 1000));
     MessageManager.setValue("laps", event.getRaceSession().getLaps());
 
     Economy economy = Racing.getInstance().getEconomy();

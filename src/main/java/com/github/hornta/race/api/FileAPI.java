@@ -1,10 +1,7 @@
 package com.github.hornta.race.api;
 
 import com.github.hornta.race.Racing;
-import com.github.hornta.race.api.migrations.EntryFeeMigration;
-import com.github.hornta.race.api.migrations.PotionEffectsMigration;
-import com.github.hornta.race.api.migrations.SignsMigration;
-import com.github.hornta.race.api.migrations.WalkSpeedMigration;
+import com.github.hornta.race.api.migrations.*;
 import com.github.hornta.race.config.ConfigKey;
 import com.github.hornta.race.config.RaceConfiguration;
 import com.github.hornta.race.enums.RaceState;
@@ -28,6 +25,7 @@ import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.time.DateTimeException;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -63,6 +61,12 @@ public class FileAPI implements RacingAPI {
   private static final String SIGNS_FIELD_WORLD = "world";
   private static final String SIGNS_FIELD_AUTHOR = "author";
   private static final String SIGNS_FIELD_CREATED_AT = "created_at";
+  public static final String RESULTS_FIELD = "results";
+  private static final String RESULTS_FIELD_PLAYER_ID = "player_id";
+  private static final String RESULTS_FIELD_PLAYER_NAME = "name";
+  private static final String RESULTS_FIELD_WINS = "wins";
+  private static final String RESULTS_FIELD_RUNS = "runs";
+  private static final String RESULTS_FIELD_DURATION = "duration";
   private ExecutorService fileService = Executors.newSingleThreadExecutor();
   private File racesDirectory;
   private MigrationManager migrationManager = new MigrationManager();
@@ -73,6 +77,7 @@ public class FileAPI implements RacingAPI {
     migrationManager.addMigration(new WalkSpeedMigration());
     migrationManager.addMigration(new PotionEffectsMigration());
     migrationManager.addMigration(new SignsMigration());
+    migrationManager.addMigration(new ResultsMigration());
   }
 
   @Override
@@ -165,6 +170,7 @@ public class FileAPI implements RacingAPI {
       writeStartPoints(race.getStartPoints(), yaml);
       writePotionEffects(race.getPotionEffects(), yaml);
       writeSigns(race.getSigns(), yaml);
+      writeResults(race.getResultByPlayerId().values(), yaml);
 
       try {
         yaml.save(raceFile);
@@ -362,6 +368,7 @@ public class FileAPI implements RacingAPI {
     List<RaceCheckpoint> checkpoints = parseCheckpoints(yaml);
     List<RaceStartPoint> startPoints = parseStartPoints(yaml);
     Set<RacePotionEffect> potionEffects = parsePotionEffects(yaml);
+    Set<RacePlayerStatistic> results = parseResults(yaml);
 
     String song = yaml.getString(SONG_FIELD, null);
 
@@ -390,7 +397,8 @@ public class FileAPI implements RacingAPI {
       entryFee,
       walkSpeed,
       potionEffects,
-      parseSigns(yaml)
+      parseSigns(yaml),
+      results
     );
   }
 
@@ -507,6 +515,52 @@ public class FileAPI implements RacingAPI {
       yaml.set(key + ".location", startPoint.getPosition());
       writeLocation(startPoint.getLocation(), yaml, key + ".location");
     }
+  }
+
+  private Set<RacePlayerStatistic> parseResults(YamlConfiguration yaml) {
+    Set<RacePlayerStatistic> results = new HashSet<>();
+    List<Map<String, Object>> entries = (List<Map<String, Object>>)yaml.getList(RESULTS_FIELD);
+    if(entries == null) {
+      throw new ParseRaceException("Couldn't parse `" + RESULTS_FIELD + "` list");
+    }
+
+    for (Map<String, Object> entry : entries) {
+      UUID playerId;
+      try {
+        playerId = UUID.fromString((String) entry.get(RESULTS_FIELD_PLAYER_ID));
+      } catch (IllegalArgumentException e) {
+        throw new ParseRaceException("Couldn't parse key `" + RESULTS_FIELD_PLAYER_ID + "` as UUID in " + RESULTS_FIELD);
+      }
+
+      String playerName = (String) entry.get(RESULTS_FIELD_PLAYER_NAME);
+      if (playerName == null || playerName.isEmpty()) {
+        throw new ParseRaceException("Couldn't parse `" + RESULTS_FIELD_PLAYER_NAME + "` is null or empty");
+      }
+
+      int runs = (int) entry.get(RESULTS_FIELD_RUNS);
+      int wins = (int) entry.get(RESULTS_FIELD_WINS);
+      long time = (int) entry.get(RESULTS_FIELD_DURATION);
+
+      results.add(new RacePlayerStatistic(playerId, playerName, wins, runs, time));
+    }
+
+    return results;
+  }
+
+  private void writeResults(Collection<RacePlayerStatistic> results, YamlConfiguration yaml) {
+    List<Map<String, Object>> writeList = new ArrayList<>();
+
+    for(RacePlayerStatistic entry : results) {
+      Map<String, Object> writeObject = new LinkedHashMap<>();
+      writeObject.put(RESULTS_FIELD_PLAYER_ID, entry.getPlayerId().toString());
+      writeObject.put(RESULTS_FIELD_PLAYER_NAME, entry.getPlayerName());
+      writeObject.put(RESULTS_FIELD_RUNS, entry.getRuns());
+      writeObject.put(RESULTS_FIELD_WINS, entry.getWins());
+      writeObject.put(RESULTS_FIELD_DURATION, entry.getTime());
+      writeList.add(writeObject);
+    }
+
+    yaml.set(RESULTS_FIELD, writeList);
   }
 
   private Set<RacePotionEffect> parsePotionEffects(YamlConfiguration yaml) {

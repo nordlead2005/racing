@@ -1,5 +1,6 @@
 package com.github.hornta.race;
 
+import com.github.hornta.DateUtil;
 import com.github.hornta.race.api.RacingAPI;
 import com.github.hornta.race.enums.*;
 import com.github.hornta.race.events.*;
@@ -16,11 +17,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -170,15 +167,16 @@ public class RacingManager implements Listener {
   @EventHandler
   void onRaceSessionResult(RaceSessionResultEvent event) {
     for(Map.Entry<RacePlayerSession, PlayerSessionResult> entry : event.getResult().getPlayerResults().entrySet()) {
+      event.getResult().getRaceSession().getRace().addResult(entry.getValue());
       if(entry.getValue().getPosition() == 1) {
         MessageManager.setValue("player_name", entry.getKey().getPlayer().getName());
         MessageManager.setValue("race_name", event.getResult().getRaceSession().getRace().getName());
         MessageManager.setValue("time", Util.getTimeLeft(entry.getValue().getTime()));
         Util.setTimeUnitValues();
         MessageManager.broadcast(MessageKey.RACE_WIN);
-        break;
       }
     }
+    updateRace(event.getResult().getRaceSession().getRace(), () -> {});
   }
 
   @EventHandler

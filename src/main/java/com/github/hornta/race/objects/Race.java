@@ -1,5 +1,6 @@
 package com.github.hornta.race.objects;
 
+import com.github.hornta.race.enums.RaceStatType;
 import com.github.hornta.race.enums.RaceState;
 import com.github.hornta.race.enums.RaceType;
 import com.github.hornta.race.enums.RaceVersion;
@@ -26,6 +27,9 @@ public class Race implements Listener {
   private Set<RacePotionEffect> potionEffects;
   private Set<RaceSign> signs;
 
+  private Map<UUID, RacePlayerStatistic> resultByPlayerId = new HashMap<>();
+  private Map<RaceStatType, Set<RacePlayerStatistic>> resultsByStat = new HashMap<>();
+
   public Race(
     UUID id,
     RaceVersion version,
@@ -40,7 +44,8 @@ public class Race implements Listener {
     double entryFee,
     float walkSpeed,
     Set<RacePotionEffect> potionEffects,
-    Set<RaceSign> signs
+    Set<RaceSign> signs,
+    Set<RacePlayerStatistic> results
   ) {
     this.id = id;
     this.version = version;
@@ -56,6 +61,89 @@ public class Race implements Listener {
     this.walkSpeed = walkSpeed;
     this.potionEffects = potionEffects;
     this.signs = signs;
+
+    for (RacePlayerStatistic playerStatistic : results) {
+      resultByPlayerId.put(playerStatistic.getPlayerId(), playerStatistic);
+    }
+
+    for(RaceStatType statType : RaceStatType.values()) {
+      Set<RacePlayerStatistic> stats = new TreeSet<>((RacePlayerStatistic o1, RacePlayerStatistic o2) -> {
+        int order;
+        switch (statType) {
+          case WINS:
+            order = o2.getWins() - o1.getWins();
+            break;
+          case FASTEST:
+            order = (int)(o1.getTime() - o2.getTime());
+            break;
+          case WIN_RATIO:
+            order = (int)((float)o2.getWins() / o2.getRuns() * 100 - (float)o1.getWins() / o1.getRuns() * 100);
+            break;
+          case RUNS:
+            order = o2.getRuns() - o1.getRuns();
+            break;
+          default:
+            order = 0;
+        }
+
+        if(order == 0) {
+          return o1.getPlayerId().compareTo(o2.getPlayerId());
+        } else {
+          return order;
+        }
+      });
+      resultsByStat.put(statType, stats);
+      stats.addAll(results);
+    }
+  }
+
+  public void addResult(PlayerSessionResult result) {
+    RacePlayerStatistic playerStatistic = resultByPlayerId.get(result.getPlayerSession().getPlayerId());
+    RacePlayerStatistic newStat;
+    if(playerStatistic == null) {
+      newStat = new RacePlayerStatistic(
+        result.getPlayerSession().getPlayerId(),
+        result.getPlayerSession().getPlayerName(),
+        result.getPosition() == 1 ? 1 : 0,
+        1,
+        result.getTime()
+      );
+    } else {
+      newStat = playerStatistic.clone();
+      newStat.setPlayerName(result.getPlayerSession().getPlayerName());
+      newStat.setRuns(newStat.getRuns() + 1);
+      if (result.getPosition() == 1) {
+        newStat.setWins(newStat.getWins() + 1);
+      }
+      if(newStat.getTime() > result.getTime()) {
+        newStat.setTime(result.getTime());
+      }
+    }
+
+    resultByPlayerId.put(newStat.getPlayerId(), newStat);
+
+    for (RaceStatType statType : RaceStatType.values()) {
+      Set<RacePlayerStatistic> resultSet = resultsByStat.get(statType);
+
+      // do we need to check if it contains in the collection before trying to remove it?
+      resultSet.remove(playerStatistic);
+      resultSet.add(newStat);
+    }
+  }
+
+  public void resetResults() {
+    resultByPlayerId.clear();
+    for (RaceStatType statType : RaceStatType.values()) {
+      resultsByStat.get(statType).clear();
+    }
+  }
+
+  public Set<RacePlayerStatistic> getResults(RaceStatType type) {
+    return resultsByStat.get(type);
+  }
+
+  public Map<UUID, RacePlayerStatistic> getResultByPlayerId() {
+    return resultByPlayerId;
   }
 
   public Set<RaceSign> getSigns() {

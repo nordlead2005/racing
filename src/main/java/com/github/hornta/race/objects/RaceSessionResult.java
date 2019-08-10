@@ -16,8 +16,8 @@ public class RaceSessionResult {
     return raceSession;
   }
 
-  public void addPlayerRessionResult(RacePlayerSession playerSession, int position, Duration time) {
-    playerResults.put(playerSession, new PlayerSessionResult(position, time));
+  public void addPlayerRessionResult(RacePlayerSession playerSession, int position, long time) {
+    playerResults.put(playerSession, new PlayerSessionResult(playerSession, position, time));
   }
 
   public Map<RacePlayerSession, PlayerSessionResult> getPlayerResults() {

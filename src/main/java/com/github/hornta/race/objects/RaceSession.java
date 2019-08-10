@@ -41,14 +41,7 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.scoreboard.Team;
 
-import java.time.Duration;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public class RaceSession implements Listener {
   private final UUID id;
@@ -60,7 +53,7 @@ public class RaceSession implements Listener {
   private RaceSessionState state;
   private List<BukkitTask> startTimerTasks = new ArrayList<>();
   private RaceCountdown countdown;
-  private Instant start;
+  private long start;
   private int numFinished;
   private Map<UUID, RacePlayerSession> playerSessions = new HashMap<>();
   private Team team;
@@ -113,7 +106,7 @@ public class RaceSession implements Listener {
 
     MessageManager.setValue("command_sender", initiator.getName());
     MessageManager.setValue("race_name", race.getName());
-    MessageManager.setValue("time_left", Util.getTimeLeft(prepareTime));
+    MessageManager.setValue("time_left", Util.getTimeLeft(prepareTime * 1000));
     MessageManager.setValue("laps", laps);
 
     MessageKey key = MessageKey.PARTICIPATE_TEXT;
@@ -170,7 +163,7 @@ public class RaceSession implements Listener {
       }
       addStartTimerTask(Bukkit.getScheduler().scheduleSyncDelayedTask(Racing.getInstance(), () -> {
         MessageManager.setValue("race_name", race.getName());
-        MessageManager.setValue("time_left", Util.getTimeLeft(interval));
+        MessageManager.setValue("time_left", Util.getTimeLeft(interval * 1000));
         Util.setTimeUnitValues();
         Bukkit.getServer().spigot().broadcast(
           new ComponentBuilder(announceMessage).append(
@@ -208,6 +201,18 @@ public class RaceSession implements Listener {
 
     setState(RaceSessionState.COUNTDOWN);
 
+    String teamName = id.toString().substring(0, 15);
+    team = Bukkit.getScoreboardManager().getMainScoreboard().getTeam(teamName);
+    if(team == null) {
+      team = Bukkit.getScoreboardManager().getMainScoreboard().registerNewTeam(teamName);
+    }
+    if(RaceConfiguration.getValue(ConfigKey.COLLISION_COUNTDOWN)) {
+      team.setOption(Team.Option.COLLISION_RULE, Team.OptionStatus.ALWAYS);
+    } else {
+      team.setOption(Team.Option.COLLISION_RULE, Team.OptionStatus.NEVER);
+    }
+    team.setAllowFriendlyFire(RaceConfiguration.getValue(ConfigKey.FRIENDLY_FIRE_COUNTDOWN));
+
     List<RacePlayerSession> shuffledSessions = new ArrayList<>(playerSessions.values());
     Collections.shuffle(shuffledSessions);
 
@@ -223,17 +228,18 @@ public class RaceSession implements Listener {
       session.startCooldown();
       tryIncrementCheckpoint(session);
       startPointIndex += 1;
+      team.addEntry(session.getPlayer().getName());
     }
 
     countdown = new RaceCountdown(playerSessions.values());
     countdown.start(() -> {
       setState(RaceSessionState.STARTED);
-      String teamName = id.toString().substring(0, 15);
-      team = Bukkit.getScoreboardManager().getMainScoreboard().getTeam(teamName);
-      if(team == null) {
-        team = Bukkit.getScoreboardManager().getMainScoreboard().registerNewTeam(teamName);
+      team.setAllowFriendlyFire(RaceConfiguration.getValue(ConfigKey.FRIENDLY_FIRE_STARTED));
+      if(RaceConfiguration.getValue(ConfigKey.COLLISION_STARTED)) {
+        team.setOption(Team.Option.COLLISION_RULE, Team.OptionStatus.ALWAYS);
+      } else {
+        team.setOption(Team.Option.COLLISION_RULE, Team.OptionStatus.NEVER);
       }
-      team.setOption(Team.Option.COLLISION_RULE, Team.OptionStatus.NEVER);
 
       List<PotionEffect> potionEffects = new ArrayList<>();
       for(RacePotionEffect racePotionEffect : race.getPotionEffects()) {
@@ -271,14 +277,13 @@ public class RaceSession implements Listener {
         if(songPlayer != null) {
           songPlayer.addPlayer(session.getPlayer());
         }
-        team.addEntry(session.getPlayer().getName());
       }
 
       if(songPlayer != null) {
         songPlayer.setTick((short) 0);
         songPlayer.setPlaying(true);
       }
-      start = Instant.now();
+      start = System.currentTimeMillis();
     });
   }
 
@@ -360,7 +365,7 @@ public class RaceSession implements Listener {
     Bukkit.getPluginManager().callEvent(new LeaveEvent(this, playerSession));
 
     if(playerSessions.isEmpty() && (state == RaceSessionState.COUNTDOWN || state == RaceSessionState.STARTED)) {
-      stop();
+      checkFinished();
     }
   }
 
@@ -497,7 +502,10 @@ public class RaceSession implements Listener {
       ) {
         if(playerSession.getStartLocation().distanceSquared(event.getTo()) >= 1) {
           playerSession.respawnInVehicle();
-          playerSession.freezeHorse();
+
+          if(race.getType() == RaceType.HORSE) {
+            playerSession.freezeHorse();
+          }
         }
       } else {
         if(
@@ -539,6 +547,8 @@ public class RaceSession implements Listener {
     Player player = event.getPlayer();
     if(isParticipating(player) && (state == RaceSessionState.COUNTDOWN || state == RaceSessionState.STARTED)) {
       playerSessions.get(player.getUniqueId()).restore();
+      playerSessions.remove(player.getUniqueId());
+      checkFinished();
     }
   }
 
@@ -574,7 +584,7 @@ public class RaceSession implements Listener {
     }
 
     if(playerSessions.isEmpty()) {
-      stop();
+      checkFinished();
     }
   }
 
@@ -619,7 +629,7 @@ public class RaceSession implements Listener {
           }
 
           if(playerSessions.isEmpty()) {
-            stop();
+            checkFinished();
           }
           break;
         default:
@@ -687,12 +697,8 @@ public class RaceSession implements Listener {
   @EventHandler
   void onRacePlayerGoal(RacePlayerGoalEvent event) {
     numFinished += 1;
-    result.addPlayerRessionResult(event.getPlayerSession(), numFinished, Duration.between(start, Instant.now()));
-
-    if(numFinished == playerSessions.size()) {
-      stop();
-      Bukkit.getPluginManager().callEvent(new RaceSessionResultEvent(result));
-    }
+    result.addPlayerRessionResult(event.getPlayerSession(), numFinished, System.currentTimeMillis() - start);
+    checkFinished();
   }
 
   @EventHandler
@@ -769,6 +775,13 @@ public class RaceSession implements Listener {
     }
 
     return race.getName() + " lap " + session.getCurrentLap() + "/" + laps;
+  }
+
+  private void checkFinished() {
+    if(numFinished == playerSessions.size()) {
+      stop();
+      Bukkit.getPluginManager().callEvent(new RaceSessionResultEvent(result));
+    }
   }
 
   private RespawnType getRespawnInteractType(RaceType type) {

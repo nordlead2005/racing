@@ -1,5 +1,6 @@
 package com.github.hornta.race.message;
 
+import com.github.hornta.race.message.MessageManager;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;

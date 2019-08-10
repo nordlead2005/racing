@@ -8,8 +8,10 @@ import org.bukkit.Location;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.RoundingMode;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.text.DecimalFormat;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,9 +19,10 @@ import java.util.Random;
 
 public class Util {
   private static final double HALF_RIGHT_ANGLE = 45;
-  private static final int SECONDS_IN_ONE_DAY = 86400;
-  private static final int SECONDS_IN_ONE_HOUR = 3600;
-  private static final int SECONDS_IN_ONE_MINUTE = 60;
+  private static final int MS_IN_ONE_DAY = 86400 * 1000;
+  private static final int MS_IN_ONE_HOUR = 3600 * 1000;
+  private static final int MS_IN_ONE_MINUTE = 60 * 1000;
+  private static final long MS_IN_ONE_SECOND = 1000;
   private static final int MAX_DURATION_UNITS = 2;
 
   public static Location snapAngles(Location location) {
@@ -54,10 +57,6 @@ public class Util {
     return filename.substring(0, lastDotIndex);
   }
 
-  public static float randomRangeFloat(float min, float max) {
-    return (float)((Math.random() < 0.5) ? ((1.0 - Math.random()) * (max - min) + min) : (Math.random() * (max - min) + min));
-  }
-
   public static int randomRangeInt(int min, int max) {
     if (min > max) {
       throw new IllegalArgumentException("min must not be greater than max");
@@ -67,41 +66,22 @@ public class Util {
     return r.nextInt((max - min) + 1) + min;
   }
 
-  private static byte[] createChecksum(InputStream input) throws NoSuchAlgorithmException, IOException {
-    byte[] buffer = new byte[1024];
-    MessageDigest complete = MessageDigest.getInstance("MD5");
-    int numRead;
-    do {
-      numRead = input.read(buffer);
-      if (numRead > 0) {
-        complete.update(buffer, 0, numRead);
-      }
-    } while (numRead != -1);
-    input.close();
-    return complete.digest();
-  }
-
-  public static String getMD5Checksum(InputStream input) throws NoSuchAlgorithmException, IOException {
-    StringBuilder stringBuilder = new StringBuilder();
-    for(byte b : createChecksum(input)) {
-      stringBuilder.append(Integer.toString((b & 0xff) + 0x100, 16).substring(1));
-    }
-    return stringBuilder.toString();
-  }
-
-  public static String getTimeLeft(Duration duration) {
-    return getTimeLeft((int)duration.getSeconds());
-  }
-
   public static String getTimeLeft(int duration) {
+    return getTimeLeft((long) duration);
+  }
+
+  public static String getTimeLeft(long duration) {
     if(duration == 0) {
       return null;
     }
 
-    int days = duration / SECONDS_IN_ONE_DAY;
-    int hours = (duration % SECONDS_IN_ONE_DAY) / SECONDS_IN_ONE_HOUR;
-    int minutes = ((duration % SECONDS_IN_ONE_DAY) % SECONDS_IN_ONE_HOUR) / SECONDS_IN_ONE_MINUTE;
-    int seconds = ((duration % SECONDS_IN_ONE_DAY) % SECONDS_IN_ONE_HOUR) % SECONDS_IN_ONE_MINUTE;
+    DecimalFormat df = new DecimalFormat("#.#");
+    df.setRoundingMode(RoundingMode.CEILING);
+
+    long days = duration / MS_IN_ONE_DAY;
+    long hours = (duration % MS_IN_ONE_DAY) / MS_IN_ONE_HOUR;
+    long minutes = ((duration % MS_IN_ONE_DAY) % MS_IN_ONE_HOUR) / MS_IN_ONE_MINUTE;
+    long seconds = (((duration % MS_IN_ONE_DAY) % MS_IN_ONE_HOUR) % MS_IN_ONE_MINUTE);
 
     List<DurationUnit> units = new ArrayList<>();
     units.add(new DurationUnit(days, "<day>", "<days>"));
@@ -114,7 +94,7 @@ public class Util {
     int count = 0;
 
     for(DurationUnit unit : units) {
-      int amount = unit.getAmount();
+      long amount = unit.getAmount();
 
       // make sure that we never get a format like 1 hour, 4 seconds, e.g. no skipping unit
       if(count != 0 && amount == 0) {
@@ -125,7 +105,12 @@ public class Util {
         continue;
       }
 
-      stringBuilder.append(amount);
+      if(unit == units.get(units.size() - 1)) {
+        stringBuilder.append(df.format(amount / (float)MS_IN_ONE_SECOND));
+      } else {
+        stringBuilder.append(amount);
+      }
+
       stringBuilder.append(" ");
       stringBuilder.append(unit.getNumerus());
       stringBuilder.append(", ");

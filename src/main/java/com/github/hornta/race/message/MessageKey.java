@@ -61,6 +61,14 @@ public enum MessageKey {
   RACE_INFO_NO_POTION_EFFECTS("commands.race_info.no_potion_effects"),
   RACE_INFO_POTION_EFFECT("commands.race_info.potion_effect_item"),
   RACE_INFO_ENTRY_FEE_LINE("commands.race_info.entry_fee_line"),
+  RACE_TOP_TYPE_FASTEST("commands.race_top.types.fastest"),
+  RACE_TOP_TYPE_MOST_RUNS("commands.race_top.types.most_runs"),
+  RACE_TOP_TYPE_MOST_WINS("commands.race_top.types.most_wins"),
+  RACE_TOP_TYPE_WIN_RATIO("commands.race_top.types.win_ratio"),
+  RACE_TOP_HEADER("commands.race_top.header"),
+  RACE_TOP_ITEM("commands.race_top.item"),
+  RACE_TOP_ITEM_NONE("commands.race_top.item_none"),
+  RACE_RESET_TOP("commands.race_reset_top.success"),
 
   RACE_NOT_FOUND("validators.race_not_found"),
   RACE_ALREADY_EXIST("validators.race_already_exist"),
@@ -77,6 +85,7 @@ public enum MessageKey {
   VALIDATE_MAX_EXCEED("validators.max_exceed"),
   RACE_POTION_EFFECT_NOT_FOUND("validators.race_potion_effect_not_found"),
   POTION_EFFECT_NOT_FOUND("validators.potion_effect_not_found"),
+  STAT_TYPE_NOT_FOUND("validators.stat_type_not_found"),
 
   RACE_CANCELED("race_canceled"),
   NOSHOW_DISQUALIFIED("race_start_noshow_disqualified"),
@@ -121,7 +130,8 @@ public enum MessageKey {
   TIME_UNIT_HOUR("timeunit.hour"),
   TIME_UNIT_HOURS("timeunit.hours"),
   TIME_UNIT_DAY("timeunit.day"),
-  TIME_UNIT_DAYS("timeunit.days");
+  TIME_UNIT_DAYS("timeunit.days"),
+  TIME_UNIT_NOW("timeunit.now");
 
   private static final Set<String> identifiers = new HashSet<>();
   static {

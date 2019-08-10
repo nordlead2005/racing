@@ -2,6 +2,8 @@ package com.github.hornta.race.objects;
 
 import com.github.hornta.race.Racing;
 import com.github.hornta.race.Util;
+import com.github.hornta.race.config.ConfigKey;
+import com.github.hornta.race.config.RaceConfiguration;
 import com.github.hornta.race.enums.RaceType;
 import com.github.hornta.race.enums.RespawnType;
 import com.github.hornta.race.message.MessageKey;
@@ -101,7 +103,10 @@ public class RacePlayerSession {
       player.removePotionEffect(effect.getType());
     }
     player.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, RaceCountdown.COUNTDOWN_IN_SECONDS * 20, 128));
-    player.setGameMode(GameMode.ADVENTURE);
+
+    if(RaceConfiguration.getValue(ConfigKey.ADVENTURE_ON_START)) {
+      player.setGameMode(GameMode.ADVENTURE);
+    }
     player.closeInventory();
 
     if(player.isInsideVehicle()) {

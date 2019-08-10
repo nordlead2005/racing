@@ -1,21 +1,25 @@
 package com.github.hornta.race.objects;
 
-import java.time.Duration;
-
 public class PlayerSessionResult {
+  private final RacePlayerSession playerSession;
   private final int position;
-  private final Duration time;
+  private final long time;
 
-  PlayerSessionResult(int position, Duration time) {
+  PlayerSessionResult(RacePlayerSession playerSession, int position, long time) {
+    this.playerSession = playerSession;
     this.position = position;
     this.time = time;
+  }
+
+  public RacePlayerSession getPlayerSession() {
+    return playerSession;
   }
 
   public int getPosition() {
     return position;
   }
 
-  public Duration getTime() {
+  public long getTime() {
     return time;
   }
 }

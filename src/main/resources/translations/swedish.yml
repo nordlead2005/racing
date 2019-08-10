@@ -93,6 +93,17 @@ commands:
     no_potion_effects: "§fInga"
     potion_effect_item: "§f<potion_effect> : <amplifier>"
     entry_fee_line: "§eAnmälningsavgift: §f<entry_fee>\n"
+  race_top:
+    types:
+      fastest: 'Snabbaste'
+      most_runs: 'Mest deltagande'
+      most_wins: 'Flest vinster'
+      win_ratio: 'Störst vinstförhållande'
+    header: "§e§9<type> §ei race §a<race_name>"
+    item: "§e#<position> §f<player_name> §8- §e<value>"
+    item_none: "§e#<position> §f-"
+  race_reset_top:
+    success: '§eResultat för race §a<race_name> §e har återställts.'
 
 validators:
   race_not_found: "§cDet finns inget race med namn `<race_name>`."
@@ -110,6 +121,7 @@ validators:
   max_exceed: "§c`<argument>` får va högst `<expected>` men fick `<received>`.\n\nAnvändning:\n<help_text>"
   race_potion_effect_not_found: "§cDet finns ingen trolldryckseffekt med namnet `<potion_effect>` i race `<race_name>`."
   potion_effect_not_found: "§cDet finns ingen trolldryckseffekt med namnet `<potion_effect>`."
+  stat_type_not_found: "§cDet finns ingen statistiktyp med namnet `<stat_type>`. Möjliga typer: <stat_types>"
 
 race_canceled: "§eRacet har blivit inställt p.g.a. för få deltagande."
 race_start_noshow_disqualified: "§e<player_name> uteblev från racet och är därmed diskvalificerad."
@@ -179,3 +191,4 @@ timeunit.hour: "timme"
 timeunit.hours: "timmar"
 timeunit.day: "dag"
 timeunit.days: "dagar"
+timeunit.now: "now"

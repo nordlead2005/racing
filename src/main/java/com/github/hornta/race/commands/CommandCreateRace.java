@@ -14,6 +14,7 @@ import org.bukkit.entity.Player;
 
 import java.time.Instant;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.UUID;
 
@@ -40,7 +41,8 @@ public class CommandCreateRace extends RacingCommand implements ICommandHandler 
       0,
       0.2F,
       new HashSet<>(),
-      new HashSet<>());
+      new HashSet<>(),
+      Collections.emptySet());
 
     racingManager.createRace(race, () -> {
       MessageManager.setValue("race_name", race.getName());

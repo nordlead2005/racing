@@ -83,6 +83,8 @@ public class Racing extends JavaPlugin {
   }
 
   private void setupCommands() {
+    carbon = new Carbon();
+
     carbon.setNoPermissionHandler((CommandSender commandSender, CarbonCommand command) -> {
       MessageManager.sendMessage(commandSender, MessageKey.NO_PERMISSION_COMMAND);
     });
@@ -414,13 +416,31 @@ public class Racing extends JavaPlugin {
 
     carbon
       .addCommand("racing help")
-      .withHandler(new CommandHelp());
+      .withHandler(new CommandHelp())
+      .requiresPermission(Permission.RACING_PLAYER.toString());
 
     carbon
       .addCommand("racing info")
       .withArgument(raceArgument)
       .withHandler(new CommandInfo(racingManager))
       .requiresPermission(Permission.RACING_MODERATOR.toString());
+
+    carbon
+      .addCommand("racing top")
+      .withArgument(raceArgument)
+      .withArgument(
+        new CarbonArgument.Builder("stat")
+          .setHandler(new RaceStatArgumentHandler())
+          .create()
+      )
+      .withHandler(new CommandTop(racingManager))
+      .requiresPermission(Permission.RACING_PLAYER.toString());
+
+    carbon
+      .addCommand("racing resettop")
+      .withArgument(raceArgument)
+      .withHandler(new CommandResetTop(racingManager))
+      .requiresPermission(Permission.RACING_ADMIN.toString());
   }
 
   @Override
@@ -437,8 +457,6 @@ public class Racing extends JavaPlugin {
         economy = rsp.getProvider();
       }
     }
-
-    carbon = new Carbon();
 
     if (!RaceConfiguration.init(this)) {
       getLogger().log(Level.SEVERE, "*** This plugin will be disabled. ***");

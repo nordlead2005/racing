@@ -40,7 +40,13 @@ public enum ConfigKey {
 
   DISCORD_ENABLED("discord.enabled", ConfigType.BOOLEAN, false),
   DISCORD_TOKEN("discord.bot_token", ConfigType.STRING, ""),
-  DISCORD_ANNOUNCE_CHANNEL("discord.announce_channel", ConfigType.STRING, "");
+  DISCORD_ANNOUNCE_CHANNEL("discord.announce_channel", ConfigType.STRING, ""),
+
+  ADVENTURE_ON_START("adventure_mode_on_start", ConfigType.BOOLEAN, true),
+  FRIENDLY_FIRE_COUNTDOWN("friendlyfire.countdown", ConfigType.BOOLEAN, false),
+  FRIENDLY_FIRE_STARTED("friendlyfire.started", ConfigType.BOOLEAN, false),
+  COLLISION_COUNTDOWN("collision.countdown", ConfigType.BOOLEAN, false),
+  COLLISION_STARTED("collision.started", ConfigType.BOOLEAN, false);
 
   private static final Set<String> configPaths = new HashSet<>();
 
