@@ -136,13 +136,11 @@ race_participate_hover_text: 点击参加.
 race_participate_text: |
   §e竞赛 §a<race_name>§e已经开启，将在<time_left>后正式开始.
   圈数: <laps>
-  发起人: <command_sender>
   §6>> 点击参加 <<
 race_participate_text_fee: |
   §e竞赛 §a<race_name>§e已经开启，将在<time_left>后正式开始.
   圈数: <laps>
   入场费: <entry_fee>
-  发起人: <command_sender>
   §6>> 点击参加 <<
 race_participate_text_timeleft: §e离竞赛开始还剩下<time_left>.快输入§7/rc join <race_name>§e参加吧.
 race_countdown_subtitle: 竞赛即将开始.

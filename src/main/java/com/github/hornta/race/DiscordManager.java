@@ -79,7 +79,6 @@ public class DiscordManager implements Listener, EventListener {
     Util.setTimeUnitValues();
 
     MessageManager.setValue("race_name", event.getRaceSession().getRace().getName());
-    MessageManager.setValue("command_sender", event.getRaceSession().getInitiator().getName());
     MessageManager.setValue("time_left", Util.getTimeLeft(prepareTime * 1000));
     MessageManager.setValue("laps", event.getRaceSession().getLaps());
 

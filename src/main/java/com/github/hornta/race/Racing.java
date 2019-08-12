@@ -18,6 +18,7 @@ import com.github.hornta.race.message.Translations;
 import com.gmail.nossr50.mcMMO;
 import net.dv8tion.jda.core.JDA;
 import net.milkbowl.vault.economy.Economy;
+import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -40,6 +41,7 @@ public class Racing extends JavaPlugin {
   private Translations translations;
   private RacingManager racingManager;
   private ProtocolManager protocolManager;
+  private Metrics metrics;
 
   public static Racing getInstance() {
     return instance;
@@ -374,8 +376,7 @@ public class Racing extends JavaPlugin {
       .withHandler(new CommandStartRace(racingManager))
       .withArgument(raceArgument)
       .withArgument(lapsArgument)
-      .requiresPermission(Permission.RACING_MODERATOR.toString())
-      .preventConsoleCommandSender();
+      .requiresPermission(Permission.RACING_MODERATOR.toString());
 
     carbon
       .addCommand("racing startrandom")
@@ -425,14 +426,14 @@ public class Racing extends JavaPlugin {
       .withHandler(new CommandInfo(racingManager))
       .requiresPermission(Permission.RACING_MODERATOR.toString());
 
+    CarbonArgument statArgument = new CarbonArgument.Builder("stat")
+      .setHandler(new RaceStatArgumentHandler())
+      .create();
+
     carbon
       .addCommand("racing top")
       .withArgument(raceArgument)
-      .withArgument(
-        new CarbonArgument.Builder("stat")
-          .setHandler(new RaceStatArgumentHandler())
-          .create()
-      )
+      .withArgument(statArgument)
       .withHandler(new CommandTop(racingManager))
       .requiresPermission(Permission.RACING_PLAYER.toString());
 
@@ -446,7 +447,7 @@ public class Racing extends JavaPlugin {
   @Override
   public void onEnable() {
     instance = this;
-
+    metrics = new Metrics(this);
     isNoteBlockAPILoaded = Bukkit.getPluginManager().isPluginEnabled("NoteBlockAPI");
     isHolographicDisplaysLoaded = Bukkit.getPluginManager().isPluginEnabled("HolographicDisplays");
     isVaultLoaded = Bukkit.getPluginManager().isPluginEnabled("Vault");

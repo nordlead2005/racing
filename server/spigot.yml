@@ -60,6 +60,7 @@ advancements:
   - minecraft:story/disabled
 world-settings:
   default:
+    view-distance: default
     seed-outpost: 165745296
     verbose: false
     arrow-despawn-rate: 1200

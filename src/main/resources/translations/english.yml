@@ -135,26 +135,22 @@ race_participate_hover_text: "Click here to participate."
 race_participate_text: |
   §eRace §a<race_name>§e has been started and begins in <time_left>.
   Laps: <laps>
-  Initiator: <command_sender>
   §6>> Click here to participate <<
 race_participate_text_fee: |
   §eRace §a<race_name>§e has been started and begins in <time_left>.
   Laps: <laps>
   Entry fee: <entry_fee>
-  Initiator: <command_sender>
   §6>> Click here to participate <<
 race_participate_discord: |
   @everyone
   Race **<race_name>** has been started and begins in **<time_left>**.
   Laps: <laps>
-  Initiator: <command_sender>
   Enter the server and write **/rc join <race_name>** to participate.
 race_participate_discord_fee: |
   @everyone
   Race **<race_name>** has been started and begins in **<time_left>**.
   Laps: <laps>
   Entry fee: <entry_fee>
-  Initiator: <command_sender>
   Enter the server and write **/rc join <race_name>** to participate.
 race_participate_text_timeleft: "§eThere are <time_left> left before the race begins. Write §7/rc join <race_name>§e to participate."
 race_countdown_subtitle: "seconds before the race begins."

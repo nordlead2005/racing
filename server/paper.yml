@@ -11,7 +11,7 @@
 # Docs: https://paper.readthedocs.org/ 
 
 verbose: false
-config-version: 18
+config-version: 19
 settings:
   enable-player-collisions: true
   player-auto-save-rate: -1
@@ -132,13 +132,12 @@ world-settings:
       - chest
       - diamond_ore
       - redstone_ore
-      - lit_redstone_ore
       - clay
       - emerald_ore
       - ender_chest
       replacement-blocks:
       - stone
-      - planks
+      - oak_planks
     hopper:
       cooldown-when-full: true
       disable-move-event: false
@@ -150,6 +149,7 @@ world-settings:
       refresh-min: 12h
       refresh-max: 2d
     game-mechanics:
+      disable-relative-projectile-velocity: false
       disable-sprint-interruption-on-attack: false
       disable-end-credits: false
       shield-blocking-delay: 5
@@ -178,3 +178,7 @@ world-settings:
       sound: -1
       impact-sound: -1
       flash: -1
+    alt-item-despawn-rate:
+      enabled: false
+      items:
+        COBBLESTONE: 300

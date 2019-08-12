@@ -104,7 +104,6 @@ public class RaceSession implements Listener {
 
     int prepareTime = RaceConfiguration.getValue(ConfigKey.RACE_PREPARE_TIME);
 
-    MessageManager.setValue("command_sender", initiator.getName());
     MessageManager.setValue("race_name", race.getName());
     MessageManager.setValue("time_left", Util.getTimeLeft(prepareTime * 1000));
     MessageManager.setValue("laps", laps);
@@ -154,7 +153,9 @@ public class RaceSession implements Listener {
       .create()[0]
     );
 
-    initiator.spigot().sendMessage(tc);
+    if(initiator instanceof Player) {
+      initiator.spigot().sendMessage(tc);
+    }
     
     ArrayList<Integer> announceIntervals = RaceConfiguration.getValue(ConfigKey.RACE_ANNOUNCE_INTERVALS);
     for(int interval : announceIntervals) {

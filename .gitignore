@@ -12,6 +12,7 @@ eula.txt
 server.properties
 target
 .idea
+.settings
 racing.iml
 server/usercache.json
 server/plugins/TheNewEconomy/Economy.trace.db
