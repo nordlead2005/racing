@@ -40,7 +40,7 @@ commands:
     error_not_enabled: "§cThis race must be enabled in order to start. Write §7/rc setstate <race_name> enabled §cto enable it."
     error_no_enabled: "§cThere are no enabled race."
   stop_race:
-    success: "§eRace been stopped."
+    success: "§cRace been stopped."
     error_not_started: "§cRace is not started."
   join_race:
     success: "§e<player_name> entered race `<race_name>`. (<current_participants>/<max_participants> participants)"
@@ -123,7 +123,7 @@ validators:
   potion_effect_not_found: "§cThere is no potion effect with name `<potion_effect>`."
   stat_type_not_found: "§cThere is no stat type with name `<stat_type>`. Possible values: <stat_types>"
 
-race_canceled: "§eRace has been cancelled due to lack of participants."
+race_canceled: "§cRace has been cancelled due to lack of participants."
 race_start_noshow_disqualified: "§e<player_name> was absent and is now disqualified."
 race_start_quit_disqualified: "§e<player_name> left and is now disqualified."
 race_death_disqualified: "§e<player_name> died during the race and is now disqualified."

@@ -1,13 +1,11 @@
 package com.github.hornta.race;
 
-import com.github.hornta.DateUtil;
 import com.github.hornta.race.config.ConfigKey;
 import com.github.hornta.race.config.RaceConfiguration;
 import com.github.hornta.race.events.ConfigReloadedEvent;
 import com.github.hornta.race.events.RaceSessionStartEvent;
 import com.github.hornta.race.message.MessageKey;
 import com.github.hornta.race.message.MessageManager;
-import com.github.hornta.race.objects.Race;
 import net.dv8tion.jda.core.AccountType;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.JDABuilder;
@@ -16,15 +14,12 @@ import net.dv8tion.jda.core.events.Event;
 import net.dv8tion.jda.core.events.ReadyEvent;
 import net.dv8tion.jda.core.events.ShutdownEvent;
 import net.dv8tion.jda.core.hooks.EventListener;
-import net.dv8tion.jda.core.requests.restaction.MessageAction;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 
 import javax.security.auth.login.LoginException;
-import java.util.Calendar;
 import java.util.Comparator;
-import java.util.GregorianCalendar;
 import java.util.logging.Level;
 
 public class DiscordManager implements Listener, EventListener {

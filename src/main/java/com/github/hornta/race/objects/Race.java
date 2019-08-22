@@ -26,6 +26,7 @@ public class Race implements Listener {
   private float walkSpeed;
   private Set<RacePotionEffect> potionEffects;
   private Set<RaceSign> signs;
+  private int minimimRequiredParticipantsToStart;
 
   private Map<UUID, RacePlayerStatistic> resultByPlayerId = new HashMap<>();
   private Map<RaceStatType, Set<RacePlayerStatistic>> resultsByStat = new HashMap<>();
@@ -45,7 +46,8 @@ public class Race implements Listener {
     float walkSpeed,
     Set<RacePotionEffect> potionEffects,
     Set<RaceSign> signs,
-    Set<RacePlayerStatistic> results
+    Set<RacePlayerStatistic> results,
+    int minimimRequiredPlayersToStart
   ) {
     this.id = id;
     this.version = version;
@@ -61,6 +63,7 @@ public class Race implements Listener {
     this.walkSpeed = walkSpeed;
     this.potionEffects = potionEffects;
     this.signs = signs;
+    this.minimimRequiredParticipantsToStart = minimimRequiredPlayersToStart;
 
     for (RacePlayerStatistic playerStatistic : results) {
       resultByPlayerId.put(playerStatistic.getPlayerId(), playerStatistic);
@@ -125,8 +128,9 @@ public class Race implements Listener {
     for (RaceStatType statType : RaceStatType.values()) {
       Set<RacePlayerStatistic> resultSet = resultsByStat.get(statType);
 
-      // do we need to check if it contains in the collection before trying to remove it?
-      resultSet.remove(playerStatistic);
+      if(playerStatistic != null) {
+        resultSet.remove(playerStatistic);
+      }
       resultSet.add(newStat);
     }
   }
@@ -306,5 +310,9 @@ public class Race implements Listener {
 
   public RaceVersion getVersion() {
     return version;
+  }
+
+  public int getMinimimRequiredParticipantsToStart() {
+    return minimimRequiredParticipantsToStart;
   }
 }

@@ -46,12 +46,6 @@ public class MessageManager {
     });
   }
 
-  public static void sendMessage(CommandSender commandSender, MessageKey key) {
-    String message = getTranslation(key);
-    message = transformPlaceholders(message);
-    commandSender.sendMessage(message);
-  }
-
   private static String transformPlaceholders(String input) {
     String transformed = transformPattern(input);
     placeholderValues.clear();
@@ -77,16 +71,16 @@ public class MessageManager {
   }
 
   public static void broadcast(MessageKey key) {
-    String message = getTranslation(key);
+    Bukkit.broadcastMessage(getMessage(key));
+  }
 
-    message = transformPlaceholders(message);
-
-    Bukkit.broadcastMessage(message);
+  public static void sendMessage(CommandSender commandSender, MessageKey key) {
+    commandSender.sendMessage(getMessage(key));
   }
 
   public static String getMessage(MessageKey key) {
     String message = getTranslation(key);
-    return transformPlaceholders(message);
+    return transformPlaceholders(message).trim();
   }
 
   private static Map<PlaceholderOption, String> getPlaceholderOptions(String options) {

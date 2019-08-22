@@ -1,6 +1,5 @@
 package com.github.hornta.race;
 
-import com.github.hornta.DateUtil;
 import com.github.hornta.race.api.RacingAPI;
 import com.github.hornta.race.enums.*;
 import com.github.hornta.race.events.*;

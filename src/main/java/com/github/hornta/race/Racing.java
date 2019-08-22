@@ -3,6 +3,7 @@ package com.github.hornta.race;
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.ProtocolManager;
 import com.github.hornta.*;
+import com.github.hornta.carbon.*;
 import com.github.hornta.race.api.FileAPI;
 import com.github.hornta.race.api.StorageType;
 import com.github.hornta.race.commands.*;
@@ -16,7 +17,6 @@ import com.github.hornta.race.message.MessageKey;
 import com.github.hornta.race.message.MessageManager;
 import com.github.hornta.race.message.Translations;
 import com.gmail.nossr50.mcMMO;
-import net.dv8tion.jda.core.JDA;
 import net.milkbowl.vault.economy.Economy;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
@@ -35,7 +35,6 @@ public class Racing extends JavaPlugin {
   private static Racing instance;
   private boolean isNoteBlockAPILoaded;
   private boolean isHolographicDisplaysLoaded;
-  private boolean isVaultLoaded;
   private Economy economy;
   private Carbon carbon;
   private Translations translations;
@@ -367,7 +366,7 @@ public class Racing extends JavaPlugin {
 
     CarbonArgument lapsArgument = new CarbonArgument.Builder("laps")
       .setType(CarbonArgumentType.INTEGER)
-      .setDefaultValue(1)
+      .setDefaultValue(CommandSender.class, 1)
       .setMin(1)
       .create();
 
@@ -382,8 +381,7 @@ public class Racing extends JavaPlugin {
       .addCommand("racing startrandom")
       .withHandler(new CommandStartRace(racingManager))
       .withArgument(lapsArgument)
-      .requiresPermission(Permission.RACING_MODERATOR.toString())
-      .preventConsoleCommandSender();
+      .requiresPermission(Permission.RACING_MODERATOR.toString());
 
     carbon
       .addCommand("racing join")
@@ -450,9 +448,8 @@ public class Racing extends JavaPlugin {
     metrics = new Metrics(this);
     isNoteBlockAPILoaded = Bukkit.getPluginManager().isPluginEnabled("NoteBlockAPI");
     isHolographicDisplaysLoaded = Bukkit.getPluginManager().isPluginEnabled("HolographicDisplays");
-    isVaultLoaded = Bukkit.getPluginManager().isPluginEnabled("Vault");
 
-    if (isVaultLoaded) {
+    if (Bukkit.getPluginManager().isPluginEnabled("Vault")) {
       RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
       if (rsp != null) {
         economy = rsp.getProvider();

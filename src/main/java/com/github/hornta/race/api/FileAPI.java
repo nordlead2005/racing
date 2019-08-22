@@ -67,6 +67,7 @@ public class FileAPI implements RacingAPI {
   private static final String RESULTS_FIELD_WINS = "wins";
   private static final String RESULTS_FIELD_RUNS = "runs";
   private static final String RESULTS_FIELD_DURATION = "duration";
+  private static final String MINIMUM_REQUIRED_PARTICIPANTS_TO_START = "min_required_participants_to_start";
   private ExecutorService fileService = Executors.newSingleThreadExecutor();
   private File racesDirectory;
   private MigrationManager migrationManager = new MigrationManager();
@@ -78,6 +79,7 @@ public class FileAPI implements RacingAPI {
     migrationManager.addMigration(new PotionEffectsMigration());
     migrationManager.addMigration(new SignsMigration());
     migrationManager.addMigration(new ResultsMigration());
+    migrationManager.addMigration(new MinimumRequiredParticipantsToStartMigration());
   }
 
   @Override
@@ -171,6 +173,7 @@ public class FileAPI implements RacingAPI {
       writePotionEffects(race.getPotionEffects(), yaml);
       writeSigns(race.getSigns(), yaml);
       writeResults(race.getResultByPlayerId().values(), yaml);
+      yaml.set(MINIMUM_REQUIRED_PARTICIPANTS_TO_START, race.getMinimimRequiredParticipantsToStart());
 
       try {
         yaml.save(raceFile);
@@ -383,6 +386,11 @@ public class FileAPI implements RacingAPI {
       walkSpeed = yaml.getInt(WALK_SPEED_FIELD);
     }
 
+    if(!yaml.contains(MINIMUM_REQUIRED_PARTICIPANTS_TO_START)) {
+      throw new ParseRaceException("`" + MINIMUM_REQUIRED_PARTICIPANTS_TO_START + "` is missing from race");
+    }
+    int minimumRequiredParticipantsToStart = yaml.getInt(MINIMUM_REQUIRED_PARTICIPANTS_TO_START);
+
     return new Race(
       id,
       version,
@@ -398,7 +406,8 @@ public class FileAPI implements RacingAPI {
       walkSpeed,
       potionEffects,
       parseSigns(yaml),
-      results
+      results,
+      minimumRequiredParticipantsToStart
     );
   }
 

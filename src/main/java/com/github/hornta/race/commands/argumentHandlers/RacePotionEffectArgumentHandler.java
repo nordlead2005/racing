@@ -1,7 +1,7 @@
 package com.github.hornta.race.commands.argumentHandlers;
 
-import com.github.hornta.ValidationResult;
-import com.github.hornta.completers.IArgumentHandler;
+import com.github.hornta.carbon.ValidationResult;
+import com.github.hornta.carbon.completers.IArgumentHandler;
 import com.github.hornta.race.RacingManager;
 import com.github.hornta.race.message.MessageKey;
 import com.github.hornta.race.message.MessageManager;
@@ -38,6 +38,7 @@ public class RacePotionEffectArgumentHandler implements IArgumentHandler {
   public boolean test(Set<String> items, String argument) {
     return items.contains(argument.toLowerCase(Locale.ENGLISH));
   }
+
   @Override
   public void whenInvalid(ValidationResult result) {
     MessageManager.setValue("race_name", result.getPrevArgs()[0]);

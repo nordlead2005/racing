@@ -132,28 +132,26 @@ public class RaceSession implements Listener {
     MessageManager.setValue("race_name", race.getName());
     ClickEvent stopClickEvent = new ClickEvent(ClickEvent.Action.RUN_COMMAND, MessageManager.getMessage(MessageKey.STOP_RACE_CLICK_TEXT));
 
-    HoverEvent skipWaitHover = new HoverEvent(
-      HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(MessageManager.getMessage(MessageKey.SKIP_WAIT_HOVER_TEXT)).create()
-    );
-    HoverEvent stopHover = new HoverEvent(
-      HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(MessageManager.getMessage(MessageKey.STOP_RACE_HOVER_TEXT)).create()
-    );
-
-    TextComponent tc = new TextComponent();
-    tc.addExtra(
-      new ComponentBuilder(MessageManager.getMessage(MessageKey.SKIP_WAIT))
-      .event(skipWaitHover)
-      .event(skipWaitClickEvent).create()[0]
-    );
-    tc.addExtra(" ");
-    tc.addExtra(
-      new ComponentBuilder(MessageManager.getMessage(MessageKey.STOP_RACE))
-      .event(stopHover)
-      .event(stopClickEvent)
-      .create()[0]
-    );
-
     if(initiator instanceof Player) {
+      HoverEvent skipWaitHover = new HoverEvent(
+        HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(MessageManager.getMessage(MessageKey.SKIP_WAIT_HOVER_TEXT)).create()
+      );
+      HoverEvent stopHover = new HoverEvent(
+        HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(MessageManager.getMessage(MessageKey.STOP_RACE_HOVER_TEXT)).create()
+      );
+      TextComponent tc = new TextComponent();
+      tc.addExtra(
+        new ComponentBuilder(MessageManager.getMessage(MessageKey.SKIP_WAIT))
+          .event(skipWaitHover)
+          .event(skipWaitClickEvent).create()[0]
+      );
+      tc.addExtra(" ");
+      tc.addExtra(
+        new ComponentBuilder(MessageManager.getMessage(MessageKey.STOP_RACE))
+          .event(stopHover)
+          .event(stopClickEvent)
+          .create()[0]
+      );
       initiator.spigot().sendMessage(tc);
     }
     
@@ -194,7 +192,7 @@ public class RaceSession implements Listener {
       }
     }
 
-    if(playerSessions.isEmpty()) {
+    if (playerSessions.isEmpty() || getAmountOfParticipants() < race.getMinimimRequiredParticipantsToStart()) {
       MessageManager.broadcast(MessageKey.RACE_CANCELED);
       stop();
       return;
@@ -365,7 +363,7 @@ public class RaceSession implements Listener {
 
     Bukkit.getPluginManager().callEvent(new LeaveEvent(this, playerSession));
 
-    if(playerSessions.isEmpty() && (state == RaceSessionState.COUNTDOWN || state == RaceSessionState.STARTED)) {
+    if(state == RaceSessionState.COUNTDOWN || state == RaceSessionState.STARTED) {
       checkFinished();
     }
   }
@@ -697,8 +695,11 @@ public class RaceSession implements Listener {
 
   @EventHandler
   void onRacePlayerGoal(RacePlayerGoalEvent event) {
+    if (event.getRaceSession() != this) {
+      return;
+    }
     numFinished += 1;
-    result.addPlayerRessionResult(event.getPlayerSession(), numFinished, System.currentTimeMillis() - start);
+    result.addPlayerSessionResult(event.getPlayerSession(), numFinished, System.currentTimeMillis() - start);
     checkFinished();
   }
 

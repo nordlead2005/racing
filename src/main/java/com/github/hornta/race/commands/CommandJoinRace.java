@@ -1,6 +1,6 @@
 package com.github.hornta.race.commands;
 
-import com.github.hornta.ICommandHandler;
+import com.github.hornta.carbon.ICommandHandler;
 import com.github.hornta.race.Racing;
 import com.github.hornta.race.RacingManager;
 import com.github.hornta.race.enums.RaceSessionState;

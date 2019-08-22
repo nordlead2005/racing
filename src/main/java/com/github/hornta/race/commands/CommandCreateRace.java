@@ -1,6 +1,6 @@
 package com.github.hornta.race.commands;
 
-import com.github.hornta.ICommandHandler;
+import com.github.hornta.carbon.ICommandHandler;
 import com.github.hornta.race.RacingManager;
 import com.github.hornta.race.Util;
 import com.github.hornta.race.enums.RaceState;
@@ -42,7 +42,8 @@ public class CommandCreateRace extends RacingCommand implements ICommandHandler 
       0.2F,
       new HashSet<>(),
       new HashSet<>(),
-      Collections.emptySet());
+      Collections.emptySet(),
+      1);
 
     racingManager.createRace(race, () -> {
       MessageManager.setValue("race_name", race.getName());

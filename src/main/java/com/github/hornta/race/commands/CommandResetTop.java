@@ -1,6 +1,6 @@
 package com.github.hornta.race.commands;
 
-import com.github.hornta.ICommandHandler;
+import com.github.hornta.carbon.ICommandHandler;
 import com.github.hornta.race.RacingManager;
 import com.github.hornta.race.Util;
 import com.github.hornta.race.enums.RaceStatType;
@@ -23,6 +23,7 @@ public class CommandResetTop extends RacingCommand implements ICommandHandler {
     Race race = racingManager.getRace(args[0]);
     race.resetResults();
     racingManager.updateRace(race, () -> {
+      MessageManager.setValue("race_name", race.getName());
       MessageManager.sendMessage(commandSender, MessageKey.RACE_RESET_TOP);
     });
   }
