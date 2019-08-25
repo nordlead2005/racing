@@ -15,7 +15,7 @@ public class CommandRemovePotionEffect extends RacingCommand implements ICommand
   }
 
   @Override
-  public void handle(CommandSender commandSender, String[] args) {
+  public void handle(CommandSender commandSender, String[] args, int typedArgs) {
     Race race = racingManager.getRace(args[0]);
     PotionEffectType type = PotionEffectType.getByName(args[1]);
 

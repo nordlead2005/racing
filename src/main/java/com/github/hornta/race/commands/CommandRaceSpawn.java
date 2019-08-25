@@ -17,7 +17,7 @@ public class CommandRaceSpawn extends RacingCommand implements ICommandHandler {
   }
 
   @Override
-  public void handle(CommandSender commandSender, String[] args) {
+  public void handle(CommandSender commandSender, String[] args, int typedArgs) {
     Race race = racingManager.getRace(args[0]);
 
     if(race.getState() != RaceState.ENABLED && !commandSender.hasPermission(Permission.RACING_MODERATOR.toString())) {

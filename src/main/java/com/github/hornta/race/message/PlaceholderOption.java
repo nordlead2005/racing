@@ -1,7 +1,9 @@
 package com.github.hornta.race.message;
 
 public enum PlaceholderOption {
-  DELIMITER;
+  DELIMITER,
+  PREFIX,
+  SUFFIX;
 
   public static PlaceholderOption fromString(String string) {
     for(PlaceholderOption value : values()) {

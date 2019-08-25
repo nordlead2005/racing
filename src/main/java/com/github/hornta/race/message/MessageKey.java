@@ -118,6 +118,7 @@ public enum MessageKey {
   SIGN_NOT_STARTED("race_sign_status_not_started"),
   SIGN_LOBBY("race_sign_status_lobby"),
   SIGN_STARTED("race_sign_status_in_game"),
+  BLOCKED_CMDS("race_blocked_cmd"),
 
   NO_PERMISSION_COMMAND("no_permission_command"),
   MISSING_ARGUMENTS_COMMAND("missing_arguments_command"),

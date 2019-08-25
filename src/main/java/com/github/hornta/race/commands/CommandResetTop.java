@@ -19,7 +19,7 @@ public class CommandResetTop extends RacingCommand implements ICommandHandler {
   }
 
   @Override
-  public void handle(CommandSender commandSender, String[] args) {
+  public void handle(CommandSender commandSender, String[] args, int typedArgs) {
     Race race = racingManager.getRace(args[0]);
     race.resetResults();
     racingManager.updateRace(race, () -> {

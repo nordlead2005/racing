@@ -16,7 +16,7 @@ public class CommandAddPotionEffect extends RacingCommand implements ICommandHan
   }
 
   @Override
-  public void handle(CommandSender commandSender, String[] args) {
+  public void handle(CommandSender commandSender, String[] args, int typedArgs) {
     Race race = racingManager.getRace(args[0]);
     PotionEffectType type = PotionEffectType.getByName(args[1]);
     int amplifier = Integer.parseInt(args[2]);

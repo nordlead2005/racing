@@ -7,7 +7,7 @@ import org.bukkit.entity.Player;
 
 public class CommandStopSong implements ICommandHandler {
   @Override
-  public void handle(CommandSender sender, String[] args) {
+  public void handle(CommandSender sender, String[] args, int typedArgs) {
     SongManager.stopSong((Player)sender);
   }
 }

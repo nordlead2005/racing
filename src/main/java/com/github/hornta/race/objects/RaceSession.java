@@ -32,6 +32,7 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityTargetEvent;
+import org.bukkit.event.entity.EntityToggleGlideEvent;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.event.vehicle.VehicleEnterEvent;
@@ -529,7 +530,7 @@ public class RaceSession implements Listener {
 
   @EventHandler
   void onFoodLevelChange(FoodLevelChangeEvent event) {
-    if(event.getEntityType() == EntityType.PLAYER && isParticipating((Player)event.getEntity())) {
+    if(state == RaceSessionState.STARTED && event.getEntityType() == EntityType.PLAYER && isParticipating((Player)event.getEntity())) {
       event.setCancelled(true);
     }
   }
@@ -678,7 +679,7 @@ public class RaceSession implements Listener {
 
   @EventHandler
   void onVehicleExit(VehicleExitEvent event) {
-    if(!(event.getExited() instanceof Player)) {
+    if(!(event.getExited() instanceof Player) || state != RaceSessionState.STARTED && state != RaceSessionState.COUNTDOWN) {
       return;
     }
 
@@ -768,6 +769,26 @@ public class RaceSession implements Listener {
     RespawnType respawnType = getRespawnInteractType(race.getType());
     if(respawnType == RespawnType.FROM_LAST_CHECKPOINT || respawnType == RespawnType.FROM_START) {
       playerSession.respawn(respawnType, null, null);
+    }
+  }
+
+  @EventHandler
+  void onEntityToggleGlideEvent(EntityToggleGlideEvent event) {
+    if(!(boolean)RaceConfiguration.getValue(ConfigKey.ELYTRA_RESPAWN_ON_GROUND)) {
+      return;
+    }
+
+    if(!(event.getEntity() instanceof Player)) {
+      return;
+    }
+
+    Player player = (Player) event.getEntity();
+    if(!isParticipating(player) || state != RaceSessionState.STARTED) {
+      return;
+    }
+
+    if(!event.isGliding()) {
+      playerSessions.get(player.getUniqueId()).respawn(RespawnType.FROM_START, null, null);
     }
   }
 

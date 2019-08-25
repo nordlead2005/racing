@@ -16,7 +16,7 @@ public class CommandRaces extends RacingCommand implements ICommandHandler {
   }
 
   @Override
-  public void handle(CommandSender commandSender, String[] args) {
+  public void handle(CommandSender commandSender, String[] args, int typedArgs) {
     List<Race> races = racingManager.getRaces();
 
     MessageManager.setValue("races", races

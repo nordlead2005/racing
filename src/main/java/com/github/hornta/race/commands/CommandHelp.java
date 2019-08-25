@@ -11,7 +11,7 @@ import java.util.List;
 
 public class CommandHelp implements ICommandHandler {
   @Override
-  public void handle(CommandSender commandSender, String[] args) {
+  public void handle(CommandSender commandSender, String[] args, int typedArgs) {
     Player player = null;
     if(commandSender instanceof Player) {
       player = (Player)commandSender;

@@ -14,7 +14,7 @@ public class CommandSetWalkSpeed extends RacingCommand implements ICommandHandle
   }
 
   @Override
-  public void handle(CommandSender commandSender, String[] args) {
+  public void handle(CommandSender commandSender, String[] args, int typedArgs) {
     Race race = racingManager.getRace(args[0]);
     float speed = Float.parseFloat(args[1]);
 

@@ -20,7 +20,7 @@ public class CommandJoinRace extends RacingCommand implements ICommandHandler {
   }
 
   @Override
-  public void handle(CommandSender commandSender, String[] args) {
+  public void handle(CommandSender commandSender, String[] args, int typedArgs) {
     Race race = racingManager.getRace(args[0]);
     Player player = (Player)commandSender;
     racingManager.joinRace(race, player);

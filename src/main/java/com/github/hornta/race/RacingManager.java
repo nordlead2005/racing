@@ -1,6 +1,8 @@
 package com.github.hornta.race;
 
 import com.github.hornta.race.api.RacingAPI;
+import com.github.hornta.race.config.ConfigKey;
+import com.github.hornta.race.config.RaceConfiguration;
 import com.github.hornta.race.enums.*;
 import com.github.hornta.race.events.*;
 import com.github.hornta.race.message.MessageKey;
@@ -12,7 +14,9 @@ import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
@@ -222,6 +226,45 @@ public class RacingManager implements Listener {
         if(startPoint.getHologram() != null) {
           startPoint.getHologram().getVisibilityManager().resetVisibility(event.getPlayer());
         }
+      }
+    }
+  }
+
+  @EventHandler(priority = EventPriority.HIGHEST)
+  void onPlayerCommandPreprocess(PlayerCommandPreprocessEvent event) {
+    RaceSession session = getParticipatingRace(event.getPlayer());
+    if(session == null || session.getState() == RaceSessionState.PREPARING) {
+      return;
+    }
+
+    List<String> blockedCommands = RaceConfiguration.getValue(ConfigKey.BLOCKED_COMMANDS);
+    String entryLabel = event.getMessage().split(" ")[0].replace("/", "");
+    String[] entryArgs = event.getMessage().replace("/" + entryLabel, "").trim().split(" ");
+
+    for(String blockedCommand : blockedCommands) {
+      String blockedLabel = blockedCommand.split(" ")[0].replace("/", "");
+      if (blockedLabel.equalsIgnoreCase(entryLabel)) {
+        boolean skip = false;
+        String argString = blockedCommand.replace(blockedLabel, "").trim();
+        if (!argString.isEmpty()) {
+          String[] blockedArgs = argString.split(" ");
+          for(int i = 0; i < blockedArgs.length; ++i) {
+            // if entry arg doesnt exist or if entry args isn't equal to the blocked arg then continue with next blocked cmd
+            if (i >= entryArgs.length || !blockedArgs[i].equalsIgnoreCase(entryArgs[i])) {
+              skip = true;
+              break;
+            }
+          }
+        }
+
+        if (skip) {
+          continue;
+        }
+
+        event.setCancelled(true);
+        MessageManager.setValue("command", "/" + blockedCommand);
+        MessageManager.sendMessage(event.getPlayer(), MessageKey.BLOCKED_CMDS);
+        return;
       }
     }
   }

@@ -15,7 +15,7 @@ public class CommandRaceTeleportStart extends RacingCommand implements ICommandH
   }
 
   @Override
-  public void handle(CommandSender commandSender, String[] args) {
+  public void handle(CommandSender commandSender, String[] args, int typedArgs) {
     RaceStartPoint checkpoint = racingManager.getRace(args[0]).getStartPoint(Integer.parseInt(args[1]));
     Player player = (Player)commandSender;
 

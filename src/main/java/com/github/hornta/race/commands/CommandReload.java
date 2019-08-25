@@ -14,7 +14,7 @@ import org.bukkit.command.CommandSender;
 
 public class CommandReload implements ICommandHandler {
   @Override
-  public void handle(CommandSender commandSender, String[] args) {
+  public void handle(CommandSender commandSender, String[] args, int typedArgs) {
     RaceConfiguration.reload(Racing.getInstance());
     Bukkit.getPluginManager().callEvent(new ConfigReloadedEvent());
 

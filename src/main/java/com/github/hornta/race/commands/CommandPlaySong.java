@@ -7,7 +7,7 @@ import org.bukkit.entity.Player;
 
 public class CommandPlaySong implements ICommandHandler {
   @Override
-  public void handle(CommandSender sender, String[] args) {
+  public void handle(CommandSender sender, String[] args, int typedArgs) {
     SongManager.playSong(args[0], (Player)sender);
   }
 }

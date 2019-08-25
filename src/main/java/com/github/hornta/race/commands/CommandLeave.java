@@ -14,7 +14,7 @@ public class CommandLeave extends RacingCommand implements ICommandHandler {
   }
 
   @Override
-  public void handle(CommandSender commandSender, String[] args) {
+  public void handle(CommandSender commandSender, String[] args, int typedArgs) {
     Player player = (Player)commandSender;
     RaceSession session = racingManager.getParticipatingRace(player);
 

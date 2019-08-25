@@ -33,11 +33,19 @@ public class MessageManager {
       }
 
       String delimiter = "";
+      String prefix = "";
+      String suffix = "";
       if (placeholderValues.containsKey(placeholder)) {
         if (options.containsKey(PlaceholderOption.DELIMITER) && options.get(PlaceholderOption.DELIMITER) != null) {
           delimiter = options.get(PlaceholderOption.DELIMITER);
         }
-        return String.join(delimiter, placeholderValues.get(placeholder));
+        if(options.containsKey(PlaceholderOption.PREFIX) && options.get(PlaceholderOption.PREFIX) != null) {
+          prefix = options.get(PlaceholderOption.PREFIX);
+        }
+        if(options.containsKey(PlaceholderOption.SUFFIX) && options.get(PlaceholderOption.SUFFIX) != null) {
+          suffix = options.get(PlaceholderOption.SUFFIX);
+        }
+        return prefix + String.join(delimiter, placeholderValues.get(placeholder)) + suffix;
       } else if(placeholderKeys.containsKey(placeholder)) {
         return getTranslation(placeholderKeys.get(placeholder));
       } else {

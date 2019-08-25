@@ -46,7 +46,29 @@ public enum ConfigKey {
   FRIENDLY_FIRE_COUNTDOWN("friendlyfire.countdown", ConfigType.BOOLEAN, false),
   FRIENDLY_FIRE_STARTED("friendlyfire.started", ConfigType.BOOLEAN, false),
   COLLISION_COUNTDOWN("collision.countdown", ConfigType.BOOLEAN, false),
-  COLLISION_STARTED("collision.started", ConfigType.BOOLEAN, false);
+  COLLISION_STARTED("collision.started", ConfigType.BOOLEAN, false),
+
+  ELYTRA_RESPAWN_ON_GROUND("elytra_respawn_on_ground", ConfigType.BOOLEAN, true),
+
+  BLOCKED_COMMANDS("blocked_commands", ConfigType.LIST, Arrays.asList(
+    "spawn",
+    "wild",
+    "wilderness",
+    "rtp",
+    "tpa",
+    "tpo",
+    "tp",
+    "tpahere",
+    "tpaccept",
+    "tpdeny",
+    "tpyes",
+    "tpno",
+    "tppos",
+    "warp",
+    "home",
+    "rc spawn",
+    "racing spawn"
+  ));
 
   private static final Set<String> configPaths = new HashSet<>();
 

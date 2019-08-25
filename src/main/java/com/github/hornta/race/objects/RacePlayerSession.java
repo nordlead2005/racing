@@ -250,6 +250,12 @@ public class RacePlayerSession {
       ).getLocation();
     }
 
+    if (player.isSleeping()) {
+      // 2 seconds of very high resistance
+      player.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 20, 255, false, false, false));
+      player.addPotionEffect(new PotionEffect(PotionEffectType.HARM, 1, 1, false, false, false));
+    }
+
     player.setFallDistance(0);
 
     switch (race.getType()) {

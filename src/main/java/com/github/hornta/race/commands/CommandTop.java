@@ -21,7 +21,7 @@ public class CommandTop extends RacingCommand implements ICommandHandler {
   }
 
   @Override
-  public void handle(CommandSender commandSender, String[] args) {
+  public void handle(CommandSender commandSender, String[] args, int typedArgs) {
     Race race = racingManager.getRace(args[0]);
     RaceStatType statType = RaceStatType.valueOf(args[1].toUpperCase(Locale.ENGLISH));
     Set<RacePlayerStatistic> results = race.getResults(statType);
