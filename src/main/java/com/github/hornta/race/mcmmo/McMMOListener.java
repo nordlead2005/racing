@@ -17,7 +17,7 @@ public class McMMOListener implements Listener {
   @EventHandler
   void onMcMMOPlayerDeathPenalty(McMMOPlayerDeathPenaltyEvent event) {
     RaceSession raceSession = racingManager.getParticipatingRace(event.getPlayer());
-    if (raceSession.getState() == RaceSessionState.COUNTDOWN || raceSession.getState() == RaceSessionState.STARTED) {
+    if (raceSession != null && (raceSession.getState() == RaceSessionState.COUNTDOWN || raceSession.getState() == RaceSessionState.STARTED)) {
       event.setCancelled(true);
     }
   }
