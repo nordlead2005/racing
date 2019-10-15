@@ -6,10 +6,7 @@ import net.dv8tion.jda.core.entities.Game;
 import org.bukkit.GameMode;
 import org.bukkit.configuration.ConfigurationSection;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Locale;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 
 public enum ConfigKey {
@@ -71,11 +68,7 @@ public enum ConfigKey {
     "rc spawn",
     "racing spawn"
   )),
-  PREVENT_JOIN_FROM_GAME_MODE("prevent_join_from_game_mode", ConfigType.LIST, Arrays.asList(
-    GameMode.ADVENTURE,
-    GameMode.CREATIVE,
-    GameMode.SPECTATOR
-  ));
+  PREVENT_JOIN_FROM_GAME_MODE("prevent_join_from_game_mode", ConfigType.LIST, Collections.emptyList());
 
   private static final Set<String> configPaths = new HashSet<>();
 
