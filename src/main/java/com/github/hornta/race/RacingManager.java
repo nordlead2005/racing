@@ -10,6 +10,7 @@ import com.github.hornta.race.message.MessageManager;
 import com.github.hornta.race.objects.*;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -430,6 +431,13 @@ public class RacingManager implements Listener {
 
     if(session.isFull()) {
       MessageManager.sendMessage(player, MessageKey.JOIN_RACE_IS_FULL);
+      return;
+    }
+
+    List<GameMode> preventJoinFromGameMode = RaceConfiguration.getValue(ConfigKey.PREVENT_JOIN_FROM_GAME_MODE);
+    if(preventJoinFromGameMode.contains(player.getGameMode())) {
+      MessageManager.setValue("game_mode", player.getGameMode());
+      MessageManager.sendMessage(player, MessageKey.JOIN_RACE_GAME_MODE);
       return;
     }
 

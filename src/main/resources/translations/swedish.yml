@@ -50,6 +50,7 @@ commands:
     error_is_participating: "§cDu deltar redan i detta race."
     error_is_participating_other: "§cDu deltar för tillfället i ett annat race."
     error_not_afford: "§cDu har inte råd att delta. Det kostar <entry_fee> och du har <balance>."
+    error_game_mode: "§cDu kan inte delta i racet när du är i `<game_mode>`."
   race_skip_wait:
     error_not_started: "§cRacet måste vara startat för att kunna skippas."
   reload:

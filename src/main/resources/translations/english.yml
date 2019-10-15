@@ -50,6 +50,7 @@ commands:
     error_is_participating: "§cYou are already participating in this race."
     error_is_participating_other: "§cYou are currently participating in another race."
     error_not_afford: "§cYou can't afford to enter this race. Entry fee is <entry_fee> and you have <balance>."
+    error_game_mode: "§cYou can't join this race when in game mode `<game_mode>`."
   race_skip_wait:
     error_not_started: "§cRace must be started in order to skip preparing."
   reload:

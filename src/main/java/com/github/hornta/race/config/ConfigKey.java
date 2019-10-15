@@ -2,6 +2,8 @@ package com.github.hornta.race.config;
 
 import com.github.hornta.race.api.StorageType;
 import com.github.hornta.race.enums.RespawnType;
+import net.dv8tion.jda.core.entities.Game;
+import org.bukkit.GameMode;
 import org.bukkit.configuration.ConfigurationSection;
 
 import java.util.Arrays;
@@ -68,6 +70,11 @@ public enum ConfigKey {
     "home",
     "rc spawn",
     "racing spawn"
+  )),
+  PREVENT_JOIN_FROM_GAME_MODE("prevent_join_from_game_mode", ConfigType.LIST, Arrays.asList(
+    GameMode.ADVENTURE,
+    GameMode.CREATIVE,
+    GameMode.SPECTATOR
   ));
 
   private static final Set<String> configPaths = new HashSet<>();

@@ -41,6 +41,7 @@ import org.bukkit.event.vehicle.VehicleMoveEvent;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.scoreboard.Team;
+import org.bukkit.util.Vector;
 
 import java.util.*;
 
@@ -156,7 +157,7 @@ public class RaceSession implements Listener {
       initiator.spigot().sendMessage(tc);
     }
     
-    ArrayList<Integer> announceIntervals = RaceConfiguration.getValue(ConfigKey.RACE_ANNOUNCE_INTERVALS);
+    List<Integer> announceIntervals = RaceConfiguration.getValue(ConfigKey.RACE_ANNOUNCE_INTERVALS);
     for(int interval : announceIntervals) {
       if(interval >= prepareTime) {
         return;
@@ -438,6 +439,7 @@ public class RaceSession implements Listener {
             playerSession.setNextCheckpoint(race.getCheckpoint(nextCheckpoint.getPosition() + 1));
           }
         }
+        Bukkit.getPluginManager().callEvent(new CheckpointReachedEvent(this, playerSession, nextCheckpoint));
       }
     }
   }
@@ -510,8 +512,8 @@ public class RaceSession implements Listener {
       } else {
         if(
           Double.compare(event.getFrom().getX(), event.getTo().getX()) == 0 &&
-            Double.compare(event.getFrom().getY(), event.getTo().getY()) == 0 &&
-            Double.compare(event.getFrom().getZ(), event.getTo().getZ()) == 0
+          Double.compare(event.getFrom().getY(), event.getTo().getY()) == 0 &&
+          Double.compare(event.getFrom().getZ(), event.getTo().getZ()) == 0
         ) {
           return;
         }
@@ -789,6 +791,17 @@ public class RaceSession implements Listener {
 
     if(!event.isGliding()) {
       playerSessions.get(player.getUniqueId()).respawn(RespawnType.FROM_START, null, null);
+    }
+  }
+
+  @EventHandler
+  void onCheckpointReached(CheckpointReachedEvent event) {
+    if (event.getRaceSession() != this) {
+      return;
+    }
+    if (event.getPlayerSession().getNextCheckpoint() != null) {
+      //Vector v = event.getPlayerSession().getPlayer().getVelocity();
+      //event.getPlayerSession().getPlayer().setVelocity(v.multiply(5));
     }
   }
 

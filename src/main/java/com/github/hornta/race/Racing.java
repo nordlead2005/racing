@@ -152,6 +152,7 @@ public class Racing extends JavaPlugin {
           .showTabCompletion(false)
           .create()
       )
+      .requiresPermission(Permission.COMMAND_CREATE.toString())
       .requiresPermission(Permission.RACING_MODIFY.toString())
       .preventConsoleCommandSender();
 
@@ -159,17 +160,20 @@ public class Racing extends JavaPlugin {
       .addCommand("racing delete")
       .withHandler(new CommandDeleteRace(racingManager))
       .withArgument(raceArgument)
+      .requiresPermission(Permission.COMMAND_DELETE.toString())
       .requiresPermission(Permission.RACING_MODIFY.toString());
 
     carbon
       .addCommand("racing list")
       .withHandler(new CommandRaces(racingManager))
+      .requiresPermission(Permission.COMMAND_LIST.toString())
       .requiresPermission(Permission.RACING_PLAYER.toString());
 
     carbon
       .addCommand("racing addcheckpoint")
       .withHandler(new CommandAddCheckpoint(racingManager))
       .withArgument(raceArgument)
+      .requiresPermission(Permission.COMMAND_ADD_CHECKPOINT.toString())
       .requiresPermission(Permission.RACING_MODIFY.toString())
       .preventConsoleCommandSender();
 
@@ -183,6 +187,7 @@ public class Racing extends JavaPlugin {
       .withHandler(new CommandDeleteCheckpoint(racingManager))
       .withArgument(raceArgument)
       .withArgument(checkpointArgument)
+      .requiresPermission(Permission.COMMAND_DELETE_CHECKPOINT.toString())
       .requiresPermission(Permission.RACING_MODIFY.toString());
 
     carbon
@@ -190,6 +195,7 @@ public class Racing extends JavaPlugin {
       .withHandler(new CommandRaceTeleportPoint(racingManager))
       .withArgument(raceArgument)
       .withArgument(checkpointArgument)
+      .requiresPermission(Permission.COMMAND_TELEPORT_CHECKPOINT.toString())
       .requiresPermission(Permission.RACING_MODIFY.toString())
       .preventConsoleCommandSender();
 
@@ -198,12 +204,14 @@ public class Racing extends JavaPlugin {
       .withHandler(new CommandRaceSpawn(racingManager))
       .withArgument(raceArgument)
       .requiresPermission(Permission.RACING_PLAYER.toString())
+      .requiresPermission(Permission.COMMAND_SPAWN.toString())
       .preventConsoleCommandSender();
 
     carbon
       .addCommand("racing setspawn")
       .withHandler(new CommandRaceSetSpawn(racingManager))
       .withArgument(raceArgument)
+      .requiresPermission(Permission.COMMAND_SET_SPAWN.toString())
       .requiresPermission(Permission.RACING_MODIFY.toString())
       .preventConsoleCommandSender();
 
@@ -216,6 +224,7 @@ public class Racing extends JavaPlugin {
           .setHandler(new RaceStateArgumentHandler())
           .create()
       )
+      .requiresPermission(Permission.COMMAND_SET_STATE.toString())
       .requiresPermission(Permission.RACING_MODIFY.toString());
 
     carbon
@@ -227,6 +236,7 @@ public class Racing extends JavaPlugin {
           .setType(CarbonArgumentType.STRING)
           .create()
       )
+      .requiresPermission(Permission.COMMAND_SET_NAME.toString())
       .requiresPermission(Permission.RACING_MODIFY.toString());
 
     carbon
@@ -238,6 +248,7 @@ public class Racing extends JavaPlugin {
           .setHandler(new RaceTypeArgumentHandler())
           .create()
       )
+      .requiresPermission(Permission.COMMAND_SET_TYPE.toString())
       .requiresPermission(Permission.RACING_MODIFY.toString());
 
     if(economy != null) {
@@ -251,6 +262,7 @@ public class Racing extends JavaPlugin {
             .setMin(0)
             .create()
         )
+        .requiresPermission(Permission.COMMAND_SET_ENTRY_FEE.toString())
         .requiresPermission(Permission.RACING_MODIFY.toString());
     }
 
@@ -264,6 +276,7 @@ public class Racing extends JavaPlugin {
           .setMin(0)
           .create()
       )
+      .requiresPermission(Permission.COMMAND_SET_WALK_SPEED.toString())
       .requiresPermission(Permission.RACING_MODIFY.toString());
 
     carbon
@@ -282,6 +295,7 @@ public class Racing extends JavaPlugin {
           .setMax(255)
           .create()
       )
+      .requiresPermission(Permission.COMMAND_ADD_POTION_EFFECT.toString())
       .requiresPermission(Permission.RACING_MODIFY.toString());
 
     carbon
@@ -294,18 +308,21 @@ public class Racing extends JavaPlugin {
           .dependsOn(raceArgument)
           .create()
       )
+      .requiresPermission(Permission.COMMAND_REMOVE_POTION_EFFECT.toString())
       .requiresPermission(Permission.RACING_MODIFY.toString());
 
     carbon
       .addCommand("racing clearpotioneffects")
       .withHandler(new CommandClearPotionEffects(racingManager))
       .withArgument(raceArgument)
+      .requiresPermission(Permission.COMMAND_CLEAR_POTION_EFFECTS.toString())
       .requiresPermission(Permission.RACING_MODIFY.toString());
 
     carbon
       .addCommand("racing addstartpoint")
       .withHandler(new CommandAddStartpoint(racingManager))
       .withArgument(raceArgument)
+      .requiresPermission(Permission.COMMAND_ADD_STARTPOINT.toString())
       .requiresPermission(Permission.RACING_MODIFY.toString())
       .preventConsoleCommandSender();
 
@@ -321,6 +338,7 @@ public class Racing extends JavaPlugin {
       .withHandler(new CommandDeleteStartpoint(racingManager))
       .withArgument(raceArgument)
       .withArgument(startPointArgument)
+      .requiresPermission(Permission.COMMAND_DELETE_STARTPOINT.toString())
       .requiresPermission(Permission.RACING_MODIFY.toString());
 
     carbon
@@ -328,6 +346,7 @@ public class Racing extends JavaPlugin {
       .withHandler(new CommandRaceTeleportStart(racingManager))
       .withArgument(raceArgument)
       .withArgument(startPointArgument)
+      .requiresPermission(Permission.COMMAND_TELEPORT_STARTPOINT.toString())
       .requiresPermission(Permission.RACING_MODIFY.toString())
       .preventConsoleCommandSender();
 
@@ -342,24 +361,28 @@ public class Racing extends JavaPlugin {
         .withHandler(new CommandSetSong(racingManager))
         .withArgument(raceArgument)
         .withArgument(songArgument)
+        .requiresPermission(Permission.COMMAND_SET_SONG.toString())
         .requiresPermission(Permission.RACING_MODIFY.toString());
 
       carbon
         .addCommand("racing unsetsong")
         .withHandler(new CommandUnsetSong(racingManager))
         .withArgument(raceArgument)
+        .requiresPermission(Permission.COMMAND_UNSET_SONG.toString())
         .requiresPermission(Permission.RACING_MODIFY.toString());
 
       carbon
         .addCommand("racing playsong")
         .withHandler(new CommandPlaySong())
         .withArgument(songArgument)
+        .requiresPermission(Permission.COMMAND_PLAY_SONG.toString())
         .requiresPermission(Permission.RACING_MODIFY.toString())
         .preventConsoleCommandSender();
 
       carbon
         .addCommand("racing stopsong")
         .withHandler(new CommandStopSong())
+        .requiresPermission(Permission.COMMAND_STOP_SONG.toString())
         .requiresPermission(Permission.RACING_MODIFY.toString())
         .preventConsoleCommandSender();
     }
@@ -375,18 +398,21 @@ public class Racing extends JavaPlugin {
       .withHandler(new CommandStartRace(racingManager))
       .withArgument(raceArgument)
       .withArgument(lapsArgument)
+      .requiresPermission(Permission.COMMAND_START.toString())
       .requiresPermission(Permission.RACING_MODERATOR.toString());
 
     carbon
       .addCommand("racing startrandom")
       .withHandler(new CommandStartRace(racingManager))
       .withArgument(lapsArgument)
+      .requiresPermission(Permission.COMMAND_START_RANDOM.toString())
       .requiresPermission(Permission.RACING_MODERATOR.toString());
 
     carbon
       .addCommand("racing join")
       .withHandler(new CommandJoinRace(racingManager))
       .withArgument(raceArgument)
+      .requiresPermission(Permission.COMMAND_JOIN.toString())
       .requiresPermission(Permission.RACING_PLAYER.toString())
       .preventConsoleCommandSender();
 
@@ -394,34 +420,40 @@ public class Racing extends JavaPlugin {
       .addCommand("racing stop")
       .withHandler(new CommandStopRace(racingManager))
       .withArgument(raceArgument)
+      .requiresPermission(Permission.COMMAND_STOP.toString())
       .requiresPermission(Permission.RACING_MODERATOR.toString());
 
     carbon
       .addCommand("racing skipwait")
       .withHandler(new CommandSkipWait(racingManager))
       .withArgument(raceArgument)
+      .requiresPermission(Permission.COMMAND_SKIPWAIT.toString())
       .requiresPermission(Permission.RACING_MODERATOR.toString());
 
     carbon
       .addCommand("racing leave")
       .withHandler(new CommandLeave(racingManager))
+      .requiresPermission(Permission.COMMAND_LEAVE.toString())
       .requiresPermission(Permission.RACING_PLAYER.toString())
       .preventConsoleCommandSender();
 
     carbon
       .addCommand("racing reload")
       .withHandler(new CommandReload())
+      .requiresPermission(Permission.COMMAND_RELOAD.toString())
       .requiresPermission(Permission.RACING_ADMIN.toString());
 
     carbon
       .addCommand("racing help")
       .withHandler(new CommandHelp())
+      .requiresPermission(Permission.COMMAND_HELP.toString())
       .requiresPermission(Permission.RACING_PLAYER.toString());
 
     carbon
       .addCommand("racing info")
       .withArgument(raceArgument)
       .withHandler(new CommandInfo(racingManager))
+      .requiresPermission(Permission.COMMAND_INFO.toString())
       .requiresPermission(Permission.RACING_MODERATOR.toString());
 
     CarbonArgument statArgument = new CarbonArgument.Builder("stat")
@@ -433,12 +465,14 @@ public class Racing extends JavaPlugin {
       .withArgument(raceArgument)
       .withArgument(statArgument)
       .withHandler(new CommandTop(racingManager))
+      .requiresPermission(Permission.COMMAND_TOP.toString())
       .requiresPermission(Permission.RACING_PLAYER.toString());
 
     carbon
       .addCommand("racing resettop")
       .withArgument(raceArgument)
       .withHandler(new CommandResetTop(racingManager))
+      .requiresPermission(Permission.COMMAND_RESET_TOP.toString())
       .requiresPermission(Permission.RACING_ADMIN.toString());
   }
 

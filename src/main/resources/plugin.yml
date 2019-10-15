@@ -21,7 +21,6 @@ permissions:
     default: op
     children:
       racing.modify: true
-      racing.moderator: true
   racing.modify:
     description: Gives access to build and modify races
     default: op
