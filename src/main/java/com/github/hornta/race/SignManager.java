@@ -1,5 +1,6 @@
 package com.github.hornta.race;
 
+import com.github.hornta.race.enums.JoinType;
 import com.github.hornta.race.enums.Permission;
 import com.github.hornta.race.enums.RaceSessionState;
 import com.github.hornta.race.events.*;
@@ -203,7 +204,7 @@ public class SignManager implements Listener {
     }
 
     if(event.getAction() == Action.RIGHT_CLICK_BLOCK) {
-      racingManager.joinRace(racesBySign.get(sign), event.getPlayer());
+      racingManager.joinRace(racesBySign.get(sign), event.getPlayer(), JoinType.SIGN);
     }
   }
 

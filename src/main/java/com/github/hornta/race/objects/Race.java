@@ -27,6 +27,7 @@ public class Race implements Listener {
   private Set<RacePotionEffect> potionEffects;
   private Set<RaceSign> signs;
   private int minimimRequiredParticipantsToStart;
+  private double pigSpeed;
 
   private Map<UUID, RacePlayerStatistic> resultByPlayerId = new HashMap<>();
   private Map<RaceStatType, Set<RacePlayerStatistic>> resultsByStat = new HashMap<>();
@@ -47,7 +48,8 @@ public class Race implements Listener {
     Set<RacePotionEffect> potionEffects,
     Set<RaceSign> signs,
     Set<RacePlayerStatistic> results,
-    int minimimRequiredPlayersToStart
+    int minimimRequiredPlayersToStart,
+    double pigSpeed
   ) {
     this.id = id;
     this.version = version;
@@ -64,6 +66,7 @@ public class Race implements Listener {
     this.potionEffects = potionEffects;
     this.signs = signs;
     this.minimimRequiredParticipantsToStart = minimimRequiredPlayersToStart;
+    this.pigSpeed = pigSpeed;
 
     for (RacePlayerStatistic playerStatistic : results) {
       resultByPlayerId.put(playerStatistic.getPlayerId(), playerStatistic);
@@ -314,5 +317,13 @@ public class Race implements Listener {
 
   public int getMinimimRequiredParticipantsToStart() {
     return minimimRequiredParticipantsToStart;
+  }
+
+  public double getPigSpeed() {
+    return pigSpeed;
+  }
+
+  public void setPigSpeed(double pigSpeed) {
+    this.pigSpeed = pigSpeed;
   }
 }

@@ -68,6 +68,7 @@ public class FileAPI implements RacingAPI {
   private static final String RESULTS_FIELD_RUNS = "runs";
   private static final String RESULTS_FIELD_DURATION = "duration";
   private static final String MINIMUM_REQUIRED_PARTICIPANTS_TO_START = "min_required_participants_to_start";
+  private static final String PIG_SPEED_FIELD = "pig_speed";
   private ExecutorService fileService = Executors.newSingleThreadExecutor();
   private File racesDirectory;
   private MigrationManager migrationManager = new MigrationManager();
@@ -80,6 +81,7 @@ public class FileAPI implements RacingAPI {
     migrationManager.addMigration(new SignsMigration());
     migrationManager.addMigration(new ResultsMigration());
     migrationManager.addMigration(new MinimumRequiredParticipantsToStartMigration());
+    migrationManager.addMigration(new PigSpeedMigration());
   }
 
   @Override
@@ -174,6 +176,7 @@ public class FileAPI implements RacingAPI {
       writeSigns(race.getSigns(), yaml);
       writeResults(race.getResultByPlayerId().values(), yaml);
       yaml.set(MINIMUM_REQUIRED_PARTICIPANTS_TO_START, race.getMinimimRequiredParticipantsToStart());
+      yaml.set(PIG_SPEED_FIELD, race.getPigSpeed());
 
       try {
         yaml.save(raceFile);
@@ -391,6 +394,13 @@ public class FileAPI implements RacingAPI {
     }
     int minimumRequiredParticipantsToStart = yaml.getInt(MINIMUM_REQUIRED_PARTICIPANTS_TO_START);
 
+    double pigSpeed;
+    if(yaml.isDouble(PIG_SPEED_FIELD)) {
+      pigSpeed = yaml.getDouble(PIG_SPEED_FIELD);
+    } else {
+      pigSpeed = yaml.getInt(PIG_SPEED_FIELD);
+    }
+
     return new Race(
       id,
       version,
@@ -407,7 +417,8 @@ public class FileAPI implements RacingAPI {
       potionEffects,
       parseSigns(yaml),
       results,
-      minimumRequiredParticipantsToStart
+      minimumRequiredParticipantsToStart,
+      pigSpeed
     );
   }
 

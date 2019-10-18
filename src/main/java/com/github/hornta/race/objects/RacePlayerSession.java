@@ -8,9 +8,13 @@ import com.github.hornta.race.enums.RaceType;
 import com.github.hornta.race.enums.RespawnType;
 import com.github.hornta.race.message.MessageKey;
 import com.github.hornta.race.message.MessageManager;
+import net.minecraft.server.v1_14_R1.NBTTagCompound;
+import net.minecraft.server.v1_14_R1.NBTTagDouble;
+import net.minecraft.server.v1_14_R1.NBTTagString;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.boss.BossBar;
+import org.bukkit.craftbukkit.v1_14_R1.entity.CraftPig;
 import org.bukkit.entity.*;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.inventory.ItemStack;
@@ -52,7 +56,7 @@ public class RacePlayerSession {
   private int currentLap;
   private boolean isAllowedToEnterVehicle;
   private boolean isAllowedToExitVehicle;
-  private boolean isDirty;
+  private boolean isRestored;
 
   RacePlayerSession(Race race, Player player, double chargedEntryFee) {
     this.race = race;
@@ -64,6 +68,10 @@ public class RacePlayerSession {
 
   public void setPlayer(Player player) {
     this.player = player;
+  }
+
+  public boolean hasPlayer() {
+    return player != null;
   }
 
   public UUID getPlayerId() {
@@ -137,7 +145,7 @@ public class RacePlayerSession {
       freezeHorse();
     }
 
-    isDirty = true;
+    isRestored = false;
   }
 
   Entity getVehicle() {
@@ -283,6 +291,7 @@ public class RacePlayerSession {
     pig.setInvulnerable(true);
     pig.setAI(false);
     pig.setSaddle(true);
+    pig.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).setBaseValue(race.getPigSpeed());
   }
 
   private void spawnHorse(Location location, Horse oldHorse) {
@@ -356,7 +365,7 @@ public class RacePlayerSession {
   }
 
   void restore() {
-    if(!isDirty) {
+    if(isRestored) {
       return;
     }
 
@@ -392,7 +401,7 @@ public class RacePlayerSession {
     boat = null;
     minecart = null;
 
-    isDirty = false;
+    isRestored = true;
   }
 
   public RaceCheckpoint getCurrentCheckpoint() {
@@ -432,5 +441,9 @@ public class RacePlayerSession {
 
   public void setCurrentLap(int currentLap) {
     this.currentLap = currentLap;
+  }
+
+  public boolean isRestored() {
+    return isRestored;
   }
 }

@@ -44,10 +44,10 @@ public class RaceConfiguration {
   public static <T> T getValue(ConfigKey key) {
     Object obj = instance.getConfiguration().get(key.getPath());
 
-    Function<String, Object> converter = key.getConverter();
+    Function<Object, Object> converter = key.getConverter();
 
     if(converter != null) {
-      return (T)converter.apply(((String)obj).toUpperCase(Locale.ENGLISH));
+      return (T)converter.apply(obj);
     }
 
     return (T)obj;

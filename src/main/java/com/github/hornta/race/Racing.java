@@ -266,17 +266,26 @@ public class Racing extends JavaPlugin {
         .requiresPermission(Permission.RACING_MODIFY.toString());
     }
 
+
+    CarbonArgument speedArgument = new CarbonArgument.Builder("speed")
+      .setType(CarbonArgumentType.NUMBER)
+      .setMin(0)
+      .create();
+
     carbon
       .addCommand("racing setwalkspeed")
       .withHandler(new CommandSetWalkSpeed(racingManager))
       .withArgument(raceArgument)
-      .withArgument(
-        new CarbonArgument.Builder("speed")
-          .setType(CarbonArgumentType.NUMBER)
-          .setMin(0)
-          .create()
-      )
+      .withArgument(speedArgument)
       .requiresPermission(Permission.COMMAND_SET_WALK_SPEED.toString())
+      .requiresPermission(Permission.RACING_MODIFY.toString());
+
+    carbon
+      .addCommand("racing setpigspeed")
+      .withHandler(new CommandSetPigSpeed(racingManager))
+      .withArgument(raceArgument)
+      .withArgument(speedArgument)
+      .requiresPermission(Permission.COMMAND_SET_PIG_SPEED.toString())
       .requiresPermission(Permission.RACING_MODIFY.toString());
 
     carbon

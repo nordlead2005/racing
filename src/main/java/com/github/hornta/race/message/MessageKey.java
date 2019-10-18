@@ -51,6 +51,7 @@ public enum MessageKey {
   RACE_HELP_ITEM("commands.race_help.item"),
   RACE_SET_ENTRYFEE("commands.race_set_entryfee.success"),
   RACE_SET_WALKSPEED("commands.race_set_walkspeed.success"),
+  RACE_SET_PIG_SPEED("commands.race_set_pig_speed.success"),
   RACE_ADD_POTION_EFFECT("commands.race_add_potion_effect.success"),
   RACE_REMOVE_POTION_EFFECT("commands.race_remove_potion_effect.success"),
   RACE_CLEAR_POTION_EFFECTS("commands.race_clear_potion_effects.success"),

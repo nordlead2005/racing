@@ -68,6 +68,8 @@ commands:
     success: "§eEntry fee set to <entry_fee>."
   race_set_walkspeed:
     success: "§eWalk speed has been set to <walk_speed>."
+  race_set_pig_speed:
+    success: "§ePig speed has been set to <speed>."
   race_add_potion_effect:
     success: "§ePotion effect `<potion_effect>` with amplifier `<amplifier>` set in race `<race_name>`."
   race_remove_potion_effect:

@@ -186,6 +186,15 @@ public class RacingManager implements Listener {
   @EventHandler
   void onRaceSessionStop(RaceSessionStopEvent event) {
     raceSessions.remove(event.getRaceSession());
+
+    if (RaceConfiguration.getValue(ConfigKey.TELEPORT_AFTER_RACE_ENABLED)) {
+      TeleportAfterRaceWhen when = RaceConfiguration.getValue(ConfigKey.TELEPORT_AFTER_RACE_ENABLED_WHEN);
+      if(when == TeleportAfterRaceWhen.EVERYONE_FINISHES) {
+        for(RacePlayerSession playerSession : event.getRaceSession().getPlayerSessions()) {
+          playerSession.getPlayer().teleport(event.getRaceSession().getRace().getSpawn());
+        }
+      }
+    }
   }
 
   @EventHandler
@@ -266,6 +275,16 @@ public class RacingManager implements Listener {
         MessageManager.setValue("command", "/" + blockedCommand);
         MessageManager.sendMessage(event.getPlayer(), MessageKey.BLOCKED_CMDS);
         return;
+      }
+    }
+  }
+
+  @EventHandler
+  void onRacePlayerGoal(RacePlayerGoalEvent event) {
+    if (RaceConfiguration.getValue(ConfigKey.TELEPORT_AFTER_RACE_ENABLED)) {
+      TeleportAfterRaceWhen when = RaceConfiguration.getValue(ConfigKey.TELEPORT_AFTER_RACE_ENABLED_WHEN);
+      if(when == TeleportAfterRaceWhen.PARTICIPANT_FINISHES) {
+        event.getPlayerSession().getPlayer().teleport(event.getRaceSession().getRace().getSpawn());
       }
     }
   }
@@ -407,11 +426,29 @@ public class RacingManager implements Listener {
     return null;
   }
 
-  public void joinRace(Race race, Player player) {
+  public void joinRace(Race race, Player player, JoinType type) {
     List<RaceSession> sessions = getRaceSessions(race);
     RaceSession session = null;
     if(!sessions.isEmpty()) {
       session = sessions.get(0);
+    }
+
+    List<GameMode> preventJoinFromGameMode = RaceConfiguration.getValue(ConfigKey.PREVENT_JOIN_FROM_GAME_MODE);
+    if(preventJoinFromGameMode.contains(player.getGameMode())) {
+      MessageManager.setValue("game_mode", player.getGameMode());
+      MessageManager.sendMessage(player, MessageKey.JOIN_RACE_GAME_MODE);
+      return;
+    }
+
+    boolean startOnSign = RaceConfiguration.getValue(ConfigKey.START_ON_JOIN_SIGN);
+    boolean startOnCommand = RaceConfiguration.getValue(ConfigKey.START_ON_JOIN_SIGN);
+
+    if(session == null && ((type == JoinType.SIGN && startOnSign) || (type == JoinType.COMMAND && startOnCommand))) {
+      StartRaceStatus status = tryStartRace(race.getName(), player, 1);
+      if(status == StartRaceStatus.ERROR) {
+        return;
+      }
+      session = getRaceSessions(race).get(0);
     }
 
     if(session == null || session.getState() != RaceSessionState.PREPARING) {
@@ -431,13 +468,6 @@ public class RacingManager implements Listener {
 
     if(session.isFull()) {
       MessageManager.sendMessage(player, MessageKey.JOIN_RACE_IS_FULL);
-      return;
-    }
-
-    List<GameMode> preventJoinFromGameMode = RaceConfiguration.getValue(ConfigKey.PREVENT_JOIN_FROM_GAME_MODE);
-    if(preventJoinFromGameMode.contains(player.getGameMode())) {
-      MessageManager.setValue("game_mode", player.getGameMode());
-      MessageManager.sendMessage(player, MessageKey.JOIN_RACE_GAME_MODE);
       return;
     }
 
@@ -462,5 +492,51 @@ public class RacingManager implements Listener {
     MessageManager.setValue("current_participants", session.getAmountOfParticipants());
     MessageManager.setValue("max_participants", race.getStartPoints().size());
     MessageManager.broadcast(MessageKey.JOIN_RACE_SUCCESS);
+  }
+
+  public StartRaceStatus tryStartRace(String raceName, CommandSender commandSender, int numLaps) {
+    Race race = getRace(raceName);
+
+    if(race == null) {
+      List<Race> allRaces = races
+        .stream()
+        .filter((Race r) -> r.getState() == RaceState.ENABLED)
+        .collect(Collectors.toList());
+
+      if(allRaces.isEmpty()) {
+        MessageManager.sendMessage(commandSender, MessageKey.START_RACE_NO_ENABLED);
+        return StartRaceStatus.ERROR;
+      }
+      race = allRaces.get(Util.randomRangeInt(0, allRaces.size() - 1));
+    }
+
+    if(race.getState() != RaceState.ENABLED) {
+      MessageManager.setValue("race_name", race.getName());
+      MessageManager.sendMessage(commandSender, MessageKey.START_RACE_NOT_ENABLED);
+      return StartRaceStatus.ERROR;
+    }
+
+    List<RaceSession> sessions = getRaceSessions(race);
+
+    if(!sessions.isEmpty()) {
+      MessageManager.sendMessage(commandSender, MessageKey.START_RACE_ALREADY_STARTED);
+      return StartRaceStatus.ERROR;
+    }
+
+    if(race.getStartPoints().size() < 1) {
+      MessageManager.sendMessage(commandSender, MessageKey.START_RACE_MISSING_STARTPOINT);
+      return StartRaceStatus.ERROR;
+    }
+
+    if(numLaps == 1 && race.getCheckpoints().size() < 1) {
+      MessageManager.sendMessage(commandSender, MessageKey.START_RACE_MISSING_CHECKPOINT);
+      return StartRaceStatus.ERROR;
+    } else if(race.getCheckpoints().size() < 2) {
+      MessageManager.sendMessage(commandSender, MessageKey.START_RACE_MISSING_CHECKPOINTS);
+      return StartRaceStatus.ERROR;
+    }
+
+    startNewSession(commandSender, race, numLaps);
+    return StartRaceStatus.OK;
   }
 }

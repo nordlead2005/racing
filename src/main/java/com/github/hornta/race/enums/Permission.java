@@ -19,6 +19,7 @@ public enum Permission {
   COMMAND_SET_TYPE("racing.command.set_type"),
   COMMAND_SET_ENTRY_FEE("racing.command.set_entry_fee"),
   COMMAND_SET_WALK_SPEED("racing.command.set_walk_speed"),
+  COMMAND_SET_PIG_SPEED("racing.command.set_pig_speed"),
   COMMAND_ADD_POTION_EFFECT("racing.command.add_potion_effect"),
   COMMAND_REMOVE_POTION_EFFECT("racing.command.remove_potion_effect"),
   COMMAND_CLEAR_POTION_EFFECTS("racing.command.clear_potion_effects"),

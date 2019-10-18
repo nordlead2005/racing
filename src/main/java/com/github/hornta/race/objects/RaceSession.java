@@ -298,7 +298,19 @@ public class RaceSession implements Listener {
     }
   }
 
+  private void tryAndSkipToCountdown() {
+    if(playerSessions.values().stream().filter(RacePlayerSession::hasPlayer).count() == race.getStartPoints().size()) {
+      skipToCountdown();
+    }
+  }
+
   public void stop() {
+    beforeStopCleanup();
+    Bukkit.getPluginManager().callEvent(new RaceSessionStopEvent(this));
+    playerSessions.clear();
+  }
+
+  private void beforeStopCleanup() {
     if(countdown != null) {
       countdown.stop();
       countdown = null;
@@ -320,8 +332,6 @@ public class RaceSession implements Listener {
       songPlayer.setPlaying(false);
     }
 
-    playerSessions.clear();
-
     if(state != RaceSessionState.PREPARING) {
       for (RaceCheckpoint checkpoint : race.getCheckpoints()) {
         checkpoint.stopTask();
@@ -339,8 +349,6 @@ public class RaceSession implements Listener {
     }
 
     HandlerList.unregisterAll(this);
-
-    Bukkit.getPluginManager().callEvent(new RaceSessionStopEvent(this));
   }
 
   public void leave(Player player) {
@@ -370,12 +378,29 @@ public class RaceSession implements Listener {
     }
   }
 
+  public List<RacePlayerSession> getPlayerSessions() {
+    return new ArrayList<>(playerSessions.values());
+  }
+
   public boolean isFull() {
     return playerSessions.size() == race.getStartPoints().size();
   }
 
   public boolean isParticipating(Player player) {
     return playerSessions.containsKey(player.getUniqueId());
+  }
+
+  private boolean isCurrentlyRacing(Player player) {
+    if(!playerSessions.containsKey(player.getUniqueId())) {
+      return false;
+    }
+
+    RacePlayerSession playerSession = playerSessions.get(player.getUniqueId());
+    if(playerSession.isRestored()) {
+      return false;
+    }
+
+    return true;
   }
 
   public int getAmountOfParticipants() {
@@ -386,6 +411,7 @@ public class RaceSession implements Listener {
     RacePlayerSession session = new RacePlayerSession(race, player, chargedEntryFee);
     playerSessions.put(player.getUniqueId(), session);
     Bukkit.getPluginManager().callEvent(new ParticipateEvent(this, session));
+    tryAndSkipToCountdown();
   }
 
   private void addStartTimerTask(int id) {
@@ -418,7 +444,11 @@ public class RaceSession implements Listener {
 
         if(isLastCheckpoint && playerSession.getCurrentLap() == laps) {
           playerSession.setNextCheckpoint(null);
+          numFinished += 1;
+          result.addPlayerSessionResult(playerSession, numFinished, System.currentTimeMillis() - start);
+          playerSession.restore();
           Bukkit.getPluginManager().callEvent(new RacePlayerGoalEvent(this, playerSession));
+          checkFinished();
         } else {
           if(isLastCheckpoint) {
             playerSession.setNextCheckpoint(race.getCheckpoint(1));
@@ -446,7 +476,7 @@ public class RaceSession implements Listener {
 
   @EventHandler
   void onPlayerTeleport(PlayerTeleportEvent event) {
-    if(isParticipating(event.getPlayer()) && (
+    if(isCurrentlyRacing(event.getPlayer()) && (
       event.getCause() == PlayerTeleportEvent.TeleportCause.ENDER_PEARL ||
         event.getCause() == PlayerTeleportEvent.TeleportCause.CHORUS_FRUIT
     )) {
@@ -465,7 +495,7 @@ public class RaceSession implements Listener {
     }
 
     Player player = (Player) event.getVehicle().getPassengers().get(0);
-    if(!isParticipating(player)) {
+    if(!isCurrentlyRacing(player)) {
       return;
     }
 
@@ -485,8 +515,12 @@ public class RaceSession implements Listener {
 
   @EventHandler
   void onPlayerMove(PlayerMoveEvent event) {
-    if(isParticipating(event.getPlayer()) && (state == RaceSessionState.COUNTDOWN || state == RaceSessionState.STARTED)) {
+    if(isCurrentlyRacing(event.getPlayer()) && (state == RaceSessionState.COUNTDOWN || state == RaceSessionState.STARTED)) {
       RacePlayerSession playerSession = playerSessions.get(event.getPlayer().getUniqueId());
+
+      if(playerSession.isRestored()) {
+        return;
+      }
 
       tryIncrementCheckpoint(playerSession);
 
@@ -532,14 +566,14 @@ public class RaceSession implements Listener {
 
   @EventHandler
   void onFoodLevelChange(FoodLevelChangeEvent event) {
-    if(state == RaceSessionState.STARTED && event.getEntityType() == EntityType.PLAYER && isParticipating((Player)event.getEntity())) {
+    if(state == RaceSessionState.STARTED && event.getEntityType() == EntityType.PLAYER && isCurrentlyRacing((Player)event.getEntity())) {
       event.setCancelled(true);
     }
   }
 
   @EventHandler
   void onEntityTarget(EntityTargetEvent event) {
-    if((event.getTarget() instanceof Player) && isParticipating((Player) event.getTarget()) && state == RaceSessionState.COUNTDOWN) {
+    if((event.getTarget() instanceof Player) && isCurrentlyRacing((Player) event.getTarget()) && state == RaceSessionState.COUNTDOWN) {
       event.setCancelled(true);
     }
   }
@@ -547,7 +581,7 @@ public class RaceSession implements Listener {
   @EventHandler
   void onPlayerKick(PlayerKickEvent event) {
     Player player = event.getPlayer();
-    if(isParticipating(player) && (state == RaceSessionState.COUNTDOWN || state == RaceSessionState.STARTED)) {
+    if(isCurrentlyRacing(player) && (state == RaceSessionState.COUNTDOWN || state == RaceSessionState.STARTED)) {
       playerSessions.get(player.getUniqueId()).restore();
       playerSessions.remove(player.getUniqueId());
       checkFinished();
@@ -556,9 +590,10 @@ public class RaceSession implements Listener {
 
   @EventHandler
   void onPlayerJoin(PlayerJoinEvent event) {
-    if(isParticipating(event.getPlayer()) && state == RaceSessionState.PREPARING) {
+    if(isCurrentlyRacing(event.getPlayer()) && state == RaceSessionState.PREPARING) {
      RacePlayerSession playerSession = playerSessions.get(event.getPlayer().getUniqueId());
      playerSession.setPlayer(event.getPlayer());
+     tryAndSkipToCountdown();
     }
   }
 
@@ -566,7 +601,7 @@ public class RaceSession implements Listener {
   void onPlayerQuit(PlayerQuitEvent event) {
     Player player = event.getPlayer();
 
-    if(!isParticipating(player)) {
+    if(!isCurrentlyRacing(player)) {
       return;
     }
 
@@ -598,7 +633,7 @@ public class RaceSession implements Listener {
 
     Player player = (Player) event.getEntity();
 
-    if(!isParticipating(player)) {
+    if(!isCurrentlyRacing(player)) {
       return;
     }
 
@@ -647,7 +682,7 @@ public class RaceSession implements Listener {
 
     Player player = (Player) event.getEntered();
 
-    if(!isParticipating(player)) {
+    if(!isCurrentlyRacing(player)) {
       return;
     }
 
@@ -687,7 +722,7 @@ public class RaceSession implements Listener {
 
     Player player = (Player) event.getExited();
 
-    if(!isParticipating(player)) {
+    if(!isCurrentlyRacing(player)) {
       return;
     }
 
@@ -697,18 +732,8 @@ public class RaceSession implements Listener {
   }
 
   @EventHandler
-  void onRacePlayerGoal(RacePlayerGoalEvent event) {
-    if (event.getRaceSession() != this) {
-      return;
-    }
-    numFinished += 1;
-    result.addPlayerSessionResult(event.getPlayerSession(), numFinished, System.currentTimeMillis() - start);
-    checkFinished();
-  }
-
-  @EventHandler
   void onPlayerDropItem(PlayerDropItemEvent event) {
-    if(!isParticipating(event.getPlayer())) {
+    if(!isCurrentlyRacing(event.getPlayer())) {
       return;
     }
 
@@ -737,7 +762,7 @@ public class RaceSession implements Listener {
 
   @EventHandler
   void onPlayerItemDamageEvent(PlayerItemDamageEvent event) {
-    if(!isParticipating(event.getPlayer())) {
+    if(!isCurrentlyRacing(event.getPlayer())) {
       return;
     }
 
@@ -761,7 +786,7 @@ public class RaceSession implements Listener {
   @EventHandler
   void onPlayerInteract(PlayerInteractEvent event) {
     if(
-      !isParticipating(event.getPlayer()) ||
+      !isCurrentlyRacing(event.getPlayer()) ||
       state != RaceSessionState.STARTED
     ) {
       return;
@@ -785,7 +810,7 @@ public class RaceSession implements Listener {
     }
 
     Player player = (Player) event.getEntity();
-    if(!isParticipating(player) || state != RaceSessionState.STARTED) {
+    if(!isCurrentlyRacing(player) || state != RaceSessionState.STARTED) {
       return;
     }
 
