@@ -17,8 +17,8 @@ public enum ConfigKey {
   SONGS_DIRECTORY("songs_directory", ConfigType.STRING, "songs"),
   STORAGE("storage.current", ConfigType.STRING, StorageType.FILE, (Object val) -> StorageType.valueOf(((String)val).toUpperCase(Locale.ENGLISH))),
   FILE_RACE_DIRECTORY("storage.file.directory", ConfigType.STRING, "races"),
-  RACE_PREPARE_TIME("prepare_time", ConfigType.INTEGER, 300),
-  RACE_ANNOUNCE_INTERVALS("race_announce_intervals", ConfigType.LIST, Arrays.asList(180, 60, 30)),
+  RACE_PREPARE_TIME("prepare_time", ConfigType.INTEGER, 60),
+  RACE_ANNOUNCE_INTERVALS("race_announce_intervals", ConfigType.LIST, Arrays.asList(30, 10)),
   COUNTDOWN("countdown", ConfigType.INTEGER, 10),
 
   RESPAWN_PLAYER_DEATH("respawn.player.death", ConfigType.STRING, RespawnType.FROM_LAST_CHECKPOINT, (Object val) -> RespawnType.valueOf(((String)val).toUpperCase(Locale.ENGLISH))),

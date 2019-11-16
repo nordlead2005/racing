@@ -2,7 +2,6 @@ package com.github.hornta.race;
 
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.ProtocolManager;
-import com.github.hornta.*;
 import com.github.hornta.carbon.*;
 import com.github.hornta.race.api.FileAPI;
 import com.github.hornta.race.api.StorageType;
@@ -16,7 +15,9 @@ import com.github.hornta.race.message.Translation;
 import com.github.hornta.race.message.MessageKey;
 import com.github.hornta.race.message.MessageManager;
 import com.github.hornta.race.message.Translations;
+import com.github.hornta.race.objects.RaceCommandExecutor;
 import com.gmail.nossr50.mcMMO;
+import net.milkbowl.vault.chat.Chat;
 import net.milkbowl.vault.economy.Economy;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
@@ -36,11 +37,13 @@ public class Racing extends JavaPlugin {
   private boolean isNoteBlockAPILoaded;
   private boolean isHolographicDisplaysLoaded;
   private Economy economy;
+  private Chat chat;
   private Carbon carbon;
   private Translations translations;
   private RacingManager racingManager;
   private ProtocolManager protocolManager;
   private Metrics metrics;
+  private RaceCommandExecutor raceCommandExecutor;
 
   public static Racing getInstance() {
     return instance;
@@ -56,6 +59,10 @@ public class Racing extends JavaPlugin {
 
   public Economy getEconomy() {
     return economy;
+  }
+
+  public Chat getChat() {
+    return chat;
   }
 
   @Override
@@ -514,9 +521,18 @@ public class Racing extends JavaPlugin {
     isHolographicDisplaysLoaded = Bukkit.getPluginManager().isPluginEnabled("HolographicDisplays");
 
     if (Bukkit.getPluginManager().isPluginEnabled("Vault")) {
-      RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
-      if (rsp != null) {
-        economy = rsp.getProvider();
+      {
+        RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
+        if (rsp != null) {
+          economy = rsp.getProvider();
+        }
+      }
+
+      {
+        RegisteredServiceProvider<Chat> rsp = getServer().getServicesManager().getRegistration(Chat.class);
+        if (rsp != null) {
+          chat = rsp.getProvider();
+        }
       }
     }
 
@@ -553,10 +569,12 @@ public class Racing extends JavaPlugin {
       getServer().getPluginManager().registerEvents(SongManager.getInstance(), this);
     }
 
+    raceCommandExecutor = new RaceCommandExecutor();
     racingManager = new RacingManager();
     SignManager signManager = new SignManager(racingManager);
     DiscordManager discordManager = new DiscordManager();
 
+    getServer().getPluginManager().registerEvents(raceCommandExecutor, this);
     getServer().getPluginManager().registerEvents(racingManager, this);
     getServer().getPluginManager().registerEvents(signManager, this);
     getServer().getPluginManager().registerEvents(discordManager, this);

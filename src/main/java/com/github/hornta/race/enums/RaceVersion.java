@@ -11,7 +11,8 @@ public enum RaceVersion {
   V6,
   V7,
   V8,
-  V9;
+  V9,
+  V10;
 
   private static final RaceVersion[] copyOfValues = values();
 

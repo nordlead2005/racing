@@ -173,7 +173,7 @@ public class RacingManager implements Listener {
     for(Map.Entry<RacePlayerSession, PlayerSessionResult> entry : event.getResult().getPlayerResults().entrySet()) {
       event.getResult().getRaceSession().getRace().addResult(entry.getValue());
       if(entry.getValue().getPosition() == 1) {
-        MessageManager.setValue("player_name", entry.getKey().getPlayer().getName());
+        MessageManager.setValue("player_name", entry.getValue().getPlayerSession().getPlayerName());
         MessageManager.setValue("race_name", event.getResult().getRaceSession().getRace().getName());
         MessageManager.setValue("time", Util.getTimeLeft(entry.getValue().getTime()));
         Util.setTimeUnitValues();
@@ -286,6 +286,15 @@ public class RacingManager implements Listener {
       if(when == TeleportAfterRaceWhen.PARTICIPANT_FINISHES) {
         event.getPlayerSession().getPlayer().teleport(event.getRaceSession().getRace().getSpawn());
       }
+    }
+  }
+
+  @EventHandler
+  void onSessionStateChanged(SessionStateChangedEvent event) {
+    if(event.getRaceSession().getState() == RaceSessionState.COUNTDOWN) {
+      Bukkit.getPluginManager().callEvent(new ExecuteCommandEvent(RaceCommandType.ON_COUNTDOWN, event.getRaceSession()));
+    } else if(event.getRaceSession().getState() == RaceSessionState.STARTED) {
+      Bukkit.getPluginManager().callEvent(new ExecuteCommandEvent(RaceCommandType.ON_START, event.getRaceSession()));
     }
   }
 

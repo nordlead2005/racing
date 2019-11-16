@@ -3,6 +3,7 @@ package com.github.hornta.race.commands;
 import com.github.hornta.carbon.ICommandHandler;
 import com.github.hornta.race.Racing;
 import com.github.hornta.race.SongManager;
+import com.github.hornta.race.api.ParseRaceException;
 import com.github.hornta.race.config.ConfigKey;
 import com.github.hornta.race.config.RaceConfiguration;
 import com.github.hornta.race.events.ConfigReloadedEvent;
@@ -15,7 +16,14 @@ import org.bukkit.command.CommandSender;
 public class CommandReload implements ICommandHandler {
   @Override
   public void handle(CommandSender commandSender, String[] args, int typedArgs) {
-    RaceConfiguration.reload(Racing.getInstance());
+    try {
+      RaceConfiguration.reload(Racing.getInstance());
+    } catch (ParseRaceException e) {
+      MessageManager.setValue("error", e.getMessage());
+      MessageManager.sendMessage(commandSender, MessageKey.RELOAD_FAILED);
+      return;
+    }
+
     Bukkit.getPluginManager().callEvent(new ConfigReloadedEvent());
 
     String language = RaceConfiguration.getValue(ConfigKey.LANGUAGE);

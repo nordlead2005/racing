@@ -42,6 +42,7 @@ public enum MessageKey {
   JOIN_RACE_GAME_MODE("commands.join_race.error_game_mode"),
   RACE_SKIP_WAIT_NOT_STARTED("commands.race_skip_wait.error_not_started"),
   RELOAD_SUCCESS("commands.reload.success"),
+  RELOAD_FAILED("commands.reload.failed"),
   RELOAD_NOT_RACES("commands.reload.not_races"),
   RELOAD_NOT_LANGUAGE("commands.reload.not_language"),
   RACE_SET_STATE_SUCCESS("commands.race_set_state.success"),

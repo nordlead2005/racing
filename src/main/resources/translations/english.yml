@@ -55,6 +55,7 @@ commands:
     error_not_started: "§cRace must be started in order to skip preparing."
   reload:
     success: "§eConfiguration has been reloaded."
+    failed: "§cRaces couldn't be reloaded. Error: <error>."
     not_races: "§cRaces has not been reloaded because there are currently ongoing races."
     not_language: "§cLanguage has not been reloaded because the language `<language>` couldn't be found."
   race_set_state:

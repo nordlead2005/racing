@@ -1,12 +1,12 @@
 package com.github.hornta.race.objects;
 
-import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 
 public class RaceSessionResult {
   private final RaceSession raceSession;
   private Map<RacePlayerSession, PlayerSessionResult> playerResults = new HashMap<>();
+  private Map<Integer, PlayerSessionResult> resultsByPosition = new HashMap<>();
 
   public RaceSessionResult(RaceSession raceSession) {
     this.raceSession = raceSession;
@@ -17,7 +17,13 @@ public class RaceSessionResult {
   }
 
   public void addPlayerSessionResult(RacePlayerSession playerSession, int position, long time) {
-    playerResults.put(playerSession, new PlayerSessionResult(playerSession, position, time));
+    PlayerSessionResult result = new PlayerSessionResult(playerSession, position, time);
+    playerResults.put(playerSession, result);
+    resultsByPosition.put(result.getPosition(), result);
+  }
+
+  public PlayerSessionResult getResult(int position) {
+    return resultsByPosition.get(position);
   }
 
   public Map<RacePlayerSession, PlayerSessionResult> getPlayerResults() {

@@ -4,10 +4,10 @@ import com.github.hornta.race.Racing;
 import com.github.hornta.race.api.migrations.*;
 import com.github.hornta.race.config.ConfigKey;
 import com.github.hornta.race.config.RaceConfiguration;
+import com.github.hornta.race.enums.RaceCommandType;
 import com.github.hornta.race.enums.RaceState;
 import com.github.hornta.race.enums.RaceType;
 import com.github.hornta.race.enums.RaceVersion;
-import com.github.hornta.race.events.CreateRaceEvent;
 import com.github.hornta.race.objects.*;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -25,7 +25,6 @@ import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.time.DateTimeException;
-import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -71,6 +70,8 @@ public class FileAPI implements RacingAPI {
   private static final String PIG_SPEED_FIELD = "pig_speed";
   private static final String HORSE_SPEED_FIELD = "horse_speed";
   private static final String HORSE_JUMP_STRENGTH_FIELD = "horse_jump_strength";
+  public static final String COMMANDS_FIELD = "commands";
+
   private ExecutorService fileService = Executors.newSingleThreadExecutor();
   private File racesDirectory;
   private MigrationManager migrationManager = new MigrationManager();
@@ -85,6 +86,7 @@ public class FileAPI implements RacingAPI {
     migrationManager.addMigration(new MinimumRequiredParticipantsToStartMigration());
     migrationManager.addMigration(new PigSpeedMigration());
     migrationManager.addMigration(new HorseAttributesMigration());
+    migrationManager.addMigration(new CommandsMigration());
   }
 
   @Override
@@ -182,6 +184,7 @@ public class FileAPI implements RacingAPI {
       yaml.set(PIG_SPEED_FIELD, race.getPigSpeed());
       yaml.set(HORSE_SPEED_FIELD, race.getHorseSpeed());
       yaml.set(HORSE_JUMP_STRENGTH_FIELD, race.getHorseJumpStrength());
+      writeCommands(race.getCommands(), yaml);
 
       try {
         yaml.save(raceFile);
@@ -439,7 +442,8 @@ public class FileAPI implements RacingAPI {
       minimumRequiredParticipantsToStart,
       pigSpeed,
       horseSpeed,
-      horseJumpStrength
+      horseJumpStrength,
+      parseCommands(yaml)
     );
   }
 
@@ -751,5 +755,101 @@ public class FileAPI implements RacingAPI {
     yaml.set(path + ".pitch", location.getPitch());
     yaml.set(path + ".yaw", location.getYaw());
     yaml.set(path + ".world", location.getWorld().getName());
+  }
+
+  private List<RaceCommand> parseCommands(YamlConfiguration yaml) {
+    List<RaceCommand> commands = new ArrayList<>();
+    List<Map<String, Object>> entries = (List<Map<String, Object>>)yaml.getList("commands");
+    if(entries == null) {
+      throw new ParseRaceException("Couldn't parse `commands`");
+    }
+
+    for (Map<String, Object> entry : entries) {
+      RaceCommandType commandType;
+      {
+        if(!entry.containsKey("when")) {
+          throw new ParseRaceException("Couldn't find field `commands[].when`");
+        }
+
+        String stringWhen = (String) entry.get("when");
+        stringWhen = stringWhen.toUpperCase();
+        try {
+          commandType = RaceCommandType.valueOf(stringWhen);
+        } catch (IllegalArgumentException ex) {
+          throw new ParseRaceException("Couldn't parse `commands[].when`. Value: " + stringWhen);
+        }
+      }
+
+      boolean isEnabled;
+      {
+        if(!entry.containsKey("enabled")) {
+          throw new ParseRaceException("Couldn't find field `commands[].enabled`");
+        }
+
+        if(!(entry.get("enabled") instanceof Boolean)) {
+          throw new ParseRaceException("Couldn't convert `commands[].enabled` to a boolean.");
+        }
+
+        isEnabled = (boolean) entry.get("enabled");
+      }
+
+      String command;
+      {
+        if(!entry.containsKey("command")) {
+          throw new ParseRaceException("Couldn't find field `commands[].command`");
+        }
+
+        command = (String) entry.get("command");
+        command = command.trim();
+        if(command.isEmpty()) {
+          throw new ParseRaceException("Couldn't parse `commands[].command`. Value can't be empty");
+        }
+      }
+
+      int recipient = Integer.MIN_VALUE;
+      {
+        if(entry.containsKey("recipient")) {
+          if (entry.get("recipient") instanceof String) {
+            if(!entry.get("recipient").equals("@everyone")) {
+              throw new ParseRaceException("Couldn't parse `commands[].recipient`. Value not recognized");
+            }
+            recipient = 0;
+          } else {
+            try {
+              recipient = (int) entry.get("recipient");
+            } catch (Exception e) {
+              throw new ParseRaceException("Couldn't parse `commands[].recipient`. Value can't be converted to an integer");
+            }
+
+            if (recipient <= 0) {
+              throw new ParseRaceException("Couldn't parse `commands[].recipient`. Value must be above 0");
+            }
+          }
+        }
+      }
+
+      commands.add(new RaceCommand(commandType, isEnabled, command, recipient));
+    }
+
+    return commands;
+  }
+
+  private void writeCommands(List<RaceCommand> commands, YamlConfiguration yaml) {
+    List<Map<String, Object>> writeList = new ArrayList<>();
+    for(RaceCommand command : commands) {
+      Map<String, Object> writeObject = new LinkedHashMap<>();
+      writeObject.put("when", command.getCommandType().toString().toLowerCase(Locale.ENGLISH));
+      writeObject.put("enabled", command.isEnabled());
+      writeObject.put("command", command.getCommand());
+      if(command.getRecipient() != Integer.MIN_VALUE) {
+        if(command.getRecipient() == 0) {
+          writeObject.put("recipient", "@everyone");
+        } else {
+          writeObject.put("recipient", command.getRecipient());
+        }
+      }
+      writeList.add(writeObject);
+    }
+    yaml.set("commands", writeList);
   }
 }

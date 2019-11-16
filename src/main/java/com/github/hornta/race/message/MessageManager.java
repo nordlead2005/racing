@@ -54,7 +54,7 @@ public class MessageManager {
     });
   }
 
-  private static String transformPlaceholders(String input) {
+  public static String transformPlaceholders(String input) {
     String transformed = transformPattern(input);
     placeholderValues.clear();
     placeholderKeys.clear();

@@ -5,6 +5,7 @@ import com.github.hornta.race.SongManager;
 import com.github.hornta.race.Util;
 import com.github.hornta.race.config.ConfigKey;
 import com.github.hornta.race.config.RaceConfiguration;
+import com.github.hornta.race.enums.RaceCommandType;
 import com.github.hornta.race.enums.RaceSessionState;
 import com.github.hornta.race.enums.RaceType;
 import com.github.hornta.race.enums.RespawnType;
@@ -470,6 +471,7 @@ public class RaceSession implements Listener {
           result.addPlayerSessionResult(playerSession, numFinished, System.currentTimeMillis() - start);
           playerSession.restore();
           Bukkit.getPluginManager().callEvent(new RacePlayerGoalEvent(this, playerSession));
+          Bukkit.getPluginManager().callEvent(new ExecuteCommandEvent(RaceCommandType.ON_PLAYER_FINISH, this, playerSession));
           checkFinished();
         } else {
           if(isLastCheckpoint) {
@@ -864,6 +866,7 @@ public class RaceSession implements Listener {
     if(numFinished == playerSessions.size()) {
       stop();
       Bukkit.getPluginManager().callEvent(new RaceSessionResultEvent(result));
+      Bukkit.getPluginManager().callEvent(new ExecuteCommandEvent(RaceCommandType.ON_RACE_FINISH, this));
     }
   }
 
@@ -903,6 +906,10 @@ public class RaceSession implements Listener {
       default:
         throw new IllegalArgumentException();
     }
+  }
+
+  public RaceSessionResult getResult() {
+    return result;
   }
 }
 

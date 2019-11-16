@@ -33,6 +33,7 @@ public class Race implements Listener {
 
   private Map<UUID, RacePlayerStatistic> resultByPlayerId = new HashMap<>();
   private Map<RaceStatType, Set<RacePlayerStatistic>> resultsByStat = new HashMap<>();
+  private List<RaceCommand> commands;
 
   public Race(
     UUID id,
@@ -53,7 +54,8 @@ public class Race implements Listener {
     int minimimRequiredPlayersToStart,
     double pigSpeed,
     double horseSpeed,
-    double horseJumpStrength
+    double horseJumpStrength,
+    List<RaceCommand> commands
   ) {
     this.id = id;
     this.version = version;
@@ -107,6 +109,8 @@ public class Race implements Listener {
       resultsByStat.put(statType, stats);
       stats.addAll(results);
     }
+
+    this.commands = commands;
   }
 
   public void addResult(PlayerSessionResult result) {
@@ -347,5 +351,9 @@ public class Race implements Listener {
 
   public void setHorseSpeed(double horseSpeed) {
     this.horseSpeed = horseSpeed;
+  }
+
+  public List<RaceCommand> getCommands() {
+    return commands;
   }
 }
