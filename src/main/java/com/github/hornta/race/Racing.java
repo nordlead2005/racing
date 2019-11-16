@@ -289,6 +289,27 @@ public class Racing extends JavaPlugin {
       .requiresPermission(Permission.RACING_MODIFY.toString());
 
     carbon
+      .addCommand("racing sethorsespeed")
+      .withHandler(new CommandSetHorseSpeed(racingManager))
+      .withArgument(raceArgument)
+      .withArgument(speedArgument)
+      .requiresPermission(Permission.COMMAND_SET_HORSE_SPEED.toString())
+      .requiresPermission(Permission.RACING_MODIFY.toString());
+
+    carbon
+      .addCommand("racing sethorsejumpstrength")
+      .withHandler(new CommandSetHorseJumpStrength(racingManager))
+      .withArgument(raceArgument)
+      .withArgument(
+        new CarbonArgument.Builder("jump_strength")
+        .setType(CarbonArgumentType.NUMBER)
+        .setMin(0)
+        .create()
+      )
+      .requiresPermission(Permission.COMMAND_SET_HORSE_JUMP_STRENGTH.toString())
+      .requiresPermission(Permission.RACING_MODIFY.toString());
+
+    carbon
       .addCommand("racing addpotioneffect")
       .withHandler(new CommandAddPotionEffect(racingManager))
       .withArgument(raceArgument)

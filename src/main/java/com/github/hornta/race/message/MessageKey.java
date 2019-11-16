@@ -52,6 +52,8 @@ public enum MessageKey {
   RACE_SET_ENTRYFEE("commands.race_set_entryfee.success"),
   RACE_SET_WALKSPEED("commands.race_set_walkspeed.success"),
   RACE_SET_PIG_SPEED("commands.race_set_pig_speed.success"),
+  RACE_SET_HORSE_SPEED("commands.race_set_horse_speed.success"),
+  RACE_SET_HORSE_JUMP_STRENGTH("commands.race_set_horse_jump_strength.success"),
   RACE_ADD_POTION_EFFECT("commands.race_add_potion_effect.success"),
   RACE_REMOVE_POTION_EFFECT("commands.race_remove_potion_effect.success"),
   RACE_CLEAR_POTION_EFFECTS("commands.race_clear_potion_effects.success"),
@@ -91,6 +93,8 @@ public enum MessageKey {
 
   RACE_CANCELED("race_canceled"),
   NOSHOW_DISQUALIFIED("race_start_noshow_disqualified"),
+  GAME_MODE_DISQUALIFIED("race_start_gamemode_disqualified"),
+  GAME_MODE_DISQUALIFIED_TARGET("race_start_gamemode_disqualified_target"),
   QUIT_DISQUALIFIED("race_start_quit_disqualified"),
   DEATH_DISQUALIFIED("race_death_disqualified"),
   DEATH_DISQUALIFIED_TARGET("race_death_disqualified_target"),

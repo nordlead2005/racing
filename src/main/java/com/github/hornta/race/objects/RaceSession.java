@@ -12,16 +12,14 @@ import com.github.hornta.race.events.*;
 import com.github.hornta.race.message.MessageKey;
 import com.github.hornta.race.message.MessageManager;
 import com.xxmicloxx.NoteBlockAPI.songplayer.RadioSongPlayer;
+import net.dv8tion.jda.core.entities.Game;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.milkbowl.vault.economy.Economy;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.Sound;
+import org.bukkit.*;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.command.CommandSender;
@@ -178,13 +176,31 @@ public class RaceSession implements Listener {
   }
 
   private void actualStart() {
+    ArrayList<GameMode> forbiddenGameModes = RaceConfiguration.getValue(ConfigKey.PREVENT_JOIN_FROM_GAME_MODE);
+
+    Iterator<RacePlayerSession> playerSessionIterator = playerSessions.values().iterator();
+
     // check if players are online before countdown starts
-    for(RacePlayerSession session : playerSessions.values()) {
-      if(session.getPlayer() == null) {
-        playerSessions.remove(session.getPlayerId());
+    while(playerSessionIterator.hasNext()) {
+      RacePlayerSession session = playerSessionIterator.next();
+      Player player = session.getPlayer();
+      if(player == null) {
+        playerSessionIterator.remove();
         for(RacePlayerSession session1 : playerSessions.values()) {
           MessageManager.setValue("player_name", session.getPlayerName());
           MessageManager.sendMessage(session1.getPlayer(), MessageKey.NOSHOW_DISQUALIFIED);
+        }
+
+        Economy economy = Racing.getInstance().getEconomy();
+        if (economy != null && session.getChargedEntryFee() > 0) {
+          economy.depositPlayer(Bukkit.getOfflinePlayer(session.getPlayerId()), session.getChargedEntryFee());
+        }
+      } else if(forbiddenGameModes.contains(player.getGameMode())) {
+        playerSessionIterator.remove();
+        MessageManager.sendMessage(player, MessageKey.GAME_MODE_DISQUALIFIED_TARGET);
+        for(RacePlayerSession session1 : playerSessions.values()) {
+          MessageManager.setValue("player_name", session.getPlayerName());
+          MessageManager.sendMessage(session1.getPlayer(), MessageKey.GAME_MODE_DISQUALIFIED);
         }
 
         Economy economy = Racing.getInstance().getEconomy();
@@ -299,7 +315,13 @@ public class RaceSession implements Listener {
   }
 
   private void tryAndSkipToCountdown() {
-    if(playerSessions.values().stream().filter(RacePlayerSession::hasPlayer).count() == race.getStartPoints().size()) {
+    if(
+      playerSessions
+        .values()
+        .stream()
+        .filter(RacePlayerSession::hasPlayer)
+        .count() == race.getStartPoints().size()
+    ) {
       skipToCountdown();
     }
   }

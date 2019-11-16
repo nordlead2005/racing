@@ -1,6 +1,8 @@
 package com.github.hornta.race.objects;
 
 import com.github.hornta.race.Racing;
+import com.github.hornta.race.config.ConfigKey;
+import com.github.hornta.race.config.RaceConfiguration;
 import com.github.hornta.race.message.MessageKey;
 import com.github.hornta.race.message.MessageManager;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -8,11 +10,10 @@ import org.bukkit.scheduler.BukkitRunnable;
 import java.util.Collection;
 
 class RaceCountdown {
-  public static final int COUNTDOWN_IN_SECONDS = 10;
   private static final int HALF_SECOND = 10;
   private static final int ONE_SECOND = 20;
   private final Collection<RacePlayerSession> playerSessions;
-  private int countdown = COUNTDOWN_IN_SECONDS;
+  private int countdown;
   private BukkitRunnable task;
 
   RaceCountdown(Collection<RacePlayerSession> playerSessions) {
@@ -20,11 +21,11 @@ class RaceCountdown {
   }
 
   void start(Runnable callback) {
-    this.countdown = COUNTDOWN_IN_SECONDS;
+    this.countdown = RaceConfiguration.getValue(ConfigKey.COUNTDOWN);
     task = new BukkitRunnable() {
       @Override
       public void run() {
-        if(countdown == 0) {
+        if(countdown < 1) {
           cancel();
           callback.run();
           return;

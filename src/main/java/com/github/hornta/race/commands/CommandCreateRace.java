@@ -44,7 +44,10 @@ public class CommandCreateRace extends RacingCommand implements ICommandHandler 
       new HashSet<>(),
       Collections.emptySet(),
       1,
-      0.25D);
+      0.25D,
+      0.225D,
+      0.7D
+    );
 
     racingManager.createRace(race, () -> {
       MessageManager.setValue("race_name", race.getName());

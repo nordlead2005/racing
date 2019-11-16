@@ -69,6 +69,8 @@ public class FileAPI implements RacingAPI {
   private static final String RESULTS_FIELD_DURATION = "duration";
   private static final String MINIMUM_REQUIRED_PARTICIPANTS_TO_START = "min_required_participants_to_start";
   private static final String PIG_SPEED_FIELD = "pig_speed";
+  private static final String HORSE_SPEED_FIELD = "horse_speed";
+  private static final String HORSE_JUMP_STRENGTH_FIELD = "horse_jump_strength";
   private ExecutorService fileService = Executors.newSingleThreadExecutor();
   private File racesDirectory;
   private MigrationManager migrationManager = new MigrationManager();
@@ -82,6 +84,7 @@ public class FileAPI implements RacingAPI {
     migrationManager.addMigration(new ResultsMigration());
     migrationManager.addMigration(new MinimumRequiredParticipantsToStartMigration());
     migrationManager.addMigration(new PigSpeedMigration());
+    migrationManager.addMigration(new HorseAttributesMigration());
   }
 
   @Override
@@ -177,6 +180,8 @@ public class FileAPI implements RacingAPI {
       writeResults(race.getResultByPlayerId().values(), yaml);
       yaml.set(MINIMUM_REQUIRED_PARTICIPANTS_TO_START, race.getMinimimRequiredParticipantsToStart());
       yaml.set(PIG_SPEED_FIELD, race.getPigSpeed());
+      yaml.set(HORSE_SPEED_FIELD, race.getHorseSpeed());
+      yaml.set(HORSE_JUMP_STRENGTH_FIELD, race.getHorseJumpStrength());
 
       try {
         yaml.save(raceFile);
@@ -401,6 +406,20 @@ public class FileAPI implements RacingAPI {
       pigSpeed = yaml.getInt(PIG_SPEED_FIELD);
     }
 
+    double horseSpeed;
+    if(yaml.isDouble(HORSE_SPEED_FIELD)) {
+      horseSpeed = yaml.getDouble(HORSE_SPEED_FIELD);
+    } else {
+      horseSpeed = yaml.getInt(HORSE_SPEED_FIELD);
+    }
+
+    double horseJumpStrength;
+    if(yaml.isDouble(HORSE_JUMP_STRENGTH_FIELD)) {
+      horseJumpStrength = yaml.getDouble(HORSE_JUMP_STRENGTH_FIELD);
+    } else {
+      horseJumpStrength = yaml.getInt(HORSE_JUMP_STRENGTH_FIELD);
+    }
+
     return new Race(
       id,
       version,
@@ -418,7 +437,9 @@ public class FileAPI implements RacingAPI {
       parseSigns(yaml),
       results,
       minimumRequiredParticipantsToStart,
-      pigSpeed
+      pigSpeed,
+      horseSpeed,
+      horseJumpStrength
     );
   }
 

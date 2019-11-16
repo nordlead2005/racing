@@ -28,6 +28,8 @@ public class Race implements Listener {
   private Set<RaceSign> signs;
   private int minimimRequiredParticipantsToStart;
   private double pigSpeed;
+  private double horseSpeed;
+  private double horseJumpStrength;
 
   private Map<UUID, RacePlayerStatistic> resultByPlayerId = new HashMap<>();
   private Map<RaceStatType, Set<RacePlayerStatistic>> resultsByStat = new HashMap<>();
@@ -49,7 +51,9 @@ public class Race implements Listener {
     Set<RaceSign> signs,
     Set<RacePlayerStatistic> results,
     int minimimRequiredPlayersToStart,
-    double pigSpeed
+    double pigSpeed,
+    double horseSpeed,
+    double horseJumpStrength
   ) {
     this.id = id;
     this.version = version;
@@ -67,6 +71,8 @@ public class Race implements Listener {
     this.signs = signs;
     this.minimimRequiredParticipantsToStart = minimimRequiredPlayersToStart;
     this.pigSpeed = pigSpeed;
+    this.horseSpeed = horseSpeed;
+    this.horseJumpStrength = horseJumpStrength;
 
     for (RacePlayerStatistic playerStatistic : results) {
       resultByPlayerId.put(playerStatistic.getPlayerId(), playerStatistic);
@@ -325,5 +331,21 @@ public class Race implements Listener {
 
   public void setPigSpeed(double pigSpeed) {
     this.pigSpeed = pigSpeed;
+  }
+
+  public double getHorseJumpStrength() {
+    return horseJumpStrength;
+  }
+
+  public void setHorseJumpStrength(double horseJumpStrength) {
+    this.horseJumpStrength = horseJumpStrength;
+  }
+
+  public double getHorseSpeed() {
+    return horseSpeed;
+  }
+
+  public void setHorseSpeed(double horseSpeed) {
+    this.horseSpeed = horseSpeed;
   }
 }

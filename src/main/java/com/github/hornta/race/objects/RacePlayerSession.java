@@ -6,32 +6,22 @@ import com.github.hornta.race.config.ConfigKey;
 import com.github.hornta.race.config.RaceConfiguration;
 import com.github.hornta.race.enums.RaceType;
 import com.github.hornta.race.enums.RespawnType;
-import com.github.hornta.race.message.MessageKey;
-import com.github.hornta.race.message.MessageManager;
-import net.minecraft.server.v1_14_R1.NBTTagCompound;
-import net.minecraft.server.v1_14_R1.NBTTagDouble;
-import net.minecraft.server.v1_14_R1.NBTTagString;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.boss.BossBar;
-import org.bukkit.craftbukkit.v1_14_R1.entity.CraftPig;
 import org.bukkit.entity.*;
-import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Locale;
 import java.util.UUID;
 
 public class RacePlayerSession {
   private static final int PREVENT_SPRINT_FOOD_LEVEL = 6;
   public static final double MAX_HEALTH = 20;
   public static final int MAX_FOOD_LEVEL = 20;
-  private static final double HORSE_JUMP_STRENGTH = 0.7;
-  private static final double HORSE_SPEED = 0.225;
   private final Race race;
   private final double chargedEntryFee;
   private final UUID playerId;
@@ -56,7 +46,7 @@ public class RacePlayerSession {
   private int currentLap;
   private boolean isAllowedToEnterVehicle;
   private boolean isAllowedToExitVehicle;
-  private boolean isRestored;
+  private boolean isRestored = true;
 
   RacePlayerSession(Race race, Player player, double chargedEntryFee) {
     this.race = race;
@@ -110,7 +100,10 @@ public class RacePlayerSession {
     for(PotionEffect effect : player.getActivePotionEffects()) {
       player.removePotionEffect(effect.getType());
     }
-    player.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, RaceCountdown.COUNTDOWN_IN_SECONDS * 20, 128));
+
+    // prevent players from jumping during the countdown
+    int countdown = RaceConfiguration.getValue(ConfigKey.COUNTDOWN);
+    player.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, countdown * 20, 128));
 
     if(RaceConfiguration.getValue(ConfigKey.ADVENTURE_ON_START)) {
       player.setGameMode(GameMode.ADVENTURE);
@@ -301,8 +294,8 @@ public class RacePlayerSession {
     horse.setTamed(true);
     horse.setOwner(player);
     horse.getInventory().setSaddle(new ItemStack(Material.SADDLE, 1));
-    horse.setJumpStrength(HORSE_JUMP_STRENGTH);
-    horse.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).setBaseValue(HORSE_SPEED);
+    horse.setJumpStrength(race.getHorseJumpStrength());
+    horse.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).setBaseValue(race.getHorseSpeed());
 
     if(oldHorse != null) {
       horse.setColor(oldHorse.getColor());
@@ -317,8 +310,8 @@ public class RacePlayerSession {
   }
 
   private void unfreezeHorse() {
-    horse.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).setBaseValue(HORSE_SPEED);
-    horse.setJumpStrength(HORSE_JUMP_STRENGTH);
+    horse.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).setBaseValue(race.getHorseSpeed());
+    horse.setJumpStrength(race.getHorseJumpStrength());
   }
 
   private void spawnBoat(Location location) {

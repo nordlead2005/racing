@@ -6,7 +6,7 @@
 
     <groupId>com.github.hornta</groupId>
     <artifactId>racing</artifactId>
-    <version>1.19.0</version>
+    <version>1.20.2</version>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -52,6 +52,10 @@
                         <relocation>
                             <pattern>org.bstats</pattern>
                             <shadedPattern>com.github.hornta.racing</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>com.github.hornta.carbon</pattern>
+                            <shadedPattern>com.github.hornta.racing.carbon</shadedPattern>
                         </relocation>
                     </relocations>
                 </configuration>

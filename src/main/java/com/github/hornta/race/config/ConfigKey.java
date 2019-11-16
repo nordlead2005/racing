@@ -19,6 +19,7 @@ public enum ConfigKey {
   FILE_RACE_DIRECTORY("storage.file.directory", ConfigType.STRING, "races"),
   RACE_PREPARE_TIME("prepare_time", ConfigType.INTEGER, 300),
   RACE_ANNOUNCE_INTERVALS("race_announce_intervals", ConfigType.LIST, Arrays.asList(180, 60, 30)),
+  COUNTDOWN("countdown", ConfigType.INTEGER, 10),
 
   RESPAWN_PLAYER_DEATH("respawn.player.death", ConfigType.STRING, RespawnType.FROM_LAST_CHECKPOINT, (Object val) -> RespawnType.valueOf(((String)val).toUpperCase(Locale.ENGLISH))),
   RESPAWN_PLAYER_INTERACT("respawn.player.interact", ConfigType.STRING, RespawnType.NONE, (Object val) -> RespawnType.valueOf(((String)val).toUpperCase(Locale.ENGLISH))),

@@ -70,6 +70,10 @@ commands:
     success: "§eWalk speed has been set to <walk_speed>."
   race_set_pig_speed:
     success: "§ePig speed has been set to <speed>."
+  race_set_horse_speed:
+    success: "§eHorse speed has been set to <speed>."
+  race_set_horse_jump_strength:
+    success: "§eHorse jump strength has been set to <jump_strength>."
   race_add_potion_effect:
     success: "§ePotion effect `<potion_effect>` with amplifier `<amplifier>` set in race `<race_name>`."
   race_remove_potion_effect:
@@ -129,6 +133,8 @@ validators:
 race_canceled: "§cRace has been cancelled due to lack of participants."
 race_start_noshow_disqualified: "§e<player_name> was absent and is now disqualified."
 race_start_quit_disqualified: "§e<player_name> left and is now disqualified."
+race_start_gamemode_disqualified: "§e<player_name> is in a forbidden game mode and is now disqualified."
+race_start_gamemode_disqualified_target: "§eYou were disqualified since you are in a forbidden game mode."
 race_death_disqualified: "§e<player_name> died during the race and is now disqualified."
 race_death_disqualified_target: "§eYou died and is therefore disqualified. Better luck next time."
 edit_no_edit_mode: "§cYou can't change race `<race_name>` because it's not under construction. Type §7/rc setstate <race_name> under_construction§c to put it under construction."
