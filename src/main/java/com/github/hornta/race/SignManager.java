@@ -122,8 +122,19 @@ public class SignManager implements Listener {
       return;
     }
 
+    int laps;
+    if(event.getLine(2).isEmpty()) {
+      laps = 1;
+    } else {
+      try {
+        laps = Integer.parseInt(event.getLine(2));
+      } catch (NumberFormatException e) {
+        return;
+      }
+    }
+
     Sign sign = (Sign)event.getBlock().getState();
-    RaceSign raceSign = new RaceSign(sign, event.getPlayer().getUniqueId(), Instant.now());
+    RaceSign raceSign = new RaceSign(sign, event.getPlayer().getUniqueId(), Instant.now(), laps);
     race.getSigns().add(raceSign);
     racingManager.updateRace(race, () -> {
       raceSigns.put(raceSign.getKey(), raceSign);
@@ -204,7 +215,12 @@ public class SignManager implements Listener {
     }
 
     if(event.getAction() == Action.RIGHT_CLICK_BLOCK) {
-      racingManager.joinRace(racesBySign.get(sign), event.getPlayer(), JoinType.SIGN);
+      RaceSession currentSession = racingManager.getParticipatingRace(event.getPlayer());
+      if(currentSession == null) {
+        racingManager.joinRace(racesBySign.get(sign), event.getPlayer(), JoinType.SIGN, sign.getLaps());
+      } else {
+        currentSession.leave(event.getPlayer());
+      }
     }
   }
 

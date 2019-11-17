@@ -52,13 +52,6 @@ public class FileAPI implements RacingAPI {
   private static final String CHECKPOINTS_LOCATION = "checkpoints";
   private static final String START_POINTS_LOCATION = "startPoints";
   public static final String POTION_EFFECTS_FIELD = "potion_effects";
-  public static final String SIGNS_FIELD = "signs";
-  private static final String SIGNS_FIELD_X = "x";
-  private static final String SIGNS_FIELD_Y = "y";
-  private static final String SIGNS_FIELD_Z = "z";
-  private static final String SIGNS_FIELD_WORLD = "world";
-  private static final String SIGNS_FIELD_AUTHOR = "author";
-  private static final String SIGNS_FIELD_CREATED_AT = "created_at";
   public static final String RESULTS_FIELD = "results";
   private static final String RESULTS_FIELD_PLAYER_ID = "player_id";
   private static final String RESULTS_FIELD_PLAYER_NAME = "name";
@@ -86,6 +79,7 @@ public class FileAPI implements RacingAPI {
     migrationManager.addMigration(new PigSpeedMigration());
     migrationManager.addMigration(new HorseAttributesMigration());
     migrationManager.addMigration(new CommandsMigration());
+    migrationManager.addMigration(new SignLapsMigration());
   }
 
   @Override
@@ -643,16 +637,16 @@ public class FileAPI implements RacingAPI {
 
   private Set<RaceSign> parseSigns(YamlConfiguration yaml) {
     Set<RaceSign> signs = new HashSet<>();
-    List<Map<String, Object>> entries = (List<Map<String, Object>>)yaml.getList(SIGNS_FIELD);
+    List<Map<String, Object>> entries = (List<Map<String, Object>>)yaml.getList("signs");
     if(entries == null) {
       throw new ParseRaceException("Couldn't parse signs list");
     }
 
     for (Map<String, Object> entry : entries) {
-      int x = (int) entry.get(SIGNS_FIELD_X);
-      int y = (int) entry.get(SIGNS_FIELD_Y);
-      int z = (int) entry.get(SIGNS_FIELD_Z);
-      String worldName = (String) entry.get(SIGNS_FIELD_WORLD);
+      int x = (int) entry.get("x");
+      int y = (int) entry.get("y");
+      int z = (int) entry.get("z");
+      String worldName = (String) entry.get("world");
       World world = Bukkit.getWorld(worldName);
       if(world == null) {
         throw new ParseRaceException("Couldn't parse sign because a world with name " + worldName + " wasn't found");
@@ -666,19 +660,32 @@ public class FileAPI implements RacingAPI {
 
       UUID uuid;
       try {
-        uuid = UUID.fromString((String) entry.get(SIGNS_FIELD_AUTHOR));
+        uuid = UUID.fromString((String) entry.get("author"));
       } catch (IllegalArgumentException ex) {
         throw new ParseRaceException("Couldn't parse sign because author UUID is not valid");
       }
 
       Instant createdAt;
       try {
-        createdAt = Instant.ofEpochSecond((int)entry.get(SIGNS_FIELD_CREATED_AT));
+        createdAt = Instant.ofEpochSecond((int)entry.get("created_at"));
       } catch (DateTimeException ex) {
         throw new ParseRaceException("Couldn't parse sign because timestamp is invalid");
       }
 
-      signs.add(new RaceSign((Sign) block.getState(), uuid, createdAt));
+      int laps;
+      {
+        if (!entry.containsKey("laps")) {
+          throw new ParseRaceException("Couldn't find signs[].laps");
+        }
+
+        if (!(entry.get("laps") instanceof Integer)) {
+          throw new ParseRaceException("Couldn't convert signs[].laps to an integer");
+        }
+
+        laps = (int) entry.get("laps");
+      }
+
+      signs.add(new RaceSign((Sign) block.getState(), uuid, createdAt, laps));
     }
 
     return signs;
@@ -688,15 +695,16 @@ public class FileAPI implements RacingAPI {
     List<Map<String, Object>> writeList = new ArrayList<>();
     for(RaceSign sign : signs) {
       Map<String, Object> writeSign = new LinkedHashMap<>();
-      writeSign.put(SIGNS_FIELD_X, sign.getSign().getLocation().getBlockX());
-      writeSign.put(SIGNS_FIELD_Y, sign.getSign().getLocation().getBlockY());
-      writeSign.put(SIGNS_FIELD_Z, sign.getSign().getLocation().getBlockZ());
-      writeSign.put(SIGNS_FIELD_WORLD, sign.getSign().getLocation().getWorld().getName());
-      writeSign.put(SIGNS_FIELD_AUTHOR, sign.getCreator().toString());
-      writeSign.put(SIGNS_FIELD_CREATED_AT, sign.getCreatedAt().getEpochSecond());
+      writeSign.put("x", sign.getSign().getLocation().getBlockX());
+      writeSign.put("y", sign.getSign().getLocation().getBlockY());
+      writeSign.put("z", sign.getSign().getLocation().getBlockZ());
+      writeSign.put("world", sign.getSign().getLocation().getWorld().getName());
+      writeSign.put("author", sign.getCreator().toString());
+      writeSign.put("created_at", sign.getCreatedAt().getEpochSecond());
+      writeSign.put("laps", sign.getLaps());
       writeList.add(writeSign);
     }
-    yaml.set(SIGNS_FIELD, writeList);
+    yaml.set("signs", writeList);
   }
 
   private Location parseLocation(ConfigurationSection section, String path) throws ParseYamlLocationException {

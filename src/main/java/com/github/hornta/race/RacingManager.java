@@ -434,6 +434,10 @@ public class RacingManager implements Listener {
   }
 
   public void joinRace(Race race, Player player, JoinType type) {
+    joinRace(race, player, type, 1);
+  }
+
+  public void joinRace(Race race, Player player, JoinType type, int laps) {
     List<RaceSession> sessions = getRaceSessions(race);
     RaceSession session = null;
     if(!sessions.isEmpty()) {
@@ -451,7 +455,7 @@ public class RacingManager implements Listener {
     boolean startOnCommand = Racing.getInstance().getConfiguration().get(ConfigKey.START_ON_JOIN_SIGN);
 
     if(session == null && ((type == JoinType.SIGN && startOnSign) || (type == JoinType.COMMAND && startOnCommand))) {
-      StartRaceStatus status = tryStartRace(race.getName(), player, 1);
+      StartRaceStatus status = tryStartRace(race.getName(), player, laps);
       if(status == StartRaceStatus.ERROR) {
         return;
       }

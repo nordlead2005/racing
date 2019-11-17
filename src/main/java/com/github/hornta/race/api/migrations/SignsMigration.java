@@ -1,6 +1,5 @@
 package com.github.hornta.race.api.migrations;
 
-import com.github.hornta.race.api.FileAPI;
 import com.github.hornta.race.api.IFileMigration;
 import com.github.hornta.race.enums.RaceVersion;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -20,6 +19,6 @@ public class SignsMigration implements IFileMigration {
 
   @Override
   public void migrate(YamlConfiguration yamlConfiguration) {
-    yamlConfiguration.set(FileAPI.SIGNS_FIELD, Collections.emptyList());
+    yamlConfiguration.set("signs", Collections.emptyList());
   }
 }
