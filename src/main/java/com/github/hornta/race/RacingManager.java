@@ -1,12 +1,10 @@
 package com.github.hornta.race;
 
 import com.github.hornta.race.api.RacingAPI;
-import com.github.hornta.race.config.ConfigKey;
-import com.github.hornta.race.config.RaceConfiguration;
 import com.github.hornta.race.enums.*;
 import com.github.hornta.race.events.*;
-import com.github.hornta.race.message.MessageKey;
-import com.github.hornta.race.message.MessageManager;
+import com.github.hornta.race.MessageKey;
+import com.github.hornta.carbon.message.MessageManager;
 import com.github.hornta.race.objects.*;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
@@ -187,8 +185,8 @@ public class RacingManager implements Listener {
   void onRaceSessionStop(RaceSessionStopEvent event) {
     raceSessions.remove(event.getRaceSession());
 
-    if (RaceConfiguration.getValue(ConfigKey.TELEPORT_AFTER_RACE_ENABLED)) {
-      TeleportAfterRaceWhen when = RaceConfiguration.getValue(ConfigKey.TELEPORT_AFTER_RACE_ENABLED_WHEN);
+    if (Racing.getInstance().getConfiguration().get(ConfigKey.TELEPORT_AFTER_RACE_ENABLED)) {
+      TeleportAfterRaceWhen when = Racing.getInstance().getConfiguration().get(ConfigKey.TELEPORT_AFTER_RACE_ENABLED_WHEN);
       if(when == TeleportAfterRaceWhen.EVERYONE_FINISHES) {
         for(RacePlayerSession playerSession : event.getRaceSession().getPlayerSessions()) {
           playerSession.getPlayer().teleport(event.getRaceSession().getRace().getSpawn());
@@ -247,7 +245,7 @@ public class RacingManager implements Listener {
       return;
     }
 
-    List<String> blockedCommands = RaceConfiguration.getValue(ConfigKey.BLOCKED_COMMANDS);
+    List<String> blockedCommands = Racing.getInstance().getConfiguration().get(ConfigKey.BLOCKED_COMMANDS);
     String entryLabel = event.getMessage().split(" ")[0].replace("/", "");
     String[] entryArgs = event.getMessage().replace("/" + entryLabel, "").trim().split(" ");
 
@@ -281,8 +279,8 @@ public class RacingManager implements Listener {
 
   @EventHandler
   void onRacePlayerGoal(RacePlayerGoalEvent event) {
-    if (RaceConfiguration.getValue(ConfigKey.TELEPORT_AFTER_RACE_ENABLED)) {
-      TeleportAfterRaceWhen when = RaceConfiguration.getValue(ConfigKey.TELEPORT_AFTER_RACE_ENABLED_WHEN);
+    if (Racing.getInstance().getConfiguration().get(ConfigKey.TELEPORT_AFTER_RACE_ENABLED)) {
+      TeleportAfterRaceWhen when = Racing.getInstance().getConfiguration().get(ConfigKey.TELEPORT_AFTER_RACE_ENABLED_WHEN);
       if(when == TeleportAfterRaceWhen.PARTICIPANT_FINISHES) {
         event.getPlayerSession().getPlayer().teleport(event.getRaceSession().getRace().getSpawn());
       }
@@ -442,15 +440,15 @@ public class RacingManager implements Listener {
       session = sessions.get(0);
     }
 
-    List<GameMode> preventJoinFromGameMode = RaceConfiguration.getValue(ConfigKey.PREVENT_JOIN_FROM_GAME_MODE);
+    List<GameMode> preventJoinFromGameMode = Racing.getInstance().getConfiguration().get(ConfigKey.PREVENT_JOIN_FROM_GAME_MODE);
     if(preventJoinFromGameMode.contains(player.getGameMode())) {
       MessageManager.setValue("game_mode", player.getGameMode());
       MessageManager.sendMessage(player, MessageKey.JOIN_RACE_GAME_MODE);
       return;
     }
 
-    boolean startOnSign = RaceConfiguration.getValue(ConfigKey.START_ON_JOIN_SIGN);
-    boolean startOnCommand = RaceConfiguration.getValue(ConfigKey.START_ON_JOIN_SIGN);
+    boolean startOnSign = Racing.getInstance().getConfiguration().get(ConfigKey.START_ON_JOIN_SIGN);
+    boolean startOnCommand = Racing.getInstance().getConfiguration().get(ConfigKey.START_ON_JOIN_SIGN);
 
     if(session == null && ((type == JoinType.SIGN && startOnSign) || (type == JoinType.COMMAND && startOnCommand))) {
       StartRaceStatus status = tryStartRace(race.getName(), player, 1);

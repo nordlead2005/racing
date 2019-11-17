@@ -55,8 +55,9 @@ commands:
     error_not_started: "§cRacet måste vara startat för att kunna skippas."
   reload:
     success: "§eKonfiguration har laddats om."
-    failed: "§cRaces kunde inte laddas om. Fel: <error>."
-    not_races: "§cRaces har inte laddats om eftersom ett eller flera race pågår."
+    failed: "§cKonfiguration kunde inte laddas om. Titta i konsolen efter möjliga fel."
+    not_races: "§cRace har inte laddats om eftersom ett eller flera race pågår."
+    races_failed: "§cRace kunde inte laddas om. Fel: <error>"
     not_language: "§cSpråket har inte laddats om eftersom det inte finns ett språk med namnet `<language>`."
   race_set_state:
     success: "§eStatus har ändrats från `<old_state>` till `<new_state>`."

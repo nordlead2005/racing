@@ -2,8 +2,8 @@ package com.github.hornta.race.commands;
 
 import com.github.hornta.carbon.ICommandHandler;
 import com.github.hornta.race.Racing;
-import com.github.hornta.race.message.MessageKey;
-import com.github.hornta.race.message.MessageManager;
+import com.github.hornta.race.MessageKey;
+import com.github.hornta.carbon.message.MessageManager;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 

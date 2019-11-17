@@ -1,9 +1,8 @@
 package com.github.hornta.race.objects;
 
+import com.github.hornta.race.ConfigKey;
 import com.github.hornta.race.Racing;
 import com.github.hornta.race.Util;
-import com.github.hornta.race.config.ConfigKey;
-import com.github.hornta.race.config.RaceConfiguration;
 import com.github.hornta.race.enums.RaceType;
 import com.github.hornta.race.enums.RespawnType;
 import org.bukkit.*;
@@ -102,10 +101,10 @@ public class RacePlayerSession {
     }
 
     // prevent players from jumping during the countdown
-    int countdown = RaceConfiguration.getValue(ConfigKey.COUNTDOWN);
+    int countdown = Racing.getInstance().getConfiguration().get(ConfigKey.COUNTDOWN);
     player.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, countdown * 20, 128));
 
-    if(RaceConfiguration.getValue(ConfigKey.ADVENTURE_ON_START)) {
+    if(Racing.getInstance().getConfiguration().get(ConfigKey.ADVENTURE_ON_START)) {
       player.setGameMode(GameMode.ADVENTURE);
     }
     player.closeInventory();

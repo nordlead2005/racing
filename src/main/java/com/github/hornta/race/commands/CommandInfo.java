@@ -1,12 +1,11 @@
 package com.github.hornta.race.commands;
 
 import com.github.hornta.carbon.ICommandHandler;
+import com.github.hornta.race.ConfigKey;
 import com.github.hornta.race.Racing;
 import com.github.hornta.race.RacingManager;
-import com.github.hornta.race.config.ConfigKey;
-import com.github.hornta.race.config.RaceConfiguration;
-import com.github.hornta.race.message.MessageKey;
-import com.github.hornta.race.message.MessageManager;
+import com.github.hornta.race.MessageKey;
+import com.github.hornta.carbon.message.MessageManager;
 import com.github.hornta.race.objects.Race;
 import com.github.hornta.race.objects.RacePotionEffect;
 import org.bukkit.command.CommandSender;
@@ -45,7 +44,7 @@ public class CommandInfo extends RacingCommand implements ICommandHandler {
     MessageManager.setValue("type", race.getType().name());
     MessageManager.setValue("state", race.getState().name());
     DateTimeFormatter createdFormatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.FULL)
-      .withLocale(RaceConfiguration.getValue(ConfigKey.LOCALE))
+      .withLocale(Racing.getInstance().getConfiguration().get(ConfigKey.LOCALE))
       .withZone(ZoneId.systemDefault());
     MessageManager.setValue("created", createdFormatter.format(race.getCreatedAt()));
     MessageManager.setValue("num_startpoints", race.getStartPoints().size());

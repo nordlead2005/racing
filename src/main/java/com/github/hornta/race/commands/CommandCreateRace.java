@@ -6,15 +6,14 @@ import com.github.hornta.race.Util;
 import com.github.hornta.race.enums.RaceState;
 import com.github.hornta.race.enums.RaceType;
 import com.github.hornta.race.enums.RaceVersion;
-import com.github.hornta.race.message.MessageKey;
-import com.github.hornta.race.message.MessageManager;
+import com.github.hornta.race.MessageKey;
+import com.github.hornta.carbon.message.MessageManager;
 import com.github.hornta.race.objects.Race;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.time.Instant;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.UUID;
 

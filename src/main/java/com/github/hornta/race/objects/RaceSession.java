@@ -1,19 +1,17 @@
 package com.github.hornta.race.objects;
 
+import com.github.hornta.race.ConfigKey;
 import com.github.hornta.race.Racing;
 import com.github.hornta.race.SongManager;
 import com.github.hornta.race.Util;
-import com.github.hornta.race.config.ConfigKey;
-import com.github.hornta.race.config.RaceConfiguration;
 import com.github.hornta.race.enums.RaceCommandType;
 import com.github.hornta.race.enums.RaceSessionState;
 import com.github.hornta.race.enums.RaceType;
 import com.github.hornta.race.enums.RespawnType;
 import com.github.hornta.race.events.*;
-import com.github.hornta.race.message.MessageKey;
-import com.github.hornta.race.message.MessageManager;
+import com.github.hornta.race.MessageKey;
+import com.github.hornta.carbon.message.MessageManager;
 import com.xxmicloxx.NoteBlockAPI.songplayer.RadioSongPlayer;
-import net.dv8tion.jda.core.entities.Game;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
@@ -40,7 +38,6 @@ import org.bukkit.event.vehicle.VehicleMoveEvent;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.scoreboard.Team;
-import org.bukkit.util.Vector;
 
 import java.util.*;
 
@@ -103,7 +100,7 @@ public class RaceSession implements Listener {
     MessageManager.setValue("race_name", race.getName());
     ClickEvent clickEvent = new ClickEvent(ClickEvent.Action.RUN_COMMAND, MessageManager.getMessage(MessageKey.PARTICIPATE_CLICK_TEXT));
 
-    int prepareTime = RaceConfiguration.getValue(ConfigKey.RACE_PREPARE_TIME);
+    int prepareTime = Racing.getInstance().getConfiguration().get(ConfigKey.RACE_PREPARE_TIME);
 
     MessageManager.setValue("race_name", race.getName());
     MessageManager.setValue("time_left", Util.getTimeLeft(prepareTime * 1000));
@@ -156,7 +153,7 @@ public class RaceSession implements Listener {
       initiator.spigot().sendMessage(tc);
     }
     
-    List<Integer> announceIntervals = RaceConfiguration.getValue(ConfigKey.RACE_ANNOUNCE_INTERVALS);
+    List<Integer> announceIntervals = Racing.getInstance().getConfiguration().get(ConfigKey.RACE_ANNOUNCE_INTERVALS);
     for(int interval : announceIntervals) {
       if(interval >= prepareTime) {
         return;
@@ -177,7 +174,7 @@ public class RaceSession implements Listener {
   }
 
   private void actualStart() {
-    ArrayList<GameMode> forbiddenGameModes = RaceConfiguration.getValue(ConfigKey.PREVENT_JOIN_FROM_GAME_MODE);
+    ArrayList<GameMode> forbiddenGameModes = Racing.getInstance().getConfiguration().get(ConfigKey.PREVENT_JOIN_FROM_GAME_MODE);
 
     Iterator<RacePlayerSession> playerSessionIterator = playerSessions.values().iterator();
 
@@ -224,12 +221,12 @@ public class RaceSession implements Listener {
     if(team == null) {
       team = Bukkit.getScoreboardManager().getMainScoreboard().registerNewTeam(teamName);
     }
-    if(RaceConfiguration.getValue(ConfigKey.COLLISION_COUNTDOWN)) {
+    if(Racing.getInstance().getConfiguration().get(ConfigKey.COLLISION_COUNTDOWN)) {
       team.setOption(Team.Option.COLLISION_RULE, Team.OptionStatus.ALWAYS);
     } else {
       team.setOption(Team.Option.COLLISION_RULE, Team.OptionStatus.NEVER);
     }
-    team.setAllowFriendlyFire(RaceConfiguration.getValue(ConfigKey.FRIENDLY_FIRE_COUNTDOWN));
+    team.setAllowFriendlyFire(Racing.getInstance().getConfiguration().get(ConfigKey.FRIENDLY_FIRE_COUNTDOWN));
 
     List<RacePlayerSession> shuffledSessions = new ArrayList<>(playerSessions.values());
     Collections.shuffle(shuffledSessions);
@@ -252,8 +249,8 @@ public class RaceSession implements Listener {
     countdown = new RaceCountdown(playerSessions.values());
     countdown.start(() -> {
       setState(RaceSessionState.STARTED);
-      team.setAllowFriendlyFire(RaceConfiguration.getValue(ConfigKey.FRIENDLY_FIRE_STARTED));
-      if(RaceConfiguration.getValue(ConfigKey.COLLISION_STARTED)) {
+      team.setAllowFriendlyFire(Racing.getInstance().getConfiguration().get(ConfigKey.FRIENDLY_FIRE_STARTED));
+      if(Racing.getInstance().getConfiguration().get(ConfigKey.COLLISION_STARTED)) {
         team.setOption(Team.Option.COLLISION_RULE, Team.OptionStatus.ALWAYS);
       } else {
         team.setOption(Team.Option.COLLISION_RULE, Team.OptionStatus.NEVER);
@@ -825,7 +822,7 @@ public class RaceSession implements Listener {
 
   @EventHandler
   void onEntityToggleGlideEvent(EntityToggleGlideEvent event) {
-    if(!(boolean)RaceConfiguration.getValue(ConfigKey.ELYTRA_RESPAWN_ON_GROUND)) {
+    if(!(boolean)Racing.getInstance().getConfiguration().get(ConfigKey.ELYTRA_RESPAWN_ON_GROUND)) {
       return;
     }
 
@@ -873,17 +870,17 @@ public class RaceSession implements Listener {
   private RespawnType getRespawnInteractType(RaceType type) {
     switch (type) {
       case HORSE:
-        return RaceConfiguration.getValue(ConfigKey.RESPAWN_HORSE_INTERACT);
+        return Racing.getInstance().getConfiguration().get(ConfigKey.RESPAWN_HORSE_INTERACT);
       case PIG:
-        return RaceConfiguration.getValue(ConfigKey.RESPAWN_PIG_INTERACT);
+        return Racing.getInstance().getConfiguration().get(ConfigKey.RESPAWN_PIG_INTERACT);
       case BOAT:
-        return RaceConfiguration.getValue(ConfigKey.RESPAWN_BOAT_INTERACT);
+        return Racing.getInstance().getConfiguration().get(ConfigKey.RESPAWN_BOAT_INTERACT);
       case ELYTRA:
-        return RaceConfiguration.getValue(ConfigKey.RESPAWN_ELYTRA_INTERACT);
+        return Racing.getInstance().getConfiguration().get(ConfigKey.RESPAWN_ELYTRA_INTERACT);
       case PLAYER:
-        return RaceConfiguration.getValue(ConfigKey.RESPAWN_PLAYER_INTERACT);
+        return Racing.getInstance().getConfiguration().get(ConfigKey.RESPAWN_PLAYER_INTERACT);
       case MINECART:
-        return RaceConfiguration.getValue(ConfigKey.RESPAWN_MINECART_INTERACT);
+        return Racing.getInstance().getConfiguration().get(ConfigKey.RESPAWN_MINECART_INTERACT);
       default:
         throw new IllegalArgumentException();
     }
@@ -892,17 +889,17 @@ public class RaceSession implements Listener {
   private RespawnType getRespawnDeathType(RaceType type) {
     switch (type) {
       case HORSE:
-        return RaceConfiguration.getValue(ConfigKey.RESPAWN_HORSE_DEATH);
+        return Racing.getInstance().getConfiguration().get(ConfigKey.RESPAWN_HORSE_DEATH);
       case PIG:
-        return RaceConfiguration.getValue(ConfigKey.RESPAWN_PIG_DEATH);
+        return Racing.getInstance().getConfiguration().get(ConfigKey.RESPAWN_PIG_DEATH);
       case BOAT:
-        return RaceConfiguration.getValue(ConfigKey.RESPAWN_BOAT_DEATH);
+        return Racing.getInstance().getConfiguration().get(ConfigKey.RESPAWN_BOAT_DEATH);
       case ELYTRA:
-        return RaceConfiguration.getValue(ConfigKey.RESPAWN_ELYTRA_DEATH);
+        return Racing.getInstance().getConfiguration().get(ConfigKey.RESPAWN_ELYTRA_DEATH);
       case PLAYER:
-        return RaceConfiguration.getValue(ConfigKey.RESPAWN_PLAYER_DEATH);
+        return Racing.getInstance().getConfiguration().get(ConfigKey.RESPAWN_PLAYER_DEATH);
       case MINECART:
-        return RaceConfiguration.getValue(ConfigKey.RESPAWN_MINECART_DEATH);
+        return Racing.getInstance().getConfiguration().get(ConfigKey.RESPAWN_MINECART_DEATH);
       default:
         throw new IllegalArgumentException();
     }

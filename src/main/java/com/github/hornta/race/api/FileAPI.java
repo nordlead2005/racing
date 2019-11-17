@@ -1,9 +1,8 @@
 package com.github.hornta.race.api;
 
+import com.github.hornta.race.ConfigKey;
 import com.github.hornta.race.Racing;
 import com.github.hornta.race.api.migrations.*;
-import com.github.hornta.race.config.ConfigKey;
-import com.github.hornta.race.config.RaceConfiguration;
 import com.github.hornta.race.enums.RaceCommandType;
 import com.github.hornta.race.enums.RaceState;
 import com.github.hornta.race.enums.RaceType;
@@ -77,7 +76,7 @@ public class FileAPI implements RacingAPI {
   private MigrationManager migrationManager = new MigrationManager();
 
   public FileAPI(Plugin plugin) {
-    racesDirectory = new File(plugin.getDataFolder(), RaceConfiguration.getValue(ConfigKey.FILE_RACE_DIRECTORY));
+    racesDirectory = new File(plugin.getDataFolder(), Racing.getInstance().getConfiguration().get(ConfigKey.FILE_RACE_DIRECTORY));
     migrationManager.addMigration(new EntryFeeMigration());
     migrationManager.addMigration(new WalkSpeedMigration());
     migrationManager.addMigration(new PotionEffectsMigration());

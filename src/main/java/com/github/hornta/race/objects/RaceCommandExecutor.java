@@ -2,7 +2,7 @@ package com.github.hornta.race.objects;
 
 import com.github.hornta.race.enums.RaceCommandType;
 import com.github.hornta.race.events.ExecuteCommandEvent;
-import com.github.hornta.race.message.MessageManager;
+import com.github.hornta.carbon.message.MessageManager;
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -53,7 +53,7 @@ public class RaceCommandExecutor implements Listener {
   }
 
   private void dispatchCommand(RaceCommand command) {
-    String formattedCommand = MessageManager.transformPlaceholders(command.getCommand());
+    String formattedCommand = MessageManager.getInstance().transformPlaceholders(command.getCommand());
     Bukkit.getLogger().log(Level.INFO, "Dispatching command: " + formattedCommand);
     Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), formattedCommand);
   }

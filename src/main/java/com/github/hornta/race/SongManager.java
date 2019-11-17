@@ -1,7 +1,5 @@
 package com.github.hornta.race;
 
-import com.github.hornta.race.config.ConfigKey;
-import com.github.hornta.race.config.RaceConfiguration;
 import com.github.hornta.race.events.ConfigReloadedEvent;
 import com.xxmicloxx.NoteBlockAPI.model.Song;
 import com.xxmicloxx.NoteBlockAPI.songplayer.RadioSongPlayer;
@@ -9,7 +7,6 @@ import com.xxmicloxx.NoteBlockAPI.utils.NBSDecoder;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
@@ -36,7 +33,7 @@ public class SongManager implements Listener {
 
   public static void init(JavaPlugin plugin) {
     instance = new SongManager(plugin);
-    instance.loadSongs((String) RaceConfiguration.getValue(ConfigKey.SONGS_DIRECTORY));
+    instance.loadSongs((String) Racing.getInstance().getConfiguration().get(ConfigKey.SONGS_DIRECTORY));
   }
 
   public static Set<String> getSongNames() {
@@ -109,6 +106,6 @@ public class SongManager implements Listener {
 
   @EventHandler
   void onConfigReloaded(ConfigReloadedEvent event) {
-    loadSongs((String) RaceConfiguration.getValue(ConfigKey.SONGS_DIRECTORY));
+    loadSongs((String) Racing.getInstance().getConfiguration().get(ConfigKey.SONGS_DIRECTORY));
   }
 }
