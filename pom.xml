@@ -22,7 +22,19 @@
                 <configuration>
                     <filesets>
                         <fileset>
-                            <directory>server/plugins</directory>
+                            <directory>server-1.14/plugins</directory>
+                            <includes>
+                                <include>racing-*.jar</include>
+                            </includes>
+                        </fileset>
+                        <fileset>
+                            <directory>server-1.13/plugins</directory>
+                            <includes>
+                                <include>racing-*.jar</include>
+                            </includes>
+                        </fileset>
+                        <fileset>
+                            <directory>server-1.15/plugins</directory>
                             <includes>
                                 <include>racing-*.jar</include>
                             </includes>
@@ -80,7 +92,25 @@
                             <version>${project.version}</version>
                             <type>jar</type>
                             <overWrite>yes</overWrite>
-                            <outputDirectory>${project.basedir}/server/plugins</outputDirectory>
+                            <outputDirectory>${project.basedir}/server-1.14/plugins</outputDirectory>
+                            <destFileName>${project.artifactId}-${project.version}.jar</destFileName>
+                        </artifactItem>
+                        <artifactItem>
+                            <groupId>${project.groupId}</groupId>
+                            <artifactId>${project.artifactId}</artifactId>
+                            <version>${project.version}</version>
+                            <type>jar</type>
+                            <overWrite>yes</overWrite>
+                            <outputDirectory>${project.basedir}/server-1.13/plugins</outputDirectory>
+                            <destFileName>${project.artifactId}-${project.version}.jar</destFileName>
+                        </artifactItem>
+                        <artifactItem>
+                            <groupId>${project.groupId}</groupId>
+                            <artifactId>${project.artifactId}</artifactId>
+                            <version>${project.version}</version>
+                            <type>jar</type>
+                            <overWrite>yes</overWrite>
+                            <outputDirectory>${project.basedir}/server-1.15/plugins</outputDirectory>
                             <destFileName>${project.artifactId}-${project.version}.jar</destFileName>
                         </artifactItem>
                     </artifactItems>
@@ -123,11 +153,11 @@
     </repositories>
 
     <dependencies>
-        <!-- Spigot :-) -->
+        <!-- Spigot -->
         <dependency>
             <groupId>org.spigotmc</groupId>
             <artifactId>spigot</artifactId>
-            <version>1.14.4-R0.1-SNAPSHOT</version>
+            <version>1.15-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <dependency>

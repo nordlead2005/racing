@@ -7,9 +7,7 @@ import com.github.hornta.race.MessageKey;
 import com.github.hornta.carbon.message.MessageManager;
 import com.github.hornta.race.objects.*;
 import net.milkbowl.vault.economy.Economy;
-import org.bukkit.Bukkit;
-import org.bukkit.GameMode;
-import org.bukkit.Location;
+import org.bukkit.*;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -79,6 +77,8 @@ public class RacingManager implements Listener {
       return;
     }
 
+    addChunkTickets();
+
     for(RaceCheckpoint checkpoint : event.getRace().getCheckpoints()) {
       checkpoint.startTask(true);
       checkpoint.setupHologram();
@@ -99,12 +99,15 @@ public class RacingManager implements Listener {
     for (RaceStartPoint startPoint : event.getRace().getStartPoints()) {
       startPoint.removeHologram();
     }
+
+    addChunkTickets();
   }
 
   @EventHandler
   void onAddRaceCheckpoint(AddRaceCheckpointEvent event) {
     event.getCheckpoint().startTask(true);
     event.getCheckpoint().setupHologram();
+    addChunkTickets();
   }
 
   @EventHandler
@@ -118,11 +121,13 @@ public class RacingManager implements Listener {
         checkpoint.setupHologram();
       }
     }
+    addChunkTickets();
   }
 
   @EventHandler
   void onAddRaceStartPoint(AddRaceStartPointEvent event) {
     event.getStartPoint().setupHologram();
+    addChunkTickets();
   }
 
   @EventHandler
@@ -135,6 +140,8 @@ public class RacingManager implements Listener {
         startPoint.setupHologram();
       }
     }
+
+    addChunkTickets();
   }
 
   @EventHandler
@@ -158,6 +165,8 @@ public class RacingManager implements Listener {
         }
       }
     }
+
+    addChunkTickets();
   }
 
   @EventHandler
@@ -549,5 +558,27 @@ public class RacingManager implements Listener {
 
     startNewSession(commandSender, race, numLaps);
     return StartRaceStatus.OK;
+  }
+
+  private void addChunkTickets() {
+    for(World world : Bukkit.getWorlds()) {
+      world.removePluginChunkTickets(Racing.getInstance());
+    }
+
+    for(Race race : races) {
+      if(race.getState() == RaceState.ENABLED) {
+        continue;
+      }
+
+      for (RaceStartPoint startPoint : race.getStartPoints()) {
+        startPoint.getLocation().getChunk().addPluginChunkTicket(Racing.getInstance());
+      }
+
+      for (RaceCheckpoint checkpoint : race.getCheckpoints()) {
+        checkpoint.getLocation().getChunk().addPluginChunkTicket(Racing.getInstance());
+      }
+
+      race.getSpawn().getChunk().addPluginChunkTicket(Racing.getInstance());
+    }
   }
 }

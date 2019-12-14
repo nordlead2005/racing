@@ -592,6 +592,7 @@ public class Racing extends JavaPlugin {
         .add(ConfigKey.START_ON_JOIN_COMMAND, "start_on_join.command", ConfigType.BOOLEAN, false)
         .add(ConfigKey.TELEPORT_AFTER_RACE_ENABLED, "teleport_after_race.enabled", ConfigType.BOOLEAN, false)
         .add(ConfigKey.TELEPORT_AFTER_RACE_ENABLED_WHEN, "teleport_after_race.when", ConfigType.STRING, TeleportAfterRaceWhen.PARTICIPANT_FINISHES, (Object val) -> TeleportAfterRaceWhen.valueOf(((String)val).toUpperCase(Locale.ENGLISH)))
+        .add(ConfigKey.VERBOSE, "verbose", ConfigType.BOOLEAN, false)
         .build();
     } catch (Exception e) {
       setEnabled(false);
@@ -796,5 +797,15 @@ public class Racing extends JavaPlugin {
     }
 
     Bukkit.getPluginManager().registerEvents(new McMMOListener(racingManager), Racing.getInstance());
+  }
+
+  public static void debug(String message, Object... args) {
+    if(Racing.getInstance().getConfiguration().get(ConfigKey.VERBOSE)) {
+      try {
+        Racing.getInstance().getLogger().info(String.format(message, args));
+      } catch (IllegalFormatConversionException e) {
+        Racing.getInstance().getLogger().log(Level.SEVERE, e.getMessage(), e);
+      }
+    }
   }
 }

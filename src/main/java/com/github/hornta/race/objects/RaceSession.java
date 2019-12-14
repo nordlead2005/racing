@@ -552,11 +552,7 @@ public class RaceSession implements Listener {
         return;
       }
 
-      if(
-        playerSession.getHorse() != null ||
-        playerSession.getBoat() != null ||
-        playerSession.getMinecart() != null
-      ) {
+      if(playerSession.getVehicle() != null) {
         if(playerSession.getStartLocation().distanceSquared(event.getTo()) >= 1) {
           playerSession.respawnInVehicle();
 

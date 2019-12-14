@@ -56,16 +56,16 @@ public class CheckpointParticleTask extends BukkitRunnable {
 
       Location loc = checkpoint.getLocation().add(v);
 
-      WrapperPlayServerWorldParticles wpswp = new WrapperPlayServerWorldParticles();
-      wpswp.setNumberOfParticles(1);
-      wpswp.setLongDistance(true);
-      wpswp.setParticleType(WrappedParticle.create(Particle.REDSTONE, new Particle.DustOptions(
+      WrapperPlayServerWorldParticles particle = new WrapperPlayServerWorldParticles();
+      particle.setNumberOfParticles(1);
+      particle.setLongDistance(true);
+      particle.setParticleType(WrappedParticle.create(Particle.REDSTONE, new Particle.DustOptions(
         Color.fromRGB(isInside ? 0 : 255, isInside ? 255 : 0, 0), 2
       )));
-      wpswp.setX((float)loc.getX());
-      wpswp.setY((float)loc.getY());
-      wpswp.setZ((float)loc.getZ());
-      wpswp.setParticleData(2);
+      particle.setX(loc.getX());
+      particle.setY(loc.getY());
+      particle.setZ(loc.getZ());
+      particle.setParticleData(2);
 
       if(isEditing) {
         for(Player player : Bukkit.getOnlinePlayers()) {
@@ -73,19 +73,11 @@ public class CheckpointParticleTask extends BukkitRunnable {
             continue;
           }
 
-          try {
-            Racing.getInstance().getProtocolManager().sendServerPacket(player, wpswp.getHandle());
-          } catch (InvocationTargetException e) {
-            Racing.getInstance().getLogger().log(Level.SEVERE, e.getMessage(), e);
-          }
+          particle.sendPacket(player);
         }
       } else {
         for (Player player : players) {
-          try {
-            Racing.getInstance().getProtocolManager().sendServerPacket(player, wpswp.getHandle());
-          } catch (InvocationTargetException e) {
-            Racing.getInstance().getLogger().log(Level.SEVERE, e.getMessage(), e);
-          }
+          particle.sendPacket(player);
         }
       }
     }

@@ -16,6 +16,6 @@ public class CommandRaceTeleportPoint extends RacingCommand implements ICommandH
   public void handle(CommandSender commandSender, String[] args, int typedArgs) {
     RaceCheckpoint checkpoint = racingManager.getRace(args[0]).getCheckpoint(Integer.parseInt(args[1]));
     Player player = (Player)commandSender;
-    player.teleport(checkpoint.getLocation(), PlayerTeleportEvent.TeleportCause.COMMAND);
+    player.teleport(checkpoint.getLocation().add(0, -0.5, 0), PlayerTeleportEvent.TeleportCause.COMMAND);
   }
 }
