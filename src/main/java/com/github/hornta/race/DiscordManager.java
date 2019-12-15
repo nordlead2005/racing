@@ -2,7 +2,6 @@ package com.github.hornta.race;
 
 import com.github.hornta.race.events.ConfigReloadedEvent;
 import com.github.hornta.race.events.RaceSessionStartEvent;
-import com.github.hornta.race.MessageKey;
 import com.github.hornta.carbon.message.MessageManager;
 import net.dv8tion.jda.core.AccountType;
 import net.dv8tion.jda.core.JDA;

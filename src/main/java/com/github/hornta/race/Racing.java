@@ -593,6 +593,7 @@ public class Racing extends JavaPlugin {
         .add(ConfigKey.TELEPORT_AFTER_RACE_ENABLED, "teleport_after_race.enabled", ConfigType.BOOLEAN, false)
         .add(ConfigKey.TELEPORT_AFTER_RACE_ENABLED_WHEN, "teleport_after_race.when", ConfigType.STRING, TeleportAfterRaceWhen.PARTICIPANT_FINISHES, (Object val) -> TeleportAfterRaceWhen.valueOf(((String)val).toUpperCase(Locale.ENGLISH)))
         .add(ConfigKey.VERBOSE, "verbose", ConfigType.BOOLEAN, false)
+        .add(ConfigKey.CHECKPOINT_PARTICLES_DURING_RACE, "checkpoint_particles_during_race", ConfigType.BOOLEAN, true)
         .build();
     } catch (Exception e) {
       setEnabled(false);

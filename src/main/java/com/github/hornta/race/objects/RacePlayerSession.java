@@ -13,6 +13,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
+import javax.swing.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.UUID;
@@ -200,8 +201,12 @@ public class RacePlayerSession {
         break;
 
       case HORSE:
+        HorseData horseData = null;
+        if(vehicle != null) {
+          horseData = new HorseData((Horse) vehicle);
+        }
         spawnVehicle(EntityType.HORSE, location);
-        setupHorse((Horse) vehicle);
+        setupHorse(horseData);
         break;
 
       case BOAT:
@@ -216,11 +221,14 @@ public class RacePlayerSession {
     }
 
     Bukkit.getScheduler().scheduleSyncDelayedTask(Racing.getInstance(), () -> {
-      if(race.getType() == RaceType.BOAT) {
-        player.teleport(location.clone().add(0, -0.95, 0));
-      } else {
-        player.teleport(location);
+      Location playerTeleportLoc = location;
+
+      if(vehicle instanceof Boat) {
+        playerTeleportLoc = playerTeleportLoc.clone().add(0, -0.45, 0);
       }
+
+      player.teleport(playerTeleportLoc);
+      Racing.debug("Teleported %s to vehicle %s", player.getName(), vehicle.getType());
 
       // important to set this after teleporting away from a potential source of fire.
       // 2 ticks looks like the minimum amount of ticks needed to wait after setting it to zero...
@@ -248,6 +256,9 @@ public class RacePlayerSession {
       loc = startLocation;
     } else {
       loc = currentCheckpoint.getLocation();
+      if(vehicle instanceof Boat) {
+        loc.add(0, -0.5, 0);
+      }
     }
 
     if (player.isSleeping()) {
@@ -283,8 +294,9 @@ public class RacePlayerSession {
   }
 
   private void spawnVehicle(EntityType type, Location location) {
-    Racing.debug("Attempting to spawn vehicle of type %s at %s", type, location);
-    vehicle = startLocation.getWorld().spawnEntity(location.clone().add(0, -0.95, 0), type);
+    Location spawnLocation = location;
+    Racing.debug("Attempting to spawn vehicle of type %s at %s", type, spawnLocation);
+    vehicle = startLocation.getWorld().spawnEntity(spawnLocation, type);
     Racing.debug("Spawned vehicle at " + vehicle.getLocation());
   }
 
@@ -297,7 +309,7 @@ public class RacePlayerSession {
     Racing.debug("Setting movementspeed on pig to " + race.getPigSpeed());
   }
 
-  private void setupHorse(Horse oldHorse) {
+  private void setupHorse(HorseData horseData) {
     ((Horse) vehicle).setAI(false);
     Racing.debug("Disable horse AI");
     ((Horse) vehicle).setTamed(true);
@@ -311,16 +323,16 @@ public class RacePlayerSession {
     ((Horse) vehicle).getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).setBaseValue(race.getHorseSpeed());
     Racing.debug("Setting horse movement speed to " + race.getHorseSpeed());
 
-    if(oldHorse != null) {
+    if(horseData != null) {
       Racing.debug("Transferring old horse values to new horse");
-      Racing.debug("Attempt to set horse color to " + oldHorse.getColor());
-      ((Horse) vehicle).setColor(oldHorse.getColor());
+      Racing.debug("Attempt to set horse color to " + horseData.getColor());
+      ((Horse) vehicle).setColor(horseData.getColor());
       Racing.debug("Horse color set to " + ((Horse) vehicle).getColor());
-      Racing.debug("Attempting to set horse style to " + oldHorse.getStyle());
-      ((Horse) vehicle).setStyle(oldHorse.getStyle());
+      Racing.debug("Attempting to set horse style to " + horseData.getStyle());
+      ((Horse) vehicle).setStyle(horseData.getStyle());
       Racing.debug("Horse style set to " + ((Horse) vehicle).getStyle());
-      Racing.debug("Attempting to set horse age to " + oldHorse.getAge());
-      ((Horse) vehicle).setAge(oldHorse.getAge());
+      Racing.debug("Attempting to set horse age to " + horseData.getAge());
+      ((Horse) vehicle).setAge(horseData.getAge());
       Racing.debug("Horse age set to " + ((Horse) vehicle).getAge());
     }
   }
@@ -361,9 +373,11 @@ public class RacePlayerSession {
   }
 
   void enterVehicle() {
+    Racing.debug("Attempting to enter passanger %s to vehicle %s", player.getName(), getVehicle().getType());
     isAllowedToEnterVehicle = true;
     getVehicle().addPassenger(player);
     isAllowedToEnterVehicle = false;
+    Racing.debug("Result of attempting to enter %s into %s: %b", player.getName(), getVehicle().getType(), player.isInsideVehicle());
   }
 
   void exitVehicle() {

@@ -231,8 +231,10 @@ public class RaceSession implements Listener {
     List<RacePlayerSession> shuffledSessions = new ArrayList<>(playerSessions.values());
     Collections.shuffle(shuffledSessions);
 
-    for(RaceCheckpoint checkpoint : race.getCheckpoints()) {
-      checkpoint.startTask();
+    if(Racing.getInstance().getConfiguration().get(ConfigKey.CHECKPOINT_PARTICLES_DURING_RACE)) {
+      for (int i = 0; i < race.getCheckpoints().size(); ++i) {
+        race.getCheckpoints().get(i).startTask(false, i == race.getCheckpoints().size() - 1);
+      }
     }
 
     int startPointIndex = 0;

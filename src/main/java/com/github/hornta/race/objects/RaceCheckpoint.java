@@ -40,7 +40,11 @@ public class RaceCheckpoint extends RacePoint implements Comparable<RaceCheckpoi
   }
 
   public void startTask(boolean isEditing) {
-    task = new CheckpointParticleTask(this, isEditing);
+    startTask(isEditing, false);
+  }
+
+  public void startTask(boolean isEditing, boolean isLast) {
+    task = new CheckpointParticleTask(this, isEditing, isLast);
     task.runTaskTimerAsynchronously(Racing.getInstance(), 0, 1L);
   }
 

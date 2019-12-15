@@ -2,7 +2,6 @@ package com.github.hornta.race.objects;
 
 import com.comphenix.protocol.wrappers.WrappedParticle;
 import com.github.hornta.race.enums.Permission;
-import com.github.hornta.race.Racing;
 import com.github.hornta.race.packetwrapper.WrapperPlayServerWorldParticles;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
@@ -12,9 +11,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.List;
-import java.util.logging.Level;
 
 public class CheckpointParticleTask extends BukkitRunnable {
   private static final double ANGLE_INCREMENT = Math.toRadians(4);
@@ -23,10 +20,16 @@ public class CheckpointParticleTask extends BukkitRunnable {
   private double t;
   private RaceCheckpoint checkpoint;
   private boolean isEditing;
+  private boolean isLast;
+  private RGB defaultColor;
+  private RGB isInsideColor;
 
-  public CheckpointParticleTask(RaceCheckpoint checkpoint, boolean isEditing) {
+  public CheckpointParticleTask(RaceCheckpoint checkpoint, boolean isEditing, boolean isLast) {
     this.checkpoint = checkpoint;
     this.isEditing = isEditing;
+    this.isLast = isLast;
+    this.defaultColor = new RGB(255, 0, 0);
+    this.isInsideColor = new RGB(0, 255, 0);
   }
 
   @Override
@@ -59,8 +62,16 @@ public class CheckpointParticleTask extends BukkitRunnable {
       WrapperPlayServerWorldParticles particle = new WrapperPlayServerWorldParticles();
       particle.setNumberOfParticles(1);
       particle.setLongDistance(true);
+      RGB rgb = null;
+      if(!isInside && isLast) {
+        rgb = RGB.randomLightColor();
+      }
       particle.setParticleType(WrappedParticle.create(Particle.REDSTONE, new Particle.DustOptions(
-        Color.fromRGB(isInside ? 0 : 255, isInside ? 255 : 0, 0), 2
+        Color.fromRGB(
+          isInside ? isInsideColor.getR() : isLast ? rgb.getR() : defaultColor.getR(),
+          isInside ? isInsideColor.getG() : isLast ? rgb.getG() : defaultColor.getG(),
+          isInside ? isInsideColor.getB() : isLast ? rgb.getB() : defaultColor.getB()
+        ), 2
       )));
       particle.setX(loc.getX());
       particle.setY(loc.getY());
@@ -83,4 +94,6 @@ public class CheckpointParticleTask extends BukkitRunnable {
     }
     t += ANGLE_INCREMENT;
   }
+
+
 }
