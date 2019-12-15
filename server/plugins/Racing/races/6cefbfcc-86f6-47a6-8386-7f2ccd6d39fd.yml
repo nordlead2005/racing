@@ -1,0 +1,78 @@
+id: 6cefbfcc-86f6-47a6-8386-7f2ccd6d39fd
+version: V11
+name: horse
+state: ENABLED
+type: HORSE
+created_at: 1576324498
+entry_fee: 0.0
+walk_speed: 0.2
+spawn:
+  x: 0.5
+  y: 72.0
+  z: 288.5
+  pitch: 41.099518
+  yaw: 3.393599
+  world: world
+checkpoints:
+  45edd054-1815-442f-bb75-fe827805bb56:
+    position: 1
+    location:
+      x: -0.5
+      y: 71.5
+      z: 304.5
+      pitch: 41.099518
+      yaw: 3.393599
+      world: world
+    radius: 3
+  c38a219e-1af6-4cff-bbe4-a4908a6bbd6a:
+    position: 2
+    location:
+      x: 0.5
+      y: 75.5
+      z: 315.5
+      pitch: 6.5994825
+      yaw: 1.8935981
+      world: world
+    radius: 3
+  97a57e04-5e4d-43cd-b11e-be29fa9487f2:
+    position: 3
+    location:
+      x: 2.5
+      y: 73.5
+      z: 323.5
+      pitch: 40.799534
+      yaw: -9.506402
+      world: world
+    radius: 3
+startPoints:
+  8bd77a16-32b4-4d9c-ab96-226437cb2bf1:
+    position: 1
+    location:
+      x: 0.5
+      y: 72.0
+      z: 291.5
+      pitch: 41.099518
+      yaw: 3.393599
+      world: world
+  1c9fd326-3a35-4524-8b43-a96d332e850b:
+    position: 2
+    location:
+      x: 0.5
+      y: 71.0
+      z: 295.5
+      pitch: 41.099518
+      yaw: 3.393599
+      world: world
+potion_effects: {}
+signs: []
+results:
+- player_id: 084859ed-3139-40a5-a17a-8d94ba29597c
+  name: hornta
+  runs: 1
+  wins: 1
+  duration: 47819
+min_required_participants_to_start: 1
+pig_speed: 0.25
+horse_speed: 4.0
+horse_jump_strength: 2.0
+commands: []

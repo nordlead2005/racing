@@ -1,0 +1,95 @@
+id: cae42f84-61c9-4abb-86eb-b4e6d30e9fad
+version: V11
+name: flyg
+state: ENABLED
+type: ELYTRA
+created_at: 1576327296
+entry_fee: 0.0
+walk_speed: 0.2
+spawn:
+  x: 5.5
+  y: 111.0
+  z: 267.5
+  pitch: 46.650135
+  yaw: 0.66910213
+  world: world
+checkpoints:
+  90bfd280-7c25-4568-8a4c-a2d65948848b:
+    position: 1
+    location:
+      x: 4.5
+      y: 83.5
+      z: 324.5
+      pitch: 35.99958
+      yaw: -0.30000818
+      world: world
+    radius: 3
+  54df5d69-cb67-4ff7-8062-80b76c011d79:
+    position: 2
+    location:
+      x: 4.5
+      y: 72.5
+      z: 370.5
+      pitch: 28.64955
+      yaw: -8.188188E-6
+      world: world
+    radius: 3
+startPoints:
+  33b33785-5f9f-4cb1-9815-a2ec1e984dd8:
+    position: 1
+    location:
+      x: 7.5
+      y: 111.0
+      z: 267.5
+      pitch: 38.249855
+      yaw: 0.9691022
+      world: world
+  ddf7a7ef-0261-4020-8a1e-54b6ab81939f:
+    position: 2
+    location:
+      x: 6.5
+      y: 111.0
+      z: 267.5
+      pitch: 39.74959
+      yaw: -2.0308986
+      world: world
+  1aaa98e4-583b-4cca-a53c-dca5a293aebd:
+    position: 3
+    location:
+      x: 5.5
+      y: 111.0
+      z: 267.5
+      pitch: 39.449368
+      yaw: -0.08091051
+      world: world
+  08eaa67a-d2b3-45ce-94dc-3f0e9efe864f:
+    position: 4
+    location:
+      x: 4.5
+      y: 111.0
+      z: 267.5
+      pitch: 39.449368
+      yaw: -0.08091051
+      world: world
+  f9ec0295-8168-4d73-a629-7635971d015e:
+    position: 5
+    location:
+      x: 3.5
+      y: 111.0
+      z: 267.5
+      pitch: 39.449368
+      yaw: -0.08091051
+      world: world
+potion_effects: {}
+signs: []
+results:
+- player_id: 084859ed-3139-40a5-a17a-8d94ba29597c
+  name: hornta
+  runs: 2
+  wins: 2
+  duration: 27842
+min_required_participants_to_start: 1
+pig_speed: 0.25
+horse_speed: 0.225
+horse_jump_strength: 0.7
+commands: []

@@ -1,0 +1,93 @@
+id: 4e522105-2b30-488b-b1de-20f7cfc36251
+version: V11
+name: båt
+state: ENABLED
+type: BOAT
+created_at: 1576277543
+entry_fee: 0.0
+walk_speed: 0.2
+spawn:
+  x: 20.5
+  y: 75.63512501209848
+  z: 216.5
+  pitch: 53.699657
+  yaw: 251.75168
+  world: world
+checkpoints:
+  5d599c37-12b2-4e03-a92d-9baab3ea653d:
+    position: 1
+    location:
+      x: 13.5
+      y: 63.5
+      z: 229.5
+      pitch: -3.450008
+      yaw: 178.83847
+      world: world
+    radius: 3
+  8b686785-4425-43c0-bdc8-c5a34bd1d156:
+    position: 2
+    location:
+      x: 13.5
+      y: 63.5
+      z: 220.5
+      pitch: 17.40007
+      yaw: 179.43845
+      world: world
+    radius: 3
+  241e0ba3-a294-4a14-8d54-c79ad9526cb4:
+    position: 3
+    location:
+      x: 17.5
+      y: 63.5
+      z: 216.5
+      pitch: 3.449873
+      yaw: -90.117546
+      world: world
+    radius: 3
+  6eb89a77-0d9d-46ee-b435-482e5ff3e3a8:
+    position: 4
+    location:
+      x: 29.5
+      y: 63.5
+      z: 216.5
+      pitch: -7.200051
+      yaw: -90.56755
+      world: world
+    radius: 3
+startPoints:
+  7281c2ef-edd8-4998-b05b-566651da6d45:
+    position: 1
+    location:
+      x: 15.5
+      y: 63.0
+      z: 235.5
+      pitch: -4.800185
+      yaw: 176.1365
+      world: world
+  87e3af57-434b-4cea-9497-a50eaa2106e3:
+    position: 2
+    location:
+      x: 11.5
+      y: 63.0
+      z: 235.5
+      pitch: -1.1999949
+      yaw: 190.08572
+      world: world
+potion_effects: {}
+signs: []
+results:
+- player_id: 084859ed-3139-40a5-a17a-8d94ba29597c
+  name: hornta
+  runs: 3
+  wins: 3
+  duration: 25624
+- player_id: c7463a30-29d6-4714-aad9-6e9a409ebfd3
+  name: cullago
+  runs: 8
+  wins: 8
+  duration: 4954
+min_required_participants_to_start: 1
+pig_speed: 0.25
+horse_speed: 0.225
+horse_jump_strength: 0.7
+commands: []

@@ -22,19 +22,15 @@
                 <configuration>
                     <filesets>
                         <fileset>
-                            <directory>server-1.14/plugins</directory>
+                            <directory>server/plugins</directory>
                             <includes>
                                 <include>racing-*.jar</include>
                             </includes>
                         </fileset>
+                    </filesets>
+                    <filesets>
                         <fileset>
-                            <directory>server-1.13/plugins</directory>
-                            <includes>
-                                <include>racing-*.jar</include>
-                            </includes>
-                        </fileset>
-                        <fileset>
-                            <directory>server-1.15/plugins</directory>
+                            <directory>${project.basedir}</directory>
                             <includes>
                                 <include>racing-*.jar</include>
                             </includes>
@@ -92,25 +88,18 @@
                             <version>${project.version}</version>
                             <type>jar</type>
                             <overWrite>yes</overWrite>
-                            <outputDirectory>${project.basedir}/server-1.14/plugins</outputDirectory>
+                            <outputDirectory>${project.basedir}/server/plugins</outputDirectory>
                             <destFileName>${project.artifactId}-${project.version}.jar</destFileName>
                         </artifactItem>
+                    </artifactItems>
+                    <artifactItems>
                         <artifactItem>
                             <groupId>${project.groupId}</groupId>
                             <artifactId>${project.artifactId}</artifactId>
                             <version>${project.version}</version>
                             <type>jar</type>
                             <overWrite>yes</overWrite>
-                            <outputDirectory>${project.basedir}/server-1.13/plugins</outputDirectory>
-                            <destFileName>${project.artifactId}-${project.version}.jar</destFileName>
-                        </artifactItem>
-                        <artifactItem>
-                            <groupId>${project.groupId}</groupId>
-                            <artifactId>${project.artifactId}</artifactId>
-                            <version>${project.version}</version>
-                            <type>jar</type>
-                            <overWrite>yes</overWrite>
-                            <outputDirectory>${project.basedir}/server-1.15/plugins</outputDirectory>
+                            <outputDirectory>${project.basedir}</outputDirectory>
                             <destFileName>${project.artifactId}-${project.version}.jar</destFileName>
                         </artifactItem>
                     </artifactItems>
