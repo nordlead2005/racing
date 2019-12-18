@@ -1,6 +1,11 @@
 server/*
 server/plugins/*
 !server/paper-*.jar
+server/plugins/bStats
+server/plugins/JumpPads
+server/plugins/PerWorldInventory
+server/plugins/ProtocolLib
+server/plugins/Racing
 .vscode
 target
 .idea
