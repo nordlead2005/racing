@@ -72,14 +72,19 @@ public class RacePlayerSession {
 
   void startCooldown() {
     Racing.debug("Starting cooldown for RacePlayerSession %s", playerName);
+    gameMode = player.getGameMode();
     walkSpeed = player.getWalkSpeed();
     foodLevel = player.getFoodLevel();
     inventory = player.getInventory().getContents();
     potionEffects = new ArrayList<>(player.getActivePotionEffects());
     health = player.getHealth();
-    gameMode = player.getGameMode();
     fireTicks = player.getFireTicks();
     allowFlight = player.getAllowFlight();
+
+    if(Racing.getInstance().getConfiguration().get(ConfigKey.ADVENTURE_ON_START)) {
+      player.setGameMode(GameMode.ADVENTURE);
+      Racing.debug("Setting game mode to %s on %s", GameMode.ADVENTURE, player.getName());
+    }
 
     Racing.debug("Attempting to set walk speed to %f on %s", 0f, player.getName());
     player.setWalkSpeed(0);
@@ -102,11 +107,6 @@ public class RacePlayerSession {
     Racing.debug("Attempting to add jump potion effect on %s", player.getName());
     player.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, countdown * 20, 128));
     Racing.debug("Potion effect %s added to %s", player.getPotionEffect(PotionEffectType.JUMP), player.getName());
-
-    if(Racing.getInstance().getConfiguration().get(ConfigKey.ADVENTURE_ON_START)) {
-      player.setGameMode(GameMode.ADVENTURE);
-      Racing.debug("Setting game mode to %s on %s", GameMode.ADVENTURE, player.getName());
-    }
 
     player.closeInventory();
     Racing.debug("Closing inventory of %s", player.getName());
@@ -402,29 +402,27 @@ public class RacePlayerSession {
       nextCheckpoint = null;
     }
 
-    player.setWalkSpeed(walkSpeed);
-    Racing.debug("Restored walk speed of %s to %f", player.getName(), walkSpeed);
-
     Racing.debug("Removing potion effects on %s...", player.getName());
     for(PotionEffect effect : player.getActivePotionEffects()) {
       player.removePotionEffect(effect.getType());
       Racing.debug("Removed potion effect %s on %s", effect.getType(), player.getName());
     }
-
     player.addPotionEffects(potionEffects);
     Racing.debug("Restored potion effects of %s", player.getName());
-    player.setFoodLevel(foodLevel);
-    Racing.debug("Restored food level on %s to %d", player.getName(), foodLevel);
     player.getInventory().setContents(inventory);
     Racing.debug("Restored inventory of %s to %s", player.getName(), inventory);
-    player.setHealth(health);
-    Racing.debug("Restored health of %s to %f", player.getName(), health);
-    player.setGameMode(gameMode);
-    Racing.debug("Restored game mode of %s to %s", player.getName(), gameMode);
+    player.setFoodLevel(foodLevel);
+    Racing.debug("Restored food level on %s to %d", player.getName(), foodLevel);
+    player.setWalkSpeed(walkSpeed);
+    Racing.debug("Restored walk speed of %s to %f", player.getName(), walkSpeed);
     player.setFireTicks(fireTicks);
     Racing.debug("Restored fire ticks of %s to %d", player.getName(), fireTicks);
     player.setAllowFlight(allowFlight);
     Racing.debug("Restoring allowFlight of %s to %b", player.getName(), allowFlight);
+    player.setHealth(health);
+    Racing.debug("Restored health of %s to %f", player.getName(), health);
+    player.setGameMode(gameMode);
+    Racing.debug("Restored game mode of %s to %s", player.getName(), gameMode);
     bossBar.removeAll();
     bossBar = null;
     if(getVehicle() != null) {

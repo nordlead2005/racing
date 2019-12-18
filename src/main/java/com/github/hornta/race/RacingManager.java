@@ -548,10 +548,12 @@ public class RacingManager implements Listener {
       return StartRaceStatus.ERROR;
     }
 
-    if(numLaps == 1 && race.getCheckpoints().size() < 1) {
+    if(race.getCheckpoints().isEmpty()) {
       MessageManager.sendMessage(commandSender, MessageKey.START_RACE_MISSING_CHECKPOINT);
       return StartRaceStatus.ERROR;
-    } else if(race.getCheckpoints().size() < 2) {
+    }
+
+    if(race.getCheckpoints().size() < 2 && numLaps > 1) {
       MessageManager.sendMessage(commandSender, MessageKey.START_RACE_MISSING_CHECKPOINTS);
       return StartRaceStatus.ERROR;
     }

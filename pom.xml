@@ -6,7 +6,7 @@
 
     <groupId>com.github.hornta</groupId>
     <artifactId>racing</artifactId>
-    <version>1.24.0</version>
+    <version>1.25.1</version>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -27,8 +27,6 @@
                                 <include>racing-*.jar</include>
                             </includes>
                         </fileset>
-                    </filesets>
-                    <filesets>
                         <fileset>
                             <directory>${project.basedir}</directory>
                             <includes>
@@ -91,8 +89,6 @@
                             <outputDirectory>${project.basedir}/server/plugins</outputDirectory>
                             <destFileName>${project.artifactId}-${project.version}.jar</destFileName>
                         </artifactItem>
-                    </artifactItems>
-                    <artifactItems>
                         <artifactItem>
                             <groupId>${project.groupId}</groupId>
                             <artifactId>${project.artifactId}</artifactId>
