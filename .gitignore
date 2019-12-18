@@ -11,3 +11,4 @@ target
 .idea
 .settings
 racing.iml
+racing-*.jar
