@@ -1,28 +1,25 @@
 package com.github.hornta.race.objects;
 
-import com.github.hornta.race.ConfigKey;
 import com.github.hornta.race.Racing;
 import com.github.hornta.race.Util;
 import com.github.hornta.race.enums.RaceType;
 import com.github.hornta.race.enums.RespawnType;
+import io.papermc.lib.PaperLib;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.boss.BossBar;
 import org.bukkit.entity.*;
+import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
-import javax.swing.*;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.UUID;
 
 public class RacePlayerSession {
-  private static final int PREVENT_SPRINT_FOOD_LEVEL = 6;
   public static final double MAX_HEALTH = 20;
   public static final int MAX_FOOD_LEVEL = 20;
-  private final Race race;
+  private final RaceSession raceSession;
   private final double chargedEntryFee;
   private final UUID playerId;
   private final String playerName;
@@ -30,23 +27,15 @@ public class RacePlayerSession {
   private Location startLocation;
   private RaceCheckpoint currentCheckpoint;
   private RaceCheckpoint nextCheckpoint;
-  private float walkSpeed;
-  private int foodLevel;
-  private ItemStack[] inventory;
-  private Collection<PotionEffect> potionEffects;
-  private double health;
-  private GameMode gameMode;
-  private int fireTicks;
-  private boolean allowFlight;
   private BossBar bossBar;
   private Entity vehicle;
   private int currentLap;
   private boolean isAllowedToEnterVehicle;
   private boolean isAllowedToExitVehicle;
-  private boolean isRestored = true;
+  private RaceParticipantReset restore;
 
-  RacePlayerSession(Race race, Player player, double chargedEntryFee) {
-    this.race = race;
+  RacePlayerSession(RaceSession raceSession, Player player, double chargedEntryFee) {
+    this.raceSession = raceSession;
     this.player = player;
     this.chargedEntryFee = chargedEntryFee;
     this.playerId = player.getUniqueId();
@@ -72,44 +61,8 @@ public class RacePlayerSession {
 
   void startCooldown() {
     Racing.debug("Starting cooldown for RacePlayerSession %s", playerName);
-    gameMode = player.getGameMode();
-    walkSpeed = player.getWalkSpeed();
-    foodLevel = player.getFoodLevel();
-    inventory = player.getInventory().getContents();
-    potionEffects = new ArrayList<>(player.getActivePotionEffects());
-    health = player.getHealth();
-    fireTicks = player.getFireTicks();
-    allowFlight = player.getAllowFlight();
 
-    if(Racing.getInstance().getConfiguration().get(ConfigKey.ADVENTURE_ON_START)) {
-      player.setGameMode(GameMode.ADVENTURE);
-      Racing.debug("Setting game mode to %s on %s", GameMode.ADVENTURE, player.getName());
-    }
-
-    Racing.debug("Attempting to set walk speed to %f on %s", 0f, player.getName());
-    player.setWalkSpeed(0);
-    Racing.debug("Walk speed was set to %f on %s", player.getWalkSpeed(), player.getName());
-    Racing.debug("Attempting to set food level to %d on %s", PREVENT_SPRINT_FOOD_LEVEL, player.getName());
-    player.setFoodLevel(PREVENT_SPRINT_FOOD_LEVEL);
-    Racing.debug("Setting food level to %d on %s", player.getFoodLevel(), player.getName());
-    Racing.debug("Attempting to clear inventory of %s", player.getName());
-    player.getInventory().clear();
-    Racing.debug("Inventory of %s was cleared. Contents: %s", player.getName(), player.getInventory().getContents());
-
-    Racing.debug("Attempting to remove potion effects on %s", player.getName());
-    for(PotionEffect effect : player.getActivePotionEffects()) {
-      player.removePotionEffect(effect.getType());
-      Racing.debug("Removed potion effect %s on %s", effect.getType(), player.getName());
-    }
-
-    // prevent players from jumping during the countdown
-    int countdown = Racing.getInstance().getConfiguration().get(ConfigKey.COUNTDOWN);
-    Racing.debug("Attempting to add jump potion effect on %s", player.getName());
-    player.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, countdown * 20, 128));
-    Racing.debug("Potion effect %s added to %s", player.getPotionEffect(PotionEffectType.JUMP), player.getName());
-
-    player.closeInventory();
-    Racing.debug("Closing inventory of %s", player.getName());
+    restore = new RaceParticipantReset(this);
 
     if(player.isInsideVehicle()) {
       Racing.debug("%s is inside a vehicle. Attempting to eject it...", player.getName());
@@ -117,20 +70,6 @@ public class RacePlayerSession {
       player.getVehicle().eject();
       isAllowedToExitVehicle = false;
       Racing.debug("Result of ejecting %s from vehicle: %B", player.getName(), player.getVehicle() == null);
-    }
-
-    switch (race.getType()) {
-      case HORSE:
-      case BOAT:
-      case PIG:
-      case MINECART:
-        player.setAllowFlight(true);
-        break;
-      case ELYTRA:
-      case PLAYER:
-        player.setAllowFlight(false);
-        break;
-      default:
     }
 
     Racing.debug("Teleporting %s to start location", player.getName());
@@ -141,12 +80,10 @@ public class RacePlayerSession {
       Racing.debug("Setting health to %f on %s", MAX_HEALTH, player.getName());
     });
 
-    if(race.getType() == RaceType.HORSE) {
+    if(raceSession.getRace().getType() == RaceType.HORSE) {
       freezeHorse();
       Racing.debug("Freezed horse movement");
     }
-
-    isRestored = false;
   }
 
   Entity getVehicle() {
@@ -158,7 +95,7 @@ public class RacePlayerSession {
   }
 
   void startRace() {
-    player.setWalkSpeed(race.getWalkSpeed());
+    player.setWalkSpeed(raceSession.getRace().getWalkSpeed());
     player.setFoodLevel(MAX_FOOD_LEVEL);
     player.removePotionEffect(PotionEffectType.JUMP);
 
@@ -168,14 +105,14 @@ public class RacePlayerSession {
       unfreezeHorse();
     }
 
-    if(race.getType() == RaceType.ELYTRA) {
+    if(raceSession.getRace().getType() == RaceType.ELYTRA) {
       player.getInventory().setChestplate(new ItemStack(Material.ELYTRA, 1));
     }
   }
 
   public void respawnInVehicle() {
     Location location;
-    if (currentCheckpoint == null || race.getType() == RaceType.ELYTRA) {
+    if (currentCheckpoint == null || raceSession.getRace().getType() == RaceType.ELYTRA) {
       location = startLocation;
     } else {
       location = currentCheckpoint.getLocation();
@@ -190,7 +127,7 @@ public class RacePlayerSession {
       getVehicle().remove();
     }
 
-    switch (race.getType()) {
+    switch (raceSession.getRace().getType()) {
       case PIG:
         spawnVehicle(EntityType.PIG, location);
         setupPig();
@@ -227,7 +164,7 @@ public class RacePlayerSession {
         playerTeleportLoc = playerTeleportLoc.clone().add(0, -0.45, 0);
       }
 
-      player.teleport(playerTeleportLoc);
+      PaperLib.teleportAsync(player, playerTeleportLoc, PlayerTeleportEvent.TeleportCause.PLUGIN);
       Racing.debug("Teleported %s to vehicle %s", player.getName(), vehicle.getType());
 
       // important to set this after teleporting away from a potential source of fire.
@@ -273,10 +210,10 @@ public class RacePlayerSession {
     player.setFallDistance(0);
     Racing.debug("Fall distance on %s was set to %f", player.getName(), player.getFallDistance());
 
-    switch (race.getType()) {
+    switch (raceSession.getRace().getType()) {
       case PLAYER:
       case ELYTRA:
-        player.teleport(loc);
+        PaperLib.teleportAsync(player, loc, PlayerTeleportEvent.TeleportCause.PLUGIN);
         Bukkit.getScheduler().scheduleSyncDelayedTask(Racing.getInstance(), () -> {
           player.setFireTicks(0);
           if(fireTicksResetCallback != null) {
@@ -305,8 +242,8 @@ public class RacePlayerSession {
     Racing.debug("Disable pig AI");
     ((Pig)vehicle).setSaddle(true);
     Racing.debug("Giving pig a saddle");
-    ((Pig)vehicle).getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).setBaseValue(race.getPigSpeed());
-    Racing.debug("Setting movementspeed on pig to " + race.getPigSpeed());
+    ((Pig)vehicle).getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).setBaseValue(raceSession.getRace().getPigSpeed());
+    Racing.debug("Setting movementspeed on pig to " + raceSession.getRace().getPigSpeed());
   }
 
   private void setupHorse(HorseData horseData) {
@@ -318,10 +255,10 @@ public class RacePlayerSession {
     Racing.debug("Set horse owner to " + player.getName());
     ((Horse) vehicle).getInventory().setSaddle(new ItemStack(Material.SADDLE, 1));
     Racing.debug("Giving horse a saddle");
-    ((Horse) vehicle).setJumpStrength(race.getHorseJumpStrength());
-    Racing.debug("Setting horse jump strength to" + race.getHorseJumpStrength());
-    ((Horse) vehicle).getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).setBaseValue(race.getHorseSpeed());
-    Racing.debug("Setting horse movement speed to " + race.getHorseSpeed());
+    ((Horse) vehicle).setJumpStrength(raceSession.getRace().getHorseJumpStrength());
+    Racing.debug("Setting horse jump strength to" + raceSession.getRace().getHorseJumpStrength());
+    ((Horse) vehicle).getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).setBaseValue(raceSession.getRace().getHorseSpeed());
+    Racing.debug("Setting horse movement speed to " + raceSession.getRace().getHorseSpeed());
 
     if(horseData != null) {
       Racing.debug("Transferring old horse values to new horse");
@@ -343,8 +280,8 @@ public class RacePlayerSession {
   }
 
   private void unfreezeHorse() {
-    ((Horse) vehicle).getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).setBaseValue(race.getHorseSpeed());
-    ((Horse) vehicle).setJumpStrength(race.getHorseJumpStrength());
+    ((Horse) vehicle).getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).setBaseValue(raceSession.getRace().getHorseSpeed());
+    ((Horse) vehicle).setJumpStrength(raceSession.getRace().getHorseJumpStrength());
   }
 
   private void setupBoat() {
@@ -387,7 +324,7 @@ public class RacePlayerSession {
   }
 
   void restore() {
-    if(isRestored) {
+    if(restore == null) {
       return;
     }
 
@@ -402,27 +339,8 @@ public class RacePlayerSession {
       nextCheckpoint = null;
     }
 
-    Racing.debug("Removing potion effects on %s...", player.getName());
-    for(PotionEffect effect : player.getActivePotionEffects()) {
-      player.removePotionEffect(effect.getType());
-      Racing.debug("Removed potion effect %s on %s", effect.getType(), player.getName());
-    }
-    player.addPotionEffects(potionEffects);
-    Racing.debug("Restored potion effects of %s", player.getName());
-    player.getInventory().setContents(inventory);
-    Racing.debug("Restored inventory of %s to %s", player.getName(), inventory);
-    player.setFoodLevel(foodLevel);
-    Racing.debug("Restored food level on %s to %d", player.getName(), foodLevel);
-    player.setWalkSpeed(walkSpeed);
-    Racing.debug("Restored walk speed of %s to %f", player.getName(), walkSpeed);
-    player.setFireTicks(fireTicks);
-    Racing.debug("Restored fire ticks of %s to %d", player.getName(), fireTicks);
-    player.setAllowFlight(allowFlight);
-    Racing.debug("Restoring allowFlight of %s to %b", player.getName(), allowFlight);
-    player.setHealth(health);
-    Racing.debug("Restored health of %s to %f", player.getName(), health);
-    player.setGameMode(gameMode);
-    Racing.debug("Restored game mode of %s to %s", player.getName(), gameMode);
+    restore.restore();
+    restore = null;
     bossBar.removeAll();
     bossBar = null;
     if(getVehicle() != null) {
@@ -432,7 +350,6 @@ public class RacePlayerSession {
       Racing.debug("%s ejected from vehicle result: %b", player.getName(), player.getVehicle() == null);
     }
     vehicle = null;
-    isRestored = true;
   }
 
   public RaceCheckpoint getCurrentCheckpoint() {
@@ -475,6 +392,10 @@ public class RacePlayerSession {
   }
 
   public boolean isRestored() {
-    return isRestored;
+    return restore == null;
+  }
+
+  public RaceSession getRaceSession() {
+    return raceSession;
   }
 }

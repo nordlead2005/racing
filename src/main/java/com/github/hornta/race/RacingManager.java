@@ -6,6 +6,7 @@ import com.github.hornta.race.events.*;
 import com.github.hornta.race.MessageKey;
 import com.github.hornta.carbon.message.MessageManager;
 import com.github.hornta.race.objects.*;
+import io.papermc.lib.PaperLib;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.*;
 import org.bukkit.command.CommandSender;
@@ -13,9 +14,11 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.PlayerTeleportEvent;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -28,7 +31,7 @@ public class RacingManager implements Listener {
   private List<RaceSession> raceSessions = new ArrayList<>();
 
   public void shutdown() {
-    for(RaceSession raceSession : raceSessions) {
+    for (RaceSession raceSession : raceSessions) {
       raceSession.stop();
     }
     raceSessions.clear();
@@ -52,9 +55,9 @@ public class RacingManager implements Listener {
   public List<RaceSession> getRaceSessions(Race race, RaceSessionState state) {
     List<RaceSession> sessions = new ArrayList<>();
 
-    for(RaceSession session : raceSessions) {
+    for (RaceSession session : raceSessions) {
       boolean stateOk = state == null || session.getState() == state;
-      if(session.getRace() == race && stateOk) {
+      if (session.getRace() == race && stateOk) {
         sessions.add(session);
       }
     }
@@ -63,8 +66,8 @@ public class RacingManager implements Listener {
   }
 
   public boolean hasOngoingSession(Race race) {
-    for(RaceSession session : raceSessions) {
-      if(session.getRace() == race) {
+    for (RaceSession session : raceSessions) {
+      if (session.getRace() == race) {
         return true;
       }
     }
@@ -73,13 +76,13 @@ public class RacingManager implements Listener {
 
   @EventHandler
   void onCreateRace(CreateRaceEvent event) {
-    if(event.getRace().getState() != RaceState.UNDER_CONSTRUCTION) {
+    if (event.getRace().getState() != RaceState.UNDER_CONSTRUCTION) {
       return;
     }
 
     addChunkTickets();
 
-    for(RaceCheckpoint checkpoint : event.getRace().getCheckpoints()) {
+    for (RaceCheckpoint checkpoint : event.getRace().getCheckpoints()) {
       checkpoint.startTask(true);
       checkpoint.setupHologram();
     }
@@ -91,7 +94,7 @@ public class RacingManager implements Listener {
 
   @EventHandler
   void onDeleteRace(DeleteRaceEvent event) {
-    for(RaceCheckpoint checkpoint : event.getRace().getCheckpoints()) {
+    for (RaceCheckpoint checkpoint : event.getRace().getCheckpoints()) {
       checkpoint.stopTask();
       checkpoint.removeHologram();
     }
@@ -156,7 +159,7 @@ public class RacingManager implements Listener {
       }
     }
 
-    if(Racing.getInstance().isHolographicDisplaysLoaded()) {
+    if (Racing.getInstance().isHolographicDisplaysLoaded()) {
       for (RaceStartPoint startPoint : event.getRace().getStartPoints()) {
         if (event.getRace().getState() == RaceState.UNDER_CONSTRUCTION) {
           startPoint.setupHologram();
@@ -177,9 +180,9 @@ public class RacingManager implements Listener {
 
   @EventHandler
   void onRaceSessionResult(RaceSessionResultEvent event) {
-    for(Map.Entry<RacePlayerSession, PlayerSessionResult> entry : event.getResult().getPlayerResults().entrySet()) {
+    for (Map.Entry<RacePlayerSession, PlayerSessionResult> entry : event.getResult().getPlayerResults().entrySet()) {
       event.getResult().getRaceSession().getRace().addResult(entry.getValue());
-      if(entry.getValue().getPosition() == 1) {
+      if (entry.getValue().getPosition() == 1) {
         MessageManager.setValue("player_name", entry.getValue().getPlayerSession().getPlayerName());
         MessageManager.setValue("race_name", event.getResult().getRaceSession().getRace().getName());
         MessageManager.setValue("time", Util.getTimeLeft(entry.getValue().getTime()));
@@ -187,7 +190,8 @@ public class RacingManager implements Listener {
         MessageManager.broadcast(MessageKey.RACE_WIN);
       }
     }
-    updateRace(event.getResult().getRaceSession().getRace(), () -> {});
+    updateRace(event.getResult().getRaceSession().getRace(), () -> {
+    });
   }
 
   @EventHandler
@@ -195,10 +199,12 @@ public class RacingManager implements Listener {
     raceSessions.remove(event.getRaceSession());
 
     if (Racing.getInstance().getConfiguration().get(ConfigKey.TELEPORT_AFTER_RACE_ENABLED)) {
-      TeleportAfterRaceWhen when = Racing.getInstance().getConfiguration().get(ConfigKey.TELEPORT_AFTER_RACE_ENABLED_WHEN);
-      if(when == TeleportAfterRaceWhen.EVERYONE_FINISHES) {
-        for(RacePlayerSession playerSession : event.getRaceSession().getPlayerSessions()) {
-          playerSession.getPlayer().teleport(event.getRaceSession().getRace().getSpawn());
+      TeleportAfterRaceWhen when = Racing.getInstance().getConfiguration()
+          .get(ConfigKey.TELEPORT_AFTER_RACE_ENABLED_WHEN);
+      if (when == TeleportAfterRaceWhen.EVERYONE_FINISHES) {
+        for (RacePlayerSession playerSession : event.getRaceSession().getPlayerSessions()) {
+          PaperLib.teleportAsync(playerSession.getPlayer(), event.getRaceSession().getRace().getSpawn(),
+              PlayerTeleportEvent.TeleportCause.PLUGIN);
         }
       }
     }
@@ -207,10 +213,10 @@ public class RacingManager implements Listener {
   @EventHandler
   void onPlayerJoin(PlayerJoinEvent event) {
     boolean hasPermission = event.getPlayer().hasPermission(Permission.RACING_MODIFY.toString());
-    for(Race race : races) {
-      for(RaceCheckpoint checkpoint : race.getCheckpoints()) {
-        if(checkpoint.getHologram() != null) {
-          if(hasPermission) {
+    for (Race race : races) {
+      for (RaceCheckpoint checkpoint : race.getCheckpoints()) {
+        if (checkpoint.getHologram() != null) {
+          if (hasPermission) {
             checkpoint.getHologram().getVisibilityManager().showTo(event.getPlayer());
           } else {
             checkpoint.getHologram().getVisibilityManager().hideTo(event.getPlayer());
@@ -218,9 +224,9 @@ public class RacingManager implements Listener {
         }
       }
 
-      for(RaceStartPoint startPoint : race.getStartPoints()) {
-        if(startPoint.getHologram() != null) {
-          if(hasPermission) {
+      for (RaceStartPoint startPoint : race.getStartPoints()) {
+        if (startPoint.getHologram() != null) {
+          if (hasPermission) {
             startPoint.getHologram().getVisibilityManager().showTo(event.getPlayer());
           } else {
             startPoint.getHologram().getVisibilityManager().hideTo(event.getPlayer());
@@ -232,15 +238,15 @@ public class RacingManager implements Listener {
 
   @EventHandler
   void onPlayerQuit(PlayerQuitEvent event) {
-    for(Race race : races) {
-      for(RaceCheckpoint checkpoint : race.getCheckpoints()) {
-        if(checkpoint.getHologram() != null) {
+    for (Race race : races) {
+      for (RaceCheckpoint checkpoint : race.getCheckpoints()) {
+        if (checkpoint.getHologram() != null) {
           checkpoint.getHologram().getVisibilityManager().resetVisibility(event.getPlayer());
         }
       }
 
-      for(RaceStartPoint startPoint : race.getStartPoints()) {
-        if(startPoint.getHologram() != null) {
+      for (RaceStartPoint startPoint : race.getStartPoints()) {
+        if (startPoint.getHologram() != null) {
           startPoint.getHologram().getVisibilityManager().resetVisibility(event.getPlayer());
         }
       }
@@ -250,7 +256,7 @@ public class RacingManager implements Listener {
   @EventHandler(priority = EventPriority.HIGHEST)
   void onPlayerCommandPreprocess(PlayerCommandPreprocessEvent event) {
     RaceSession session = getParticipatingRace(event.getPlayer());
-    if(session == null || session.getState() == RaceSessionState.PREPARING) {
+    if (session == null || session.getState() == RaceSessionState.PREPARING) {
       return;
     }
 
@@ -258,15 +264,16 @@ public class RacingManager implements Listener {
     String entryLabel = event.getMessage().split(" ")[0].replace("/", "");
     String[] entryArgs = event.getMessage().replace("/" + entryLabel, "").trim().split(" ");
 
-    for(String blockedCommand : blockedCommands) {
+    for (String blockedCommand : blockedCommands) {
       String blockedLabel = blockedCommand.split(" ")[0].replace("/", "");
       if (blockedLabel.equalsIgnoreCase(entryLabel)) {
         boolean skip = false;
         String argString = blockedCommand.replace(blockedLabel, "").trim();
         if (!argString.isEmpty()) {
           String[] blockedArgs = argString.split(" ");
-          for(int i = 0; i < blockedArgs.length; ++i) {
-            // if entry arg doesnt exist or if entry args isn't equal to the blocked arg then continue with next blocked cmd
+          for (int i = 0; i < blockedArgs.length; ++i) {
+            // if entry arg doesnt exist or if entry args isn't equal to the blocked arg
+            // then continue with next blocked cmd
             if (i >= entryArgs.length || !blockedArgs[i].equalsIgnoreCase(entryArgs[i])) {
               skip = true;
               break;
@@ -289,18 +296,21 @@ public class RacingManager implements Listener {
   @EventHandler
   void onRacePlayerGoal(RacePlayerGoalEvent event) {
     if (Racing.getInstance().getConfiguration().get(ConfigKey.TELEPORT_AFTER_RACE_ENABLED)) {
-      TeleportAfterRaceWhen when = Racing.getInstance().getConfiguration().get(ConfigKey.TELEPORT_AFTER_RACE_ENABLED_WHEN);
-      if(when == TeleportAfterRaceWhen.PARTICIPANT_FINISHES) {
-        event.getPlayerSession().getPlayer().teleport(event.getRaceSession().getRace().getSpawn());
+      TeleportAfterRaceWhen when = Racing.getInstance().getConfiguration()
+          .get(ConfigKey.TELEPORT_AFTER_RACE_ENABLED_WHEN);
+      if (when == TeleportAfterRaceWhen.PARTICIPANT_FINISHES) {
+        PaperLib.teleportAsync(event.getPlayerSession().getPlayer(), event.getRaceSession().getRace().getSpawn(),
+            PlayerTeleportEvent.TeleportCause.PLUGIN);
       }
     }
   }
 
   @EventHandler
   void onSessionStateChanged(SessionStateChangedEvent event) {
-    if(event.getRaceSession().getState() == RaceSessionState.COUNTDOWN) {
-      Bukkit.getPluginManager().callEvent(new ExecuteCommandEvent(RaceCommandType.ON_COUNTDOWN, event.getRaceSession()));
-    } else if(event.getRaceSession().getState() == RaceSessionState.STARTED) {
+    if (event.getRaceSession().getState() == RaceSessionState.COUNTDOWN) {
+      Bukkit.getPluginManager()
+          .callEvent(new ExecuteCommandEvent(RaceCommandType.ON_COUNTDOWN, event.getRaceSession()));
+    } else if (event.getRaceSession().getState() == RaceSessionState.STARTED) {
       Bukkit.getPluginManager().callEvent(new ExecuteCommandEvent(RaceCommandType.ON_START, event.getRaceSession()));
     }
   }
@@ -310,18 +320,18 @@ public class RacingManager implements Listener {
   }
 
   public void load() {
-    if(!raceSessions.isEmpty()) {
+    if (!raceSessions.isEmpty()) {
       throw new RuntimeException("Can't load races because there are ongoing race sessions.");
     }
 
-    for(Race race : races) {
+    for (Race race : races) {
       Bukkit.getPluginManager().callEvent(new DeleteRaceEvent(race));
     }
     racesByName.clear();
     races.clear();
 
     api.fetchAllRaces((List<Race> fetchedRaces) -> {
-      for(Race race : fetchedRaces) {
+      for (Race race : fetchedRaces) {
         racesByName.put(race.getName(), race);
         races.add(race);
         Bukkit.getPluginManager().callEvent(new CreateRaceEvent(race));
@@ -331,7 +341,7 @@ public class RacingManager implements Listener {
 
   public void updateRace(Race race, Runnable runnable) {
     api.updateRace(race, (Boolean result) -> Bukkit.getScheduler().scheduleSyncDelayedTask(Racing.getInstance(), () -> {
-      if(result) {
+      if (result) {
         runnable.run();
       }
     }));
@@ -340,39 +350,36 @@ public class RacingManager implements Listener {
   public void addCheckpoint(Location location, Race race, Consumer<RaceCheckpoint> consumer) {
     RaceCheckpoint checkpoint = new RaceCheckpoint(UUID.randomUUID(), race.getCheckpoints().size() + 1, location, 3);
 
-    api.addCheckpoint(race.getId(), checkpoint, (Boolean result) -> Bukkit.getScheduler().scheduleSyncDelayedTask(Racing.getInstance(), () -> {
-      if(result) {
-        race.addStartPoint(checkpoint);
-        Bukkit.getPluginManager().callEvent(new AddRaceCheckpointEvent(race, checkpoint));
-        consumer.accept(checkpoint);
-      }
-    }));
+    api.addCheckpoint(race.getId(), checkpoint,
+        (Boolean result) -> Bukkit.getScheduler().scheduleSyncDelayedTask(Racing.getInstance(), () -> {
+          if (result) {
+            race.addStartPoint(checkpoint);
+            Bukkit.getPluginManager().callEvent(new AddRaceCheckpointEvent(race, checkpoint));
+            consumer.accept(checkpoint);
+          }
+        }));
   }
 
   public void deleteCheckpoint(Race race, RaceCheckpoint checkpoint, Runnable runnable) {
-    api.deleteCheckpoint(race.getId(), checkpoint, (Boolean result) -> Bukkit.getScheduler().scheduleSyncDelayedTask(Racing.getInstance(), () -> {
-      if(result) {
-        race.setCheckpoints(
-          race.
-            getCheckpoints()
-            .stream()
-            .filter((RaceCheckpoint checkpoint1) -> checkpoint1 != checkpoint)
-            .peek((RaceCheckpoint checkpoint1) -> {
-              if(checkpoint1.getPosition() > checkpoint.getPosition()) {
-                checkpoint1.setPosition(checkpoint1.getPosition() - 1);
-              }
-            })
-            .collect(Collectors.toList())
-        );
-        Bukkit.getPluginManager().callEvent(new DeleteRaceCheckpointEvent(race, checkpoint));
-        runnable.run();
-      }
-    }));
+    api.deleteCheckpoint(race.getId(), checkpoint,
+        (Boolean result) -> Bukkit.getScheduler().scheduleSyncDelayedTask(Racing.getInstance(), () -> {
+          if (result) {
+            race.setCheckpoints(
+                race.getCheckpoints().stream().filter((RaceCheckpoint checkpoint1) -> checkpoint1 != checkpoint)
+                    .peek((RaceCheckpoint checkpoint1) -> {
+                      if (checkpoint1.getPosition() > checkpoint.getPosition()) {
+                        checkpoint1.setPosition(checkpoint1.getPosition() - 1);
+                      }
+                    }).collect(Collectors.toList()));
+            Bukkit.getPluginManager().callEvent(new DeleteRaceCheckpointEvent(race, checkpoint));
+            runnable.run();
+          }
+        }));
   }
 
   public void createRace(Race race, Runnable callback) {
     api.updateRace(race, (Boolean result) -> Bukkit.getScheduler().scheduleSyncDelayedTask(Racing.getInstance(), () -> {
-      if(result) {
+      if (result) {
         racesByName.put(race.getName(), race);
         races.add(race);
         Bukkit.getPluginManager().callEvent(new CreateRaceEvent(race));
@@ -383,7 +390,7 @@ public class RacingManager implements Listener {
 
   public void deleteRace(Race race, Runnable runnable) {
     api.deleteRace(race, (Boolean result) -> Bukkit.getScheduler().scheduleSyncDelayedTask(Racing.getInstance(), () -> {
-      if(result) {
+      if (result) {
         racesByName.remove(race.getName());
         races.remove(race);
         Bukkit.getPluginManager().callEvent(new DeleteRaceEvent(race));
@@ -395,34 +402,31 @@ public class RacingManager implements Listener {
   public void addStartPoint(Location location, Race race, Consumer<RaceStartPoint> consumer) {
     RaceStartPoint startPoint = new RaceStartPoint(UUID.randomUUID(), race.getStartPoints().size() + 1, location);
 
-    api.addStartPoint(race.getId(), startPoint, (Boolean result) -> Bukkit.getScheduler().scheduleSyncDelayedTask(Racing.getInstance(), () -> {
-      if(result) {
-        race.addStartPoint(startPoint);
-        Bukkit.getPluginManager().callEvent(new AddRaceStartPointEvent(race, startPoint));
-        consumer.accept(startPoint);
-      }
-    }));
+    api.addStartPoint(race.getId(), startPoint,
+        (Boolean result) -> Bukkit.getScheduler().scheduleSyncDelayedTask(Racing.getInstance(), () -> {
+          if (result) {
+            race.addStartPoint(startPoint);
+            Bukkit.getPluginManager().callEvent(new AddRaceStartPointEvent(race, startPoint));
+            consumer.accept(startPoint);
+          }
+        }));
   }
 
   public void deleteStartPoint(Race race, RaceStartPoint startPoint, Runnable runnable) {
-    api.deleteStartPoint(race.getId(), startPoint, (Boolean result) -> Bukkit.getScheduler().scheduleSyncDelayedTask(Racing.getInstance(), () -> {
-      if(result) {
-        race.setStartPoints(
-          race.
-            getStartPoints()
-            .stream()
-            .filter((RaceStartPoint startPoint1) -> startPoint1 != startPoint)
-            .peek((RaceStartPoint startPoint1) -> {
-              if(startPoint1.getPosition() > startPoint.getPosition()) {
-                startPoint1.setPosition(startPoint1.getPosition() - 1);
-              }
-            })
-            .collect(Collectors.toList())
-        );
-        Bukkit.getPluginManager().callEvent(new DeleteRaceStartPointEvent(race, startPoint));
-        runnable.run();
-      }
-    }));
+    api.deleteStartPoint(race.getId(), startPoint,
+        (Boolean result) -> Bukkit.getScheduler().scheduleSyncDelayedTask(Racing.getInstance(), () -> {
+          if (result) {
+            race.setStartPoints(
+                race.getStartPoints().stream().filter((RaceStartPoint startPoint1) -> startPoint1 != startPoint)
+                    .peek((RaceStartPoint startPoint1) -> {
+                      if (startPoint1.getPosition() > startPoint.getPosition()) {
+                        startPoint1.setPosition(startPoint1.getPosition() - 1);
+                      }
+                    }).collect(Collectors.toList()));
+            Bukkit.getPluginManager().callEvent(new DeleteRaceStartPointEvent(race, startPoint));
+            runnable.run();
+          }
+        }));
   }
 
   public Race getRace(String name) {
@@ -432,10 +436,10 @@ public class RacingManager implements Listener {
   public List<Race> getRaces() {
     return new ArrayList<>(races);
   }
-  
+
   public RaceSession getParticipatingRace(Player player) {
-    for(RaceSession session : raceSessions) {
-      if(session.isParticipating(player)) {
+    for (RaceSession session : raceSessions) {
+      if (session.isParticipating(player)) {
         return session;
       }
     }
@@ -449,12 +453,13 @@ public class RacingManager implements Listener {
   public void joinRace(Race race, Player player, JoinType type, int laps) {
     List<RaceSession> sessions = getRaceSessions(race);
     RaceSession session = null;
-    if(!sessions.isEmpty()) {
+    if (!sessions.isEmpty()) {
       session = sessions.get(0);
     }
 
-    List<GameMode> preventJoinFromGameMode = Racing.getInstance().getConfiguration().get(ConfigKey.PREVENT_JOIN_FROM_GAME_MODE);
-    if(preventJoinFromGameMode.contains(player.getGameMode())) {
+    List<GameMode> preventJoinFromGameMode = Racing.getInstance().getConfiguration()
+        .get(ConfigKey.PREVENT_JOIN_FROM_GAME_MODE);
+    if (preventJoinFromGameMode.contains(player.getGameMode())) {
       MessageManager.setValue("game_mode", player.getGameMode());
       MessageManager.sendMessage(player, MessageKey.JOIN_RACE_GAME_MODE);
       return;
@@ -463,30 +468,30 @@ public class RacingManager implements Listener {
     boolean startOnSign = Racing.getInstance().getConfiguration().get(ConfigKey.START_ON_JOIN_SIGN);
     boolean startOnCommand = Racing.getInstance().getConfiguration().get(ConfigKey.START_ON_JOIN_SIGN);
 
-    if(session == null && ((type == JoinType.SIGN && startOnSign) || (type == JoinType.COMMAND && startOnCommand))) {
+    if (session == null && ((type == JoinType.SIGN && startOnSign) || (type == JoinType.COMMAND && startOnCommand))) {
       StartRaceStatus status = tryStartRace(race.getName(), player, laps);
-      if(status == StartRaceStatus.ERROR) {
+      if (status == StartRaceStatus.ERROR) {
         return;
       }
       session = getRaceSessions(race).get(0);
     }
 
-    if(session == null || session.getState() != RaceSessionState.PREPARING) {
+    if (session == null || session.getState() != RaceSessionState.PREPARING) {
       MessageManager.sendMessage(player, MessageKey.JOIN_RACE_NOT_OPEN);
       return;
     }
 
-    if(session.isParticipating(player)) {
+    if (session.isParticipating(player)) {
       MessageManager.sendMessage(player, MessageKey.JOIN_RACE_IS_PARTICIPATING);
       return;
     }
 
-    if(getParticipatingRace(player) != null) {
+    if (getParticipatingRace(player) != null) {
       MessageManager.sendMessage(player, MessageKey.JOIN_RACE_IS_PARTICIPATING_OTHER);
       return;
     }
 
-    if(session.isFull()) {
+    if (session.isFull()) {
       MessageManager.sendMessage(player, MessageKey.JOIN_RACE_IS_FULL);
       return;
     }
@@ -517,20 +522,18 @@ public class RacingManager implements Listener {
   public StartRaceStatus tryStartRace(String raceName, CommandSender commandSender, int numLaps) {
     Race race = getRace(raceName);
 
-    if(race == null) {
-      List<Race> allRaces = races
-        .stream()
-        .filter((Race r) -> r.getState() == RaceState.ENABLED)
-        .collect(Collectors.toList());
+    if (race == null) {
+      List<Race> allRaces = races.stream().filter((Race r) -> r.getState() == RaceState.ENABLED)
+          .collect(Collectors.toList());
 
-      if(allRaces.isEmpty()) {
+      if (allRaces.isEmpty()) {
         MessageManager.sendMessage(commandSender, MessageKey.START_RACE_NO_ENABLED);
         return StartRaceStatus.ERROR;
       }
       race = allRaces.get(Util.randomRangeInt(0, allRaces.size() - 1));
     }
 
-    if(race.getState() != RaceState.ENABLED) {
+    if (race.getState() != RaceState.ENABLED) {
       MessageManager.setValue("race_name", race.getName());
       MessageManager.sendMessage(commandSender, MessageKey.START_RACE_NOT_ENABLED);
       return StartRaceStatus.ERROR;
@@ -538,22 +541,22 @@ public class RacingManager implements Listener {
 
     List<RaceSession> sessions = getRaceSessions(race);
 
-    if(!sessions.isEmpty()) {
+    if (!sessions.isEmpty()) {
       MessageManager.sendMessage(commandSender, MessageKey.START_RACE_ALREADY_STARTED);
       return StartRaceStatus.ERROR;
     }
 
-    if(race.getStartPoints().size() < 1) {
+    if (race.getStartPoints().size() < 1) {
       MessageManager.sendMessage(commandSender, MessageKey.START_RACE_MISSING_STARTPOINT);
       return StartRaceStatus.ERROR;
     }
 
-    if(race.getCheckpoints().isEmpty()) {
+    if (race.getCheckpoints().isEmpty()) {
       MessageManager.sendMessage(commandSender, MessageKey.START_RACE_MISSING_CHECKPOINT);
       return StartRaceStatus.ERROR;
     }
 
-    if(race.getCheckpoints().size() < 2 && numLaps > 1) {
+    if (race.getCheckpoints().size() < 2 && numLaps > 1) {
       MessageManager.sendMessage(commandSender, MessageKey.START_RACE_MISSING_CHECKPOINTS);
       return StartRaceStatus.ERROR;
     }
@@ -563,12 +566,15 @@ public class RacingManager implements Listener {
   }
 
   private void addChunkTickets() {
-    for(World world : Bukkit.getWorlds()) {
+    if(PaperLib.isPaper()) {
+      return;
+    }
+    for (World world : Bukkit.getWorlds()) {
       world.removePluginChunkTickets(Racing.getInstance());
     }
 
-    for(Race race : races) {
-      if(race.getState() == RaceState.ENABLED) {
+    for (Race race : races) {
+      if (race.getState() == RaceState.ENABLED) {
         continue;
       }
 

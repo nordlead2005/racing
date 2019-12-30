@@ -3,6 +3,7 @@ package com.github.hornta.race.commands;
 import com.github.hornta.carbon.ICommandHandler;
 import com.github.hornta.race.RacingManager;
 import com.github.hornta.race.objects.RaceCheckpoint;
+import io.papermc.lib.PaperLib;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerTeleportEvent;
@@ -16,6 +17,6 @@ public class CommandRaceTeleportPoint extends RacingCommand implements ICommandH
   public void handle(CommandSender commandSender, String[] args, int typedArgs) {
     RaceCheckpoint checkpoint = racingManager.getRace(args[0]).getCheckpoint(Integer.parseInt(args[1]));
     Player player = (Player)commandSender;
-    player.teleport(checkpoint.getLocation().add(0, -0.5, 0), PlayerTeleportEvent.TeleportCause.COMMAND);
+    PaperLib.teleportAsync(player, checkpoint.getLocation().add(0, -0.5, 0), PlayerTeleportEvent.TeleportCause.COMMAND);
   }
 }

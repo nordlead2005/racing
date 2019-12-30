@@ -35,10 +35,6 @@ public class RaceCheckpoint extends RacePoint implements Comparable<RaceCheckpoi
     task = null;
   }
 
-  public void startTask() {
-    startTask(false);
-  }
-
   public void startTask(boolean isEditing) {
     startTask(isEditing, false);
   }

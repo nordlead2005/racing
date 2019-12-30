@@ -8,8 +8,10 @@ import com.github.hornta.race.enums.RaceState;
 import com.github.hornta.race.MessageKey;
 import com.github.hornta.carbon.message.MessageManager;
 import com.github.hornta.race.objects.Race;
+import io.papermc.lib.PaperLib;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerTeleportEvent;
 
 public class CommandRaceSpawn extends RacingCommand implements ICommandHandler {
   public CommandRaceSpawn(RacingManager racingManager) {
@@ -25,6 +27,6 @@ public class CommandRaceSpawn extends RacingCommand implements ICommandHandler {
       return;
     }
 
-    ((Player)commandSender).teleport(Util.snapAngles(race.getSpawn()));
+    PaperLib.teleportAsync(((Player)commandSender), Util.snapAngles(race.getSpawn()), PlayerTeleportEvent.TeleportCause.COMMAND);
   }
 }

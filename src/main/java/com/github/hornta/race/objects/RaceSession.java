@@ -12,6 +12,7 @@ import com.github.hornta.race.events.*;
 import com.github.hornta.race.MessageKey;
 import com.github.hornta.carbon.message.MessageManager;
 import com.xxmicloxx.NoteBlockAPI.songplayer.RadioSongPlayer;
+import io.papermc.lib.PaperLib;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
@@ -156,7 +157,7 @@ public class RaceSession implements Listener {
     List<Integer> announceIntervals = Racing.getInstance().getConfiguration().get(ConfigKey.RACE_ANNOUNCE_INTERVALS);
     for(int interval : announceIntervals) {
       if(interval >= prepareTime) {
-        return;
+        continue;
       }
       addStartTimerTask(Bukkit.getScheduler().scheduleSyncDelayedTask(Racing.getInstance(), () -> {
         MessageManager.setValue("race_name", race.getName());
@@ -430,7 +431,7 @@ public class RaceSession implements Listener {
   }
 
   public void participate(Player player, double chargedEntryFee) {
-    RacePlayerSession session = new RacePlayerSession(race, player, chargedEntryFee);
+    RacePlayerSession session = new RacePlayerSession(this, player, chargedEntryFee);
     playerSessions.put(player.getUniqueId(), session);
     Bukkit.getPluginManager().callEvent(new ParticipateEvent(this, session));
     tryAndSkipToCountdown();
@@ -676,7 +677,7 @@ public class RaceSession implements Listener {
           playerSession.restore();
           playerSessions.remove(player.getUniqueId());
           player.setFallDistance(0);
-          player.teleport(race.getSpawn());
+          PaperLib.teleportAsync(player, race.getSpawn(), PlayerTeleportEvent.TeleportCause.PLUGIN);
           MessageManager.sendMessage(player, MessageKey.DEATH_DISQUALIFIED_TARGET);
 
           for(RacePlayerSession session : playerSessions.values()) {
