@@ -87,8 +87,8 @@ public class Race implements Listener {
           case WINS:
             order = o2.getWins() - o1.getWins();
             break;
-          case FASTEST:
-            order = (int)(o1.getTime() - o2.getTime());
+          case FASTEST_LAP:
+            order = (int)(o1.getFastestLap() - o2.getFastestLap());
             break;
           case WIN_RATIO:
             order = (int)((float)o2.getWins() / o2.getRuns() * 100 - (float)o1.getWins() / o1.getRuns() * 100);
@@ -96,6 +96,8 @@ public class Race implements Listener {
           case RUNS:
             order = o2.getRuns() - o1.getRuns();
             break;
+          case FASTEST:
+            //can't do anything here, as we would have to create many sorted results for 1 stat type
           default:
             order = 0;
         }
@@ -117,12 +119,15 @@ public class Race implements Listener {
     RacePlayerStatistic playerStatistic = resultByPlayerId.get(result.getPlayerSession().getPlayerId());
     RacePlayerStatistic newStat;
     if(playerStatistic == null) {
+      Map<Integer, Long> records = new HashMap<Integer, Long>();
+      records.put(result.getPlayerSession().getCurrentLap(), result.getTime());
       newStat = new RacePlayerStatistic(
         result.getPlayerSession().getPlayerId(),
         result.getPlayerSession().getPlayerName(),
         result.getPosition() == 1 ? 1 : 0,
         1,
-        result.getTime()
+        result.getPlayerSession().getFastestLapTime(),
+        records
       );
     } else {
       newStat = playerStatistic.clone();
@@ -131,8 +136,13 @@ public class Race implements Listener {
       if (result.getPosition() == 1) {
         newStat.setWins(newStat.getWins() + 1);
       }
-      if(newStat.getTime() > result.getTime()) {
-        newStat.setTime(result.getTime());
+      if(newStat.getFastestLap() > result.getPlayerSession().getFastestLapTime()) {
+        newStat.setFastestLap(result.getPlayerSession().getFastestLapTime());
+      }
+      int laps = result.getPlayerSession().getCurrentLap();
+      if(newStat.getRecord(laps) > result.getTime())
+      {
+        newStat.setRecord(laps, result.getTime());
       }
     }
 
@@ -159,6 +169,23 @@ public class Race implements Listener {
     return resultsByStat.get(type);
   }
 
+  public Set<RacePlayerStatistic> getResultsForLapCount(int laps) {
+
+      Set<RacePlayerStatistic> stats = new TreeSet<>((RacePlayerStatistic o1, RacePlayerStatistic o2) -> {
+        int order = (int)(o1.getRecord(laps) - o2.getRecord(laps));
+        if(order == 0) {
+          return o1.getPlayerId().compareTo(o2.getPlayerId());
+        } else {
+          return order;
+        }
+      });
+      stats.addAll(getResults(RaceStatType.FASTEST_LAP));
+      stats.removeIf(entry -> {
+        return entry.getRecord(laps) == Long.MAX_VALUE;
+      });
+      return stats;   
+  }
+
   public Map<UUID, RacePlayerStatistic> getResultByPlayerId() {
     return resultByPlayerId;
   }
@@ -177,7 +204,7 @@ public class Race implements Listener {
   }
 
   public void removePotionEffect(PotionEffectType type) {
-    Iterator it = potionEffects.iterator();
+    Iterator<RacePotionEffect> it = potionEffects.iterator();
     while(it.hasNext()) {
       if(((RacePotionEffect)it.next()).getType() == type) {
         it.remove();

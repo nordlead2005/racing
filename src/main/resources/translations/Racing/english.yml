@@ -104,7 +104,8 @@ commands:
     entry_fee_line: "§eEntry fee: §f<entry_fee>\n"
   race_top:
     types:
-      fastest: 'Fastest runs'
+      fastest: 'Fastest run for lap count'
+      fastest_lap: 'Fastest Lap'
       most_runs: 'Most runs'
       most_wins: 'Most wins'
       win_ratio: 'Win ratio'
@@ -200,3 +201,15 @@ timeunit.hours: "hours"
 timeunit.day: "day"
 timeunit.days: "days"
 timeunit.now: "now"
+
+scoreboard.heading_format: "§b§l== <heading> (<laps> Laps)=="
+scoreboard.title_format: "§b<title>"
+scoreboard.text_format: "§f<text>"
+scoreboard.world_record: "World Record:"
+scoreboard.world_record_fastest_lap: "WR Fastest Lap:"
+scoreboard.personal_record: "Personal Record:"
+scoreboard.time: "Time:"
+scoreboard.fastest_lap: "Fastest Lap:"
+scoreboard.lap_tag: " Lap"
+scoreboard.no_time_stats: "--:--.---"
+scoreboard.no_name_stats: "---------"

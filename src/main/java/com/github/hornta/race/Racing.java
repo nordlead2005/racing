@@ -511,6 +511,7 @@ public class Racing extends JavaPlugin {
       .addCommand("racing top")
       .withArgument(raceArgument)
       .withArgument(statArgument)
+      .withArgument(lapsArgument)
       .withHandler(new CommandTop(racingManager))
       .requiresPermission(Permission.COMMAND_TOP.toString())
       .requiresPermission(Permission.RACING_PLAYER.toString());
@@ -594,6 +595,18 @@ public class Racing extends JavaPlugin {
         .add(ConfigKey.TELEPORT_AFTER_RACE_ENABLED_WHEN, "teleport_after_race.when", ConfigType.STRING, TeleportAfterRaceWhen.PARTICIPANT_FINISHES, (Object val) -> TeleportAfterRaceWhen.valueOf(((String)val).toUpperCase(Locale.ENGLISH)))
         .add(ConfigKey.VERBOSE, "verbose", ConfigType.BOOLEAN, false)
         .add(ConfigKey.CHECKPOINT_PARTICLES_DURING_RACE, "checkpoint_particles_during_race", ConfigType.BOOLEAN, true)
+        .add(ConfigKey.SCOREBOARD_ENABLED, "scoreboard.enabled", ConfigType.BOOLEAN, true)
+        .add(ConfigKey.SCOREBOARD_DISPLAY_MILLISECONDS, "scoreboard.display_milliseconds", ConfigType.BOOLEAN, false)
+        .add(ConfigKey.SCOREBOARD_WORLD_RECORD, "scoreboard.display_world_record", ConfigType.BOOLEAN, true)
+        .add(ConfigKey.SCOREBOARD_WORLD_RECORD_HOLDER, "scoreboard.display_world_record_holder", ConfigType.BOOLEAN, true)
+        .add(ConfigKey.SCOREBOARD_WORLD_RECORD_FASTEST_LAP, "scoreboard.display_world_record_fastest_lap", ConfigType.BOOLEAN, false)
+        .add(ConfigKey.SCOREBOARD_WORLD_RECORD_FASTEST_LAP_HOLDER, "scoreboard.display_world_record_fastest_lap_holder", ConfigType.BOOLEAN, false)
+        .add(ConfigKey.SCOREBOARD_PERSONAL_RECORD, "scoreboard.display_personal_record", ConfigType.BOOLEAN, true)
+        .add(ConfigKey.SCOREBOARD_PERSONAL_RECORD_FASTEST_LAP, "scoreboard.display_record_fastest_lap", ConfigType.BOOLEAN, false)
+        .add(ConfigKey.SCOREBOARD_TIME, "scoreboard.display_time", ConfigType.BOOLEAN, true)
+        .add(ConfigKey.SCOREBOARD_LAP_TIME, "scoreboard.display_lap_time", ConfigType.BOOLEAN, false)
+        .add(ConfigKey.SCOREBOARD_FASTEST_LAP, "scoreboard.display_fastest_lap", ConfigType.BOOLEAN, false)
+        .add(ConfigKey.SCOREBOARD_TICKS_PER_UPDATE, "scoreboard.ticks_per_update", ConfigType.INTEGER, 1)
         .build();
     } catch (Exception e) {
       setEnabled(false);
@@ -667,6 +680,7 @@ public class Racing extends JavaPlugin {
       .add(MessageKey.RACE_INFO_POTION_EFFECT, "commands.race_info.potion_effect_item")
       .add(MessageKey.RACE_INFO_ENTRY_FEE_LINE, "commands.race_info.entry_fee_line")
       .add(MessageKey.RACE_TOP_TYPE_FASTEST, "commands.race_top.types.fastest")
+      .add(MessageKey.RACE_TOP_TYPE_FASTEST_LAP, "commands.race_top.types.fastest_lap")
       .add(MessageKey.RACE_TOP_TYPE_MOST_RUNS, "commands.race_top.types.most_runs")
       .add(MessageKey.RACE_TOP_TYPE_MOST_WINS, "commands.race_top.types.most_wins")
       .add(MessageKey.RACE_TOP_TYPE_WIN_RATIO, "commands.race_top.types.win_ratio")
@@ -736,6 +750,17 @@ public class Racing extends JavaPlugin {
       .add(MessageKey.TIME_UNIT_DAY, "timeunit.day")
       .add(MessageKey.TIME_UNIT_DAYS, "timeunit.days")
       .add(MessageKey.TIME_UNIT_NOW, "timeunit.now")
+      .add(MessageKey.SCOREBOARD_HEADING_FORMAT, "scoreboard.heading_format")
+      .add(MessageKey.SCOREBOARD_TITLE_FORMAT, "scoreboard.title_format")
+      .add(MessageKey.SCOREBOARD_TEXT_FORMAT, "scoreboard.text_format")
+      .add(MessageKey.SCOREBOARD_WORLD_RECORD, "scoreboard.world_record")
+      .add(MessageKey.SCOREBOARD_WORLD_RECORD_FASTEST_LAP, "scoreboard.world_record_fastest_lap")
+      .add(MessageKey.SCOREBOARD_PERSONAL_RECORD, "scoreboard.personal_record")
+      .add(MessageKey.SCOREBOARD_TIME, "scoreboard.time")
+      .add(MessageKey.SCOREBOARD_FASTEST_LAP, "scoreboard.fastest_lap")
+      .add(MessageKey.SCOREBOARD_LAP_TAG, "scoreboard.lap_tag")
+      .add(MessageKey.SCOREBOARD_NO_TIME_STATS, "scoreboard.no_time_stats")
+      .add(MessageKey.SCOREBOARD_NO_NAME_STATS, "scoreboard.no_name_stats")
       .build();
 
     translations = new Translations(this, messageManager);
@@ -801,7 +826,7 @@ public class Racing extends JavaPlugin {
   }
 
   public static void debug(String message, Object... args) {
-    if(Racing.getInstance().getConfiguration().get(ConfigKey.VERBOSE)) {
+    if(Racing.getInstance().getConfiguration().<Boolean>get(ConfigKey.VERBOSE)) {
       try {
         Racing.getInstance().getLogger().info(String.format(message, args));
       } catch (IllegalFormatConversionException e) {

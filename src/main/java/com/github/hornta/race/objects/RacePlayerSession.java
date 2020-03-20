@@ -30,6 +30,9 @@ public class RacePlayerSession {
   private BossBar bossBar;
   private Entity vehicle;
   private int currentLap;
+  private long lapStartTime;
+  private long fastestLap = Long.MAX_VALUE;
+  private long personalBestLapTime = Long.MAX_VALUE;
   private boolean isAllowedToEnterVehicle;
   private boolean isAllowedToExitVehicle;
   private RaceParticipantReset restore;
@@ -40,6 +43,10 @@ public class RacePlayerSession {
     this.chargedEntryFee = chargedEntryFee;
     this.playerId = player.getUniqueId();
     this.playerName = player.getName();
+    if(raceSession.getRace().getResultByPlayerId().containsKey(playerId))
+    {
+      this.personalBestLapTime = raceSession.getRace().getResultByPlayerId().get(playerId).getFastestLap();
+    }
     Racing.debug("New RacePlayerSession\nPlayer: %s\nUUID: %s\nCharged: %f", playerName, playerId, chargedEntryFee);
   }
 
@@ -57,6 +64,43 @@ public class RacePlayerSession {
 
   public String getPlayerName() {
     return playerName;
+  }
+
+  public void setLapStartTime(long millis)
+  {
+    lapStartTime = millis;
+  }
+
+  public long getLapStartTime()
+  {
+    return lapStartTime;
+  }
+
+  public void setFastestLapTime(long millis)
+  {
+    if(millis < fastestLap)
+    {
+      fastestLap = millis;
+    }
+    if(millis < personalBestLapTime)
+    {
+      personalBestLapTime = millis;
+    }
+  }
+
+  public long getFastestLapTime()
+  {
+    return fastestLap;
+  }
+
+  public long getPersonalBestLapTime()
+  {
+    return personalBestLapTime;
+  }
+
+  public boolean isFinished()
+  {
+    return nextCheckpoint == null;
   }
 
   void startCooldown() {
@@ -132,11 +176,9 @@ public class RacePlayerSession {
         spawnVehicle(EntityType.PIG, location);
         setupPig();
         break;
-
       case MINECART:
         spawnVehicle(EntityType.MINECART, location);
         break;
-
       case HORSE:
         HorseData horseData = null;
         if(vehicle != null) {
@@ -145,10 +187,14 @@ public class RacePlayerSession {
         spawnVehicle(EntityType.HORSE, location);
         setupHorse(horseData);
         break;
-
       case BOAT:
         spawnVehicle(EntityType.BOAT, location);
         setupBoat();
+        break;
+      case ELYTRA:
+      case PLAYER:
+      default:
+        //no vehichle, do nothing, intentional fall throughs.
         break;
     }
 
