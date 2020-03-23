@@ -1,9 +1,8 @@
 package com.github.hornta.race;
 
-import com.github.hornta.race.MessageKey;
 import com.github.hornta.carbon.message.MessageManager;
 import com.github.hornta.race.objects.DurationUnit;
-import org.bukkit.Bukkit;
+
 import org.bukkit.Location;
 
 import java.io.File;

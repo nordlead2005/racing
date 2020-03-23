@@ -6,8 +6,6 @@ import com.github.hornta.race.enums.RaceVersion;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 
 public class CommandsMigration implements IFileMigration {
   @Override

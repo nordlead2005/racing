@@ -6,7 +6,6 @@ import com.github.hornta.race.objects.RaceStartPoint;
 
 import java.util.List;
 import java.util.UUID;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 public interface RacingAPI {

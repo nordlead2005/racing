@@ -4,11 +4,13 @@ import com.github.hornta.race.ConfigKey;
 import com.github.hornta.race.Racing;
 import com.github.hornta.race.api.migrations.*;
 import com.github.hornta.race.enums.RaceCommandType;
+import com.github.hornta.race.enums.RaceSignType;
 import com.github.hornta.race.enums.RaceState;
 import com.github.hornta.race.enums.RaceType;
 import com.github.hornta.race.enums.RaceVersion;
 import com.github.hornta.race.enums.StartOrder;
 import com.github.hornta.race.objects.*;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -86,6 +88,7 @@ public class FileAPI implements RacingAPI {
     migrationManager.addMigration(new SignLapsMigration());
     migrationManager.addMigration(new RaceDurationMigration());
     migrationManager.addMigration(new StartOrderMigration());
+    migrationManager.addMigration(new SignTypeMigration());
   }
 
   @Override
@@ -572,6 +575,7 @@ public class FileAPI implements RacingAPI {
 
   private Set<RacePlayerStatistic> parseResults(YamlConfiguration yaml) {
     Set<RacePlayerStatistic> results = new HashSet<>();
+    @SuppressWarnings("unchecked")
     List<Map<String, Object>> entries = (List<Map<String, Object>>)yaml.getList(RESULTS_FIELD);
     if(entries == null) {
       throw new ParseRaceException("Couldn't parse `" + RESULTS_FIELD + "` list");
@@ -593,6 +597,7 @@ public class FileAPI implements RacingAPI {
       int runs = (int) entry.get(RESULTS_FIELD_RUNS);
       int wins = (int) entry.get(RESULTS_FIELD_WINS);
       long fastestLap = (int) entry.get(RESULTS_FIELD_FASTEST_LAP);
+      @SuppressWarnings("unchecked")
       Map<Integer, Long> records = (Map<Integer, Long>) entry.get(RESULTS_FIELD_RECORDS);
 
       results.add(new RacePlayerStatistic(playerId, playerName, wins, runs, fastestLap, records));
@@ -654,6 +659,7 @@ public class FileAPI implements RacingAPI {
 
   private Set<RaceSign> parseSigns(YamlConfiguration yaml) {
     Set<RaceSign> signs = new HashSet<>();
+    @SuppressWarnings("unchecked")
     List<Map<String, Object>> entries = (List<Map<String, Object>>)yaml.getList("signs");
     if(entries == null) {
       throw new ParseRaceException("Couldn't parse signs list");
@@ -701,8 +707,14 @@ public class FileAPI implements RacingAPI {
 
         laps = (int) entry.get("laps");
       }
+      RaceSignType type = RaceSignType.JOIN;
+      try {
+        type = RaceSignType.fromString((String)entry.get("type"));
+      } catch (IllegalArgumentException ex) {
+        throw new ParseRaceException("Couldn't parse sign because sign type is not valid");
+      }
 
-      signs.add(new RaceSign((Sign) block.getState(), uuid, createdAt, laps));
+      signs.add(new RaceSign((Sign) block.getState(), uuid, createdAt, laps, type));
     }
 
     return signs;
@@ -719,6 +731,7 @@ public class FileAPI implements RacingAPI {
       writeSign.put("author", sign.getCreator().toString());
       writeSign.put("created_at", sign.getCreatedAt().getEpochSecond());
       writeSign.put("laps", sign.getLaps());
+      writeSign.put("type", sign.getSignType().name());
       writeList.add(writeSign);
     }
     yaml.set("signs", writeList);
@@ -783,6 +796,7 @@ public class FileAPI implements RacingAPI {
 
   private List<RaceCommand> parseCommands(YamlConfiguration yaml) {
     List<RaceCommand> commands = new ArrayList<>();
+    @SuppressWarnings("unchecked")
     List<Map<String, Object>> entries = (List<Map<String, Object>>)yaml.getList("commands");
     if(entries == null) {
       throw new ParseRaceException("Couldn't parse `commands`");

@@ -25,6 +25,10 @@ public class CommandInfo extends RacingCommand implements ICommandHandler {
   public void handle(CommandSender commandSender, String[] args, int typedArgs) {
     Race race = racingManager.getRace(args[0]);
 
+    sendInfoMessage(commandSender, race);
+  }
+
+  static public void sendInfoMessage(CommandSender target, Race race) {
     List<String> potionEffects = race.getPotionEffects().stream().map((RacePotionEffect effect) -> {
       MessageManager.setValue("potion_effect", effect.getType().getName());
       MessageManager.setValue("amplifier", effect.getAmplifier());
@@ -54,6 +58,6 @@ public class CommandInfo extends RacingCommand implements ICommandHandler {
     MessageManager.setValue("none", noPotionEffects);
     MessageManager.setValue("potion_effects", potionEffects);
 
-    MessageManager.sendMessage(commandSender, MessageKey.RACE_INFO_SUCCESS);
+    MessageManager.sendMessage(target, MessageKey.RACE_INFO_SUCCESS);
   }
 }

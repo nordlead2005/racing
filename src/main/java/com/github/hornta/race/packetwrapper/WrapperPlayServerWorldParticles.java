@@ -16,10 +16,12 @@ public class WrapperPlayServerWorldParticles extends AbstractPacket {
 		super(packet, TYPE);
 	}
 
+  @SuppressWarnings("all")
 	public WrappedParticle getParticle() {
 		return handle.getNewParticles().read(0);
 	}
 
+  @SuppressWarnings("all")
 	public void setParticleType(WrappedParticle value) {
 		handle.getNewParticles().write(0, value);
 	}
