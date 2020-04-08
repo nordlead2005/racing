@@ -107,7 +107,7 @@ commands:
     entry_fee_line: "§eEntry fee: §f<entry_fee>\n"
   race_top:
     types:
-      fastest: 'Fastest run for <laps> lap<plural>'
+      fastest: 'Fastest run for <laps> <lap_word>'
       fastest_lap: 'Fastest Lap'
       most_runs: 'Most runs'
       most_wins: 'Most wins'
@@ -226,3 +226,6 @@ scoreboard.fastest_lap: "Fastest Lap:"
 scoreboard.lap_tag: " Lap"
 scoreboard.no_time_stats: "--:--.---"
 scoreboard.no_name_stats: "---------"
+
+lap.plural: "laps"
+lap.singular: "lap"

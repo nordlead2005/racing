@@ -784,6 +784,8 @@ public class Racing extends JavaPlugin {
       .add(MessageKey.SCOREBOARD_LAP_TAG, "scoreboard.lap_tag")
       .add(MessageKey.SCOREBOARD_NO_TIME_STATS, "scoreboard.no_time_stats")
       .add(MessageKey.SCOREBOARD_NO_NAME_STATS, "scoreboard.no_name_stats")
+      .add(MessageKey.LAP_SINGULAR, "lap.singular")
+      .add(MessageKey.LAP_PLURAL, "lap.plural")
       .build();
 
     translations = new Translations(this, messageManager);

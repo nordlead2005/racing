@@ -8,6 +8,7 @@ import com.github.hornta.race.Util;
 import com.github.hornta.race.enums.RaceStatType;
 import com.github.hornta.race.objects.Race;
 import com.github.hornta.race.objects.RacePlayerStatistic;
+import com.mojang.brigadier.Message;
 
 import org.bukkit.command.CommandSender;
 
@@ -31,7 +32,7 @@ public class CommandTop extends RacingCommand implements ICommandHandler {
   static public void sendTopMessage(CommandSender target, Race race, int laps, RaceStatType statType) {
     MessageManager.setValue("type", MessageManager.getMessage(statType.getKey()));
     MessageManager.setValue("laps", laps);
-    MessageManager.setValue("plural", (laps > 1) ? "s" : "");
+    MessageManager.setValue("lap_word", MessageManager.getMessage((laps > 1) ? MessageKey.LAP_PLURAL : MessageKey.LAP_SINGULAR));
     MessageManager.setValue("race_name", race.getName());
     MessageManager.sendMessage(target, MessageKey.RACE_TOP_HEADER);
   
