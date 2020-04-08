@@ -227,5 +227,5 @@ scoreboard.lap_tag: " Lap"
 scoreboard.no_time_stats: "--:--.---"
 scoreboard.no_name_stats: "---------"
 
-lap.plural: "laps"
-lap.singular: "lap"
+lap.plural: "Laps"
+lap.singular: "Lap"
