@@ -107,7 +107,7 @@ commands:
     entry_fee_line: "§eEntry fee: §f<entry_fee>\n"
   race_top:
     types:
-      fastest: 'Fastest run for <laps> laps'
+      fastest: 'Fastest run for <laps> lap<plural>'
       fastest_lap: 'Fastest Lap'
       most_runs: 'Most runs'
       most_wins: 'Most wins'

@@ -31,6 +31,7 @@ public class CommandTop extends RacingCommand implements ICommandHandler {
   static public void sendTopMessage(CommandSender target, Race race, int laps, RaceStatType statType) {
     MessageManager.setValue("type", MessageManager.getMessage(statType.getKey()));
     MessageManager.setValue("laps", laps);
+    MessageManager.setValue("plural", (laps > 1) ? "s" : "");
     MessageManager.setValue("race_name", race.getName());
     MessageManager.sendMessage(target, MessageKey.RACE_TOP_HEADER);
   
