@@ -107,7 +107,7 @@ commands:
     entry_fee_line: "§eEntry fee: §f<entry_fee>\n"
   race_top:
     types:
-      fastest: 'Fastest run for lap count'
+      fastest: 'Fastest run for <laps> <lap_word>'
       fastest_lap: 'Fastest Lap'
       most_runs: 'Most runs'
       most_wins: 'Most wins'
@@ -184,9 +184,18 @@ race_sign_registered: "§eSign for race `<race_name>` has been registered."
 race_sign_unregistered: "§eSign for race `<race_name>` has been unregistered."
 race_sign_lines: |
   [Race]
-  <race_name>
-  §l§8<current_participants>/<max_participants>
-  <status>
+  §a<race_name>
+  §b<status>
+  <laps> Laps §l§8<current_participants>/<max_participants>
+race_sign_fastest_lines: |
+  [Race]
+  §a<race_name>
+  §bFastest
+  <laps> Laps
+race_sign_stats_lines: |
+  [Race]
+  §a<race_name>
+  §b<stat_name>
 race_sign_status_not_started: "§8§l• Not started •"
 race_sign_status_lobby: "§d§l• Lobby •"
 race_sign_status_in_game: "§4§l• In game •"
@@ -217,3 +226,6 @@ scoreboard.fastest_lap: "Fastest Lap:"
 scoreboard.lap_tag: " Lap"
 scoreboard.no_time_stats: "--:--.---"
 scoreboard.no_name_stats: "---------"
+
+lap.plural: "Laps"
+lap.singular: "Lap"

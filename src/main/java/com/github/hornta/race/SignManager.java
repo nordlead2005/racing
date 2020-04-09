@@ -1,14 +1,18 @@
 package com.github.hornta.race;
 
+import com.github.hornta.race.commands.CommandInfo;
+import com.github.hornta.race.commands.CommandTop;
 import com.github.hornta.race.enums.JoinType;
 import com.github.hornta.race.enums.Permission;
 import com.github.hornta.race.enums.RaceSessionState;
+import com.github.hornta.race.enums.RaceStatType;
+import com.github.hornta.race.enums.RaceSignType;
 import com.github.hornta.race.events.*;
-import com.github.hornta.race.MessageKey;
 import com.github.hornta.carbon.message.MessageManager;
 import com.github.hornta.race.objects.Race;
 import com.github.hornta.race.objects.RaceSession;
 import com.github.hornta.race.objects.RaceSign;
+
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -117,31 +121,31 @@ public class SignManager implements Listener {
     boolean creatingRaceSign =
       event.getLine(0).equalsIgnoreCase("race") &&
       event.getPlayer().hasPermission(Permission.RACING_MODIFY.toString());
+    RaceSignType type = RaceSignType.fromString(event.getLine(2).toUpperCase().replace(" ", "_"));
 
-    if (!creatingRaceSign) {
+    if (!creatingRaceSign || type == null) {
       return;
     }
 
-    int laps;
-    if(event.getLine(2).isEmpty()) {
-      laps = 1;
-    } else {
-      try {
-        laps = Integer.parseInt(event.getLine(2));
-      } catch (NumberFormatException e) {
-        return;
-      }
+    int laps = 1;
+    try {
+      laps = (event.getLine(3).isEmpty() ? 1 : Integer.parseInt(event.getLine(3)));
+    } catch (NumberFormatException e) {
+      //leave laps = 1, no harm if no number entered
     }
+    addSign(race, (Sign)event.getBlock().getState(), event.getPlayer(), Instant.now(), laps, type);
+  }
 
-    Sign sign = (Sign)event.getBlock().getState();
-    RaceSign raceSign = new RaceSign(sign, event.getPlayer().getUniqueId(), Instant.now(), laps);
+  private void addSign(Race race, Sign sign, Player player, Instant createdAt, int laps, RaceSignType type)
+  {
+    RaceSign raceSign = new RaceSign(sign, player.getUniqueId(), createdAt, laps, type);
     race.getSigns().add(raceSign);
     racingManager.updateRace(race, () -> {
       raceSigns.put(raceSign.getKey(), raceSign);
       racesBySign.put(raceSign, race);
       updateSign(raceSign);
       MessageManager.setValue("race_name", race.getName());
-      MessageManager.sendMessage(event.getPlayer(), MessageKey.SIGN_REGISTERED);
+      MessageManager.sendMessage(player, MessageKey.SIGN_REGISTERED);
     });
   }
 
@@ -155,11 +159,9 @@ public class SignManager implements Listener {
     }
 
     WallSign wallSign;
-    org.bukkit.block.data.type.Sign signPost;
     Block parent;
 
     if(isSign) {
-      signPost = (org.bukkit.block.data.type.Sign) event.getBlock().getBlockData();
       parent = event.getBlock().getRelative(BlockFace.DOWN);
     } else {
       wallSign = (WallSign) event.getBlock().getBlockData();
@@ -205,7 +207,7 @@ public class SignManager implements Listener {
 
   @EventHandler
   void onPlayerInteract(PlayerInteractEvent event) {
-    if (event.getClickedBlock() == null) {
+    if (event.getClickedBlock() == null || event.getAction() != Action.RIGHT_CLICK_BLOCK) {
       return;
     }
 
@@ -213,13 +215,49 @@ public class SignManager implements Listener {
     if(sign == null) {
       return;
     }
-
-    if(event.getAction() == Action.RIGHT_CLICK_BLOCK) {
+    if(sign.getSignType() == RaceSignType.JOIN) {
       RaceSession currentSession = racingManager.getParticipatingRace(event.getPlayer());
       if(currentSession == null) {
         racingManager.joinRace(racesBySign.get(sign), event.getPlayer(), JoinType.SIGN, sign.getLaps());
       } else {
         currentSession.leave(event.getPlayer());
+      }
+    }
+    else if(sign.getSignType() == RaceSignType.INFO) {
+      CommandInfo.sendInfoMessage(event.getPlayer(), racesBySign.get(sign));
+    }
+    else
+    {
+      Race race = racesBySign.get(sign);
+      if(race != null)
+      {
+        int laps = sign.getLaps();
+        RaceStatType statType = null;
+
+        switch(sign.getSignType())
+        {
+          case WINS:
+            statType = RaceStatType.WINS;
+            break;
+          case WIN_RATIO:
+            statType = RaceStatType.WIN_RATIO;
+            break;
+          case FASTEST:
+            statType = RaceStatType.FASTEST;
+            break;
+          case FASTEST_LAP:
+            statType = RaceStatType.FASTEST_LAP;
+            break;
+          case RUNS:
+            statType = RaceStatType.RUNS;
+            break;
+          case JOIN://fall through
+          case INFO://fall through
+          default://none of these should ever hit.
+            throw new IllegalArgumentException("Unexpected case: " + sign.getSignType().name());
+        }
+
+        CommandTop.sendTopMessage(event.getPlayer(), race, laps, statType);
       }
     }
   }
@@ -228,31 +266,60 @@ public class SignManager implements Listener {
     if(!wallSignMaterials.contains(block.getType()) && !signPostMaterial.contains(block.getType())) {
       return null;
     }
-
     return raceSigns.get(RaceSign.createKey(block));
   }
 
   private void updateSign(RaceSign sign) {
     Race race = racesBySign.get(sign);
-    List<RaceSession> sessions = racingManager.getRaceSessions(race);
-    RaceSession session = sessions.isEmpty() ? null : sessions.get(0);
 
-    MessageKey statusKey;
-    if(session == null) {
-      statusKey = MessageKey.SIGN_NOT_STARTED;
-    } else if (session.getState() == RaceSessionState.PREPARING) {
-      statusKey = MessageKey.SIGN_LOBBY;
-    } else {
-      statusKey = MessageKey.SIGN_STARTED;
+    MessageKey messageKey = MessageKey.RACE_SIGN_LINES;
+    switch(sign.getSignType())
+    {
+      case JOIN:
+        List<RaceSession> sessions = racingManager.getRaceSessions(race);
+        RaceSession session = sessions.isEmpty() ? null : sessions.get(0);
+
+        MessageKey statusKey;
+        int laps = sign.getLaps();
+        if(session == null) {
+          statusKey = MessageKey.SIGN_NOT_STARTED;
+        } else if (session.getState() == RaceSessionState.PREPARING) {
+          statusKey = MessageKey.SIGN_LOBBY;
+          laps = session.getLaps();
+        } else {
+          statusKey = MessageKey.SIGN_STARTED;
+          laps = session.getLaps();
+        }
+        MessageManager.setValue("status", MessageManager.getMessage(statusKey));
+        MessageManager.setValue("laps", laps);
+        MessageManager.setValue("current_participants", session == null ? 0 : session.getAmountOfParticipants());
+        MessageManager.setValue("max_participants", race.getStartPoints().size());
+        messageKey = MessageKey.RACE_SIGN_LINES;
+        break;
+      case FASTEST:
+        MessageManager.setValue("laps", sign.getLaps());
+        messageKey = MessageKey.RACE_SIGN_FASTEST_LINES;
+        break;
+      case FASTEST_LAP: //intentional fallthrough from here down
+      case INFO:
+      case RUNS:
+      case WINS:
+      case WIN_RATIO:
+      default:
+        MessageManager.setValue("stat_name", sign.getSignType().name().replace("_", " "));
+        messageKey = MessageKey.RACE_SIGN_STATS_LINES;
+        break;
+      
     }
-    MessageManager.setValue("status", MessageManager.getMessage(statusKey));
     MessageManager.setValue("race_name", race.getName());
-    MessageManager.setValue("current_participants", session == null ? 0 : session.getAmountOfParticipants());
-    MessageManager.setValue("max_participants", race.getStartPoints().size());
-    String[] contents = MessageManager.getMessage(MessageKey.RACE_SIGN_LINES).split("\n");
-    for(int i = 0; i < contents.length; ++i) {
-      sign.getSign().setLine(i, contents[i]);
+    String[] contents = MessageManager.getMessage(messageKey).split("\n");
+    setSignLines(sign.getSign(), contents);
+  }
+
+  void setSignLines(Sign sign, String[] lines) {
+    for(int i = 0; i < lines.length; ++i) {
+      sign.setLine(i, lines[i]);
     }
-    sign.getSign().update();
+    sign.update();
   }
 }

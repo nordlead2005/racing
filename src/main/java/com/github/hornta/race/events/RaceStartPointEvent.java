@@ -2,7 +2,6 @@ package com.github.hornta.race.events;
 
 import com.github.hornta.race.objects.Race;
 import com.github.hornta.race.objects.RaceStartPoint;
-import org.bukkit.event.HandlerList;
 
 abstract public class RaceStartPointEvent extends RaceEvent {
   private RaceStartPoint startPoint;

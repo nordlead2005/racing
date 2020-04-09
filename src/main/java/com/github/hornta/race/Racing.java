@@ -46,6 +46,7 @@ public class Racing extends JavaPlugin {
   private Translations translations;
   private RacingManager racingManager;
   private ProtocolManager protocolManager;
+  @SuppressWarnings("unused")
   private Metrics metrics;
   private RaceCommandExecutor raceCommandExecutor;
   private Configuration configuration;
@@ -151,6 +152,11 @@ public class Racing extends JavaPlugin {
             MessageManager.setValue("potion_effect", result.getValue());
             MessageManager.sendMessage(result.getCommandSender(), MessageKey.POTION_EFFECT_NOT_FOUND);
           }
+          break;
+        case ERR_MAX_LENGTH:
+        case ERR_MIN_LENGTH:
+        case ERR_PATTERN:
+        default:
           break;
       }
     });
@@ -536,6 +542,7 @@ public class Racing extends JavaPlugin {
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public void onEnable() {
     instance = this;
     metrics = new Metrics(this);
@@ -748,6 +755,8 @@ public class Racing extends JavaPlugin {
       .add(MessageKey.SIGN_REGISTERED, "race_sign_registered")
       .add(MessageKey.SIGN_UNREGISTERED, "race_sign_unregistered")
       .add(MessageKey.RACE_SIGN_LINES, "race_sign_lines")
+      .add(MessageKey.RACE_SIGN_FASTEST_LINES, "race_sign_fastest_lines")
+      .add(MessageKey.RACE_SIGN_STATS_LINES, "race_sign_stats_lines")
       .add(MessageKey.SIGN_NOT_STARTED, "race_sign_status_not_started")
       .add(MessageKey.SIGN_LOBBY, "race_sign_status_lobby")
       .add(MessageKey.SIGN_STARTED, "race_sign_status_in_game")
@@ -775,6 +784,8 @@ public class Racing extends JavaPlugin {
       .add(MessageKey.SCOREBOARD_LAP_TAG, "scoreboard.lap_tag")
       .add(MessageKey.SCOREBOARD_NO_TIME_STATS, "scoreboard.no_time_stats")
       .add(MessageKey.SCOREBOARD_NO_NAME_STATS, "scoreboard.no_name_stats")
+      .add(MessageKey.LAP_SINGULAR, "lap.singular")
+      .add(MessageKey.LAP_PLURAL, "lap.plural")
       .build();
 
     translations = new Translations(this, messageManager);

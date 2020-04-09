@@ -2,7 +2,6 @@ package com.github.hornta.race.api;
 
 import com.github.hornta.race.Racing;
 import com.github.hornta.race.enums.RaceVersion;
-import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.util.ArrayList;
