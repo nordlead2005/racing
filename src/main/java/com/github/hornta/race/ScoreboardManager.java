@@ -32,6 +32,8 @@ public class ScoreboardManager {
   private final String NO_TIME_STATS = "noTimeStats";
   private final String NO_NAME_STATS = "noNameStats";
   private final String LAP_TAG = "personalRecord";
+  private final String LAP_PLURAL = "lapPlural";
+  private final String LAP_SINGULAR = "lapSingular";
   
   private final int rowsNeeded;
 
@@ -74,6 +76,8 @@ public class ScoreboardManager {
     translationMap.put(RACE_TIME, MessageManager.getMessage(MessageKey.SCOREBOARD_TIME));
     translationMap.put(RACE_FASTEST_LAP_TIME, MessageManager.getMessage(MessageKey.SCOREBOARD_FASTEST_LAP));
     translationMap.put(LAP_TAG, MessageManager.getMessage(MessageKey.SCOREBOARD_LAP_TAG));
+    translationMap.put(LAP_PLURAL, MessageManager.getMessage(MessageKey.LAP_PLURAL));
+    translationMap.put(LAP_SINGULAR, MessageManager.getMessage(MessageKey.LAP_SINGULAR));
 
     this.rowsNeeded = calculateNumberOfRowsNeeded();
   }
@@ -300,7 +304,8 @@ public class ScoreboardManager {
   }
 
   private String convertHeading(String heading, int laps) {
-    return headingFormat.replace("<heading>", heading).replace("<laps>", Integer.toString(laps));
+    String lapWord = (laps > 1) ? translationMap.get(LAP_PLURAL) : translationMap.get(LAP_SINGULAR);
+    return headingFormat.replace("<heading>", heading).replace("<laps>", Integer.toString(laps)).replace("<lap_word>", lapWord);
   }
 
   private String convertTitle(String title) {

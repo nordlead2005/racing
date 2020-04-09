@@ -275,12 +275,13 @@ public class SignManager implements Listener {
     MessageKey messageKey = MessageKey.RACE_SIGN_LINES;
     switch(sign.getSignType())
     {
-      case JOIN:
+      case JOIN: {
         List<RaceSession> sessions = racingManager.getRaceSessions(race);
         RaceSession session = sessions.isEmpty() ? null : sessions.get(0);
 
         MessageKey statusKey;
         int laps = sign.getLaps();
+        String lapWord = MessageManager.getMessage((laps > 1) ? MessageKey.LAP_PLURAL : MessageKey.LAP_SINGULAR).toLowerCase();
         if(session == null) {
           statusKey = MessageKey.SIGN_NOT_STARTED;
         } else if (session.getState() == RaceSessionState.PREPARING) {
@@ -292,14 +293,20 @@ public class SignManager implements Listener {
         }
         MessageManager.setValue("status", MessageManager.getMessage(statusKey));
         MessageManager.setValue("laps", laps);
+        MessageManager.setValue("lap_word", lapWord);
         MessageManager.setValue("current_participants", session == null ? 0 : session.getAmountOfParticipants());
         MessageManager.setValue("max_participants", race.getStartPoints().size());
         messageKey = MessageKey.RACE_SIGN_LINES;
         break;
-      case FASTEST:
-        MessageManager.setValue("laps", sign.getLaps());
+      }
+      case FASTEST: {
+        int laps = sign.getLaps();
+        String lapWord = MessageManager.getMessage((laps > 1) ? MessageKey.LAP_PLURAL : MessageKey.LAP_SINGULAR).toLowerCase();
+        MessageManager.setValue("laps", laps);
+        MessageManager.setValue("lap_word", lapWord);
         messageKey = MessageKey.RACE_SIGN_FASTEST_LINES;
         break;
+      }
       case FASTEST_LAP: //intentional fallthrough from here down
       case INFO:
       case RUNS:
